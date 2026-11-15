@@ -19,6 +19,7 @@ export function SettingsVisualLightingSection(props: {
           </>
         }
         checked={model.lightingControl}
+        testId="toggle-advanced-lighting"
         onChange={model.setLightingControl}
       />
 

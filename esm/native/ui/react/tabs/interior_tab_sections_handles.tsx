@@ -162,6 +162,7 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
 
       <ToggleRow
         label="ניהול ידיות מתקדם"
+        testId="interior-advanced-handles-toggle"
         checked={props.handleControlEnabled}
         onChange={checked => props.setHandleControlEnabled(checked)}
       />

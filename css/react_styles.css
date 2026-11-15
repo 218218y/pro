@@ -8146,3 +8146,212 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   margin: 0;
   font-size: 0.85em;
 }
+
+/* Viewer option search: same control language as notes, with a compact accessible listbox. */
+body.wp-ui-react .wp-viewer-search {
+  position: relative;
+  flex: 0 0 42px;
+  height: 42px;
+  width: 42px;
+  pointer-events: auto;
+}
+
+body.wp-ui-react .cam-btn.wp-viewer-search-btn {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  max-width: 42px;
+  max-height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+body.wp-ui-react .cam-btn.wp-viewer-search-btn.is-on {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  box-shadow: var(--wp-r-shadow-ring-primary-3);
+}
+
+body.wp-ui-react .wp-viewer-search-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(350px, calc(100vw - 40px));
+  max-height: min(390px, calc(100dvh - 100px));
+  display: flex;
+  flex-direction: column;
+  padding: 9px;
+  gap: 7px;
+  direction: rtl;
+  text-align: right;
+  background: #fff;
+  border: 1px solid #dce2eb;
+  color: #19263a;
+  border-radius: 15px;
+  box-shadow: 0 14px 38px rgb(15 23 42 / 22%);
+  pointer-events: auto;
+  z-index: 10;
+}
+
+body.wp-ui-react .wp-viewer-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  background: #f6f8fb;
+  border: 1px solid #dce3ee;
+  border-radius: 10px;
+  min-height: 43px;
+  color: #64748b;
+}
+
+body.wp-ui-react .wp-viewer-search-input-wrap:focus-within {
+  border-color: #4388cf;
+  box-shadow: 0 0 0 3px rgb(67 136 207 / 12%);
+}
+
+body.wp-ui-react .wp-viewer-search-input-wrap input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 40px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  text-align: right;
+  direction: rtl;
+  font:
+    500 0.9rem 'Heebo',
+    sans-serif;
+  outline: none;
+  box-shadow: none;
+}
+
+body.wp-ui-react .wp-viewer-search-close {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+body.wp-ui-react .wp-viewer-search-close:hover {
+  background: #e3e9f2;
+}
+
+body.wp-ui-react .wp-viewer-search-results {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.wp-ui-react .wp-viewer-search-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 39px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: right;
+  font:
+    500 0.85rem 'Heebo',
+    sans-serif;
+}
+
+body.wp-ui-react .wp-viewer-search-result:hover,
+body.wp-ui-react .wp-viewer-search-result.is-active {
+  background: #eef5fc;
+  border-color: #d4e5f6;
+}
+
+body.wp-ui-react .wp-viewer-search-result-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+body.wp-ui-react .wp-viewer-search-result-tab {
+  flex: 0 0 auto;
+  color: #61728a;
+  font-size: 0.75rem;
+}
+
+body.wp-ui-react .wp-viewer-search-empty {
+  padding: 22px 10px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+body.wp-ui-react .wp-viewer-search-hint {
+  padding: 3px 7px 1px;
+  color: #788397;
+  font-size: 0.7rem;
+  text-align: center;
+  border-top: 1px solid #eef0f4;
+}
+
+body.wp-ui-react .wp-r-search-target-flash {
+  position: relative;
+  isolation: isolate;
+  animation: wp-r-search-target-pulse 1.65s ease-in-out 1;
+  border-radius: 7px;
+}
+
+@keyframes wp-r-search-target-pulse {
+  0%,
+  100% {
+    outline: 3px solid transparent;
+    outline-offset: 3px;
+  }
+  18%,
+  65% {
+    outline: 3px solid #e6a832;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 7px rgb(230 168 50 / 16%);
+  }
+}
+
+body.wp-ui-react .wp-r-theme-dark .wp-viewer-search-popover {
+  background: #202a3a;
+  border-color: #40516a;
+  color: #eef3fa;
+}
+
+body.wp-ui-react .wp-r-theme-dark .wp-viewer-search-input-wrap {
+  background: #29364a;
+  border-color: #40516a;
+}
+
+body.wp-ui-react .wp-r-theme-dark .wp-viewer-search-result:hover,
+body.wp-ui-react .wp-r-theme-dark .wp-viewer-search-result.is-active {
+  background: #344966;
+  border-color: #456484;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.wp-ui-react .wp-r-search-target-flash {
+    animation: none;
+    outline: 3px solid #e6a832;
+    outline-offset: 3px;
+  }
+}

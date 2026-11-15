@@ -52,6 +52,7 @@ function MultiColorSwatchDotButton(props: {
     <ColorSwatch
       key={dot.key}
       title={dot.title}
+      data-wp-search-special={dot.id}
       selected={dot.selected}
       {...(dot.isSpecial !== undefined ? { special: dot.isSpecial } : {})}
       {...(dot.swatchClassName !== undefined ? { className: dot.swatchClassName } : {})}
@@ -79,6 +80,7 @@ function MultiColorSwatchRow(props: {
 }
 
 function MultiColorMirrorDraftCard(props: {
+  kind: 'mirror' | 'glass';
   heightDraft: string;
   widthDraft: string;
   title?: string;
@@ -89,7 +91,7 @@ function MultiColorMirrorDraftCard(props: {
   onSetMirrorDraftField: (key: MirrorDraftFieldKey, value: string) => void;
 }): ReactElement {
   return (
-    <div className="wp-tool-card wp-tool-card--curtain">
+    <div className="wp-tool-card wp-tool-card--curtain" data-wp-search-card={props.kind}>
       <div className="wp-section-title">{props.title || 'מידות מראה'}</div>
 
       <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
@@ -246,6 +248,7 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
     <>
       <ToggleRow
         label="צביעה ותוסף לכל חלק בנפרד"
+        testId="design-multicolor-enabled-toggle"
         checked={viewState.enabled}
         onChange={props.onToggleEnabled}
       />
@@ -304,6 +307,7 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
 
             {viewState.paintActive && viewState.paintColor === 'mirror' ? (
               <MultiColorMirrorDraftCard
+                kind="mirror"
                 heightDraft={viewState.mirrorDraftHeight}
                 widthDraft={viewState.mirrorDraftWidth}
                 onSetMirrorDraftField={props.onSetMirrorDraftField}
@@ -312,6 +316,7 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
 
             {viewState.paintActive && viewState.activeAdhesiveGlassKind ? (
               <MultiColorMirrorDraftCard
+                kind="glass"
                 title="מידות זכוכית"
                 heightLabel={MULTI_GLASS_HEIGHT}
                 widthLabel={MULTI_GLASS_WIDTH}

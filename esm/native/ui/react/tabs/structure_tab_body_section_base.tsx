@@ -81,7 +81,7 @@ export function StructureBodyBaseControls(props: {
   return (
     <>
       {!props.hideBaseTypeControls ? (
-        <div className="wp-field">
+        <div className="wp-field" data-testid="structure-base-type-controls">
           <div className="wp-field-label">סוג בסיס</div>
           <OptionButtonGroup columns={3} density="compact" className="wp-r-wardrobe-type-selector">
             {(props.isChestMode ? CHEST_BASE_TYPE_OPTIONS : BASE_TYPE_OPTIONS).map(option => {
@@ -109,6 +109,7 @@ export function StructureBodyBaseControls(props: {
                 <StructureBodyTypeOptionButton
                   key={option.value}
                   selected={selected}
+                  testId={`structure-base-type-${option.value}`}
                   label={option.label}
                   iconClass={option.iconClass}
                   onClick={handleClick}
@@ -173,6 +174,7 @@ export function StructureBodyBaseControls(props: {
                 <StructureBodyTypeOptionButton
                   key={option.value}
                   selected={props.baseLegPlatformMode === option.value}
+                  testId={`structure-base-platform-${option.value}`}
                   label={option.label}
                   iconClass={option.iconClass}
                   onClick={() => props.onSetBaseLegPlatformMode(option.value)}
@@ -324,7 +326,11 @@ export function StructureBodyBaseControls(props: {
       {!props.hideBaseTypeControls && props.isSliding ? (
         <div className="wp-field">
           <div className="wp-field-label">צבע מסילות</div>
-          <OptionButtonGroup columns={2} density="compact" className="wp-r-wardrobe-type-selector">
+          <OptionButtonGroup
+            columns={2}
+            density="compact"
+            className="wp-r-wardrobe-type-selector wp-r-sliding-tracks-selector"
+          >
             {SLIDING_TRACKS_OPTIONS.map(option => (
               <StructureBodyTypeOptionButton
                 key={option.value}

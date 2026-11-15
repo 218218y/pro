@@ -18,6 +18,7 @@ export function StructureBodyHingeControls(props: {
     <div className="wp-field">
       <ToggleRow
         label={'כיוון פתיחת דלת בודדת'}
+        testId="structure-hinge-direction-toggle"
         checked={props.hingeDirection}
         onChange={value => props.onSetHingeDirection(!!value)}
       />

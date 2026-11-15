@@ -8,12 +8,14 @@ export function StructureBodyTypeOptionButton(props: {
   label: ReactNode;
   iconClass?: string | undefined;
   title?: string | undefined;
+  testId?: string;
   onClick: () => void;
   className?: string | undefined;
 }): ReactElement {
   return (
     <OptionButton
       selected={props.selected}
+      {...(props.testId !== undefined ? { testId: props.testId } : {})}
       className={props.className || 'wp-r-type-option'}
       onClick={props.onClick}
       {...(props.title !== undefined ? { title: props.title } : {})}

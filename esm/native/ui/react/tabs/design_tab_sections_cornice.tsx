@@ -24,7 +24,12 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
     <div className="control-section">
       <span className="section-title">תוספות גובה</span>
 
-      <ToggleRow label="הוסף קרניז עליון (כתר)" checked={model.hasCornice} onChange={model.setHasCornice} />
+      <ToggleRow
+        label="הוסף קרניז עליון (כתר)"
+        checked={model.hasCornice}
+        onChange={model.setHasCornice}
+        testId="design-cornice-toggle"
+      />
 
       {model.hasCornice ? (
         <div className="wp-r-mt-2">

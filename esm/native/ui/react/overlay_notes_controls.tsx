@@ -16,6 +16,7 @@ import {
 import { enterPrimaryMode, exitPrimaryMode, getPrimaryMode } from './actions/modes_actions.js';
 import { setUiNotesEnabled, setUiShowContents } from './actions/store_actions.js';
 import { IconButton } from './components/IconButton.js';
+import { ViewerSearchControl } from './overlay_viewer_search.js';
 import { useApp, useMeta, useModeSelector, useUiFeedback, useUiSelector } from './hooks.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
 
@@ -235,6 +236,7 @@ export function ViewerNotesControls(): ReactElement {
   return (
     <div className="wp-viewer-notes-controls">
       <div className="wp-viewer-notes-controls-row">
+        <ViewerSearchControl />
         <div className="wp-viewer-notes-wrap">
           <IconButton
             variant="camera"

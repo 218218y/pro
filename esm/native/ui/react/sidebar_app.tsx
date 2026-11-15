@@ -6,6 +6,7 @@ import { StructureTabView } from './tabs/StructureTab.view.js';
 import { SidebarHeader } from './sidebar_header.js';
 import { DeferredSidebarTabsLazy, TABS, prefetchDeferredSidebarTabs } from './sidebar_shared.js';
 import { useSidebarViewState } from './use_sidebar_view_state.js';
+import { useViewerSearchNavigation } from './use_viewer_search_navigation.js';
 import { toggleSketchNoMainWardrobe } from './actions/sketch_no_main_wardrobe_action.js';
 
 function SidebarLockedView({
@@ -58,6 +59,14 @@ export function ReactSidebarApp({
     shouldMountDeferredTabs,
     site2UiEnabled,
   } = useSidebarViewState();
+
+  useViewerSearchNavigation({
+    app,
+    activeTab: activeSafe,
+    canRenderTab,
+    scrollRef,
+    setActiveTab,
+  });
 
   if (isSite2 && !site2UiEnabled) {
     return (
