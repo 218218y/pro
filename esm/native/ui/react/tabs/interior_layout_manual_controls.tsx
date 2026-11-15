@@ -66,6 +66,16 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
             }}
           />
         ) : null}
+        {isSketch ? (
+          <OptionButton
+            density="micro"
+            selected={props.isLayoutMode && props.layoutType === 'full_boring'}
+            testId="interior-layout-full_boring"
+            onClick={() => props.enterLayout('full_boring')}
+          >
+            חירור מלא
+          </OptionButton>
+        ) : null}
       </div>
 
       {!isSketch && tool !== 'storage' ? (

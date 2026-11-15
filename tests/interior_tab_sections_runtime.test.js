@@ -1012,3 +1012,21 @@ test('double hanging button shows one middle brace and two hanging levels', () =
   assert.equal(paths[0], 'M9 32H39');
   assert.equal(paths[1], 'M11 10H37 M11 34H37');
 });
+
+test('[interior-tab-sections-runtime] full boring follows winter brace and replaces standalone conversion actions', () => {
+  const calls = [];
+  const props = createLayoutProps({
+    method: 'sketch',
+    enterLayout: value => calls.push(value),
+  });
+  const tree = InteriorLayoutManualControls(props);
+  const markup = renderToStaticMarkup(React.createElement(InteriorLayoutManualControls, props));
+  const winterPos = markup.indexOf('data-testid="winter-brace-shelf-button"');
+  const boringPos = markup.indexOf('data-testid="interior-layout-full_boring"');
+  assert.ok(winterPos >= 0 && boringPos > winterPos);
+  assert.ok(findElementByTestId(tree, 'interior-layout-full_boring'));
+  assert.equal(findElementByTestId(tree, 'interior-layout-brace_shelves'), null);
+  assert.equal(findElementByTestId(tree, 'interior-layout-regular_shelf'), null);
+  findElementByTestId(tree, 'interior-layout-full_boring').props.onClick();
+  assert.deepEqual(calls, ['full_boring']);
+});

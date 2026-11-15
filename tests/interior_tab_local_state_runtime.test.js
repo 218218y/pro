@@ -99,10 +99,10 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   );
   assert.deepEqual(
     Array.from(
-      INTERIOR_LAYOUT_TYPES.filter(item => item.group === 'edits'),
+      INTERIOR_LAYOUT_TYPES.filter(item => item.group === 'tools'),
       item => item.id
     ),
-    ['brace_shelves', 'regular_shelf', 'full_boring']
+    ['full_boring']
   );
   assert.deepEqual(
     Array.from(INTERIOR_MANUAL_TOOLS, item => item.id),

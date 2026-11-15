@@ -1,6 +1,5 @@
 import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
-import { findNearestSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
 import { resolveSketchModuleBoxPreviewState } from './canvas_picking_sketch_module_surface_preview_box.js';
 import { resolveSketchModuleShelfRemovePreview } from './canvas_picking_sketch_module_surface_preview_shelf.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
@@ -57,7 +56,6 @@ export function resolveSketchModuleSurfacePreview(
   let boxWidthPreviewM = args.boxWidthOverrideM;
   let boxDepthPreviewM = args.boxDepthOverrideM;
   let storageHPreview = storageH;
-  let contentOp: 'add' | 'remove' = 'add';
 
   const regShelfDepth = INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM;
   const regularDepth = internalDepth > 0 ? Math.min(internalDepth, regShelfDepth) : regShelfDepth;
@@ -145,21 +143,6 @@ export function resolveSketchModuleSurfacePreview(
 
   if (!isBox && !isStorage && !isShelf && !isRod) return { handled: false };
 
-  if (isShelf && shelves.length) {
-    const shelfMatch = findNearestSketchModuleShelf({
-      shelves,
-      bottomY,
-      totalHeight: spanH,
-      pointerY: yClamped,
-    });
-    if (shelfMatch && shelfMatch.dy <= removeEpsShelf) {
-      contentOp = 'remove';
-      yClamped = Math.max(bottomY + pad, Math.min(topY - pad, shelfMatch.yAbs));
-      variantPreview = shelfMatch.variant || variantPreview;
-      if (shelfMatch.depthM != null) shelfDepthOverrideM = shelfMatch.depthM;
-    }
-  }
-
   const boxPreviewState = resolveSketchModuleBoxPreviewState({
     source: args,
     hitLocalX: args.hitLocalX,
@@ -183,7 +166,7 @@ export function resolveSketchModuleSurfacePreview(
     variantPreview,
     shelfDepthOverrideM,
     storageHPreview,
-    contentOp,
+    contentOp: 'add',
     bottomY,
     topY,
     spanH,

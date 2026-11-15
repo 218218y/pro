@@ -34,10 +34,10 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
   const activeMethod = readActiveMethod(props);
   const method = activeMethod ?? lastMethod;
   const isBoring = props.isLayoutMode && props.layoutType === 'full_boring';
-  const isEditingShelf = props.isBraceShelvesMode;
   let hint = METHOD_HINTS[method];
   if (isBoring) hint = 'לחצו על תא להוספה או להסרה של חורי מדף במרווח 3 ס״מ.';
-  if (isEditingShelf) hint = 'לחצו על מדף להמרה או להסרה, או על מקום פנוי להוספה.';
+  if (method === 'sketch' && props.isSketchToolActive)
+    hint = 'לחצו על מדף מסוג אחר להמרה, על מדף מאותו סוג להסרה, או על מקום פנוי להוספה.';
   if (activeMethod === 'grid' && props.manualTool === 'storage') {
     hint = 'לחצו על תא להוספה או להסרה של אוגר מצעים.';
   }
@@ -47,37 +47,27 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
     methodButtons.current[nextMethod]?.focus({ preventScroll: true });
   }
 
-  function renderLayoutOptions(group: 'presets' | 'edits') {
+  function renderLayoutOptions() {
     return (
       <div
-        className={cx('wp-interior-layout-options', group === 'presets' && 'wp-interior-layout-presets')}
+        className={cx('wp-interior-layout-options', 'wp-interior-layout-presets')}
         role="group"
-        aria-label={group === 'presets' ? 'תבניות לתא' : 'המרה וחירור'}
+        aria-label="תבניות לתא"
       >
         {props.layoutTypes
-          .filter(option => option.group === group)
+          .filter(option => option.group === 'presets')
           .map(option => {
-            const selected =
-              option.id === 'brace_shelves'
-                ? isEditingShelf && !props.isRegularShelfMode
-                : option.id === 'regular_shelf'
-                  ? props.isRegularShelfMode
-                  : props.isLayoutMode && props.layoutType === option.id;
+            const selected = props.isLayoutMode && props.layoutType === option.id;
             return (
               <OptionButton
                 key={option.id}
                 selected={selected}
                 density="micro"
-                {...(group === 'presets' ? { className: 'wp-interior-preset-button' } : {})}
-                icon={group === 'edits' ? <i className={option.icon} aria-hidden="true" /> : undefined}
+                className="wp-interior-preset-button"
                 testId={`interior-layout-${option.id}`}
                 onClick={() => props.enterLayout(option.id)}
               >
-                {group === 'presets' ? (
-                  <InteriorLayoutPresetPreview id={option.id} label={option.label} />
-                ) : (
-                  option.label
-                )}
+                <InteriorLayoutPresetPreview id={option.id} label={option.label} />
               </OptionButton>
             );
           })}
@@ -131,17 +121,10 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
       <p className="wp-interior-layout-help">{hint}</p>
 
       {method === 'presets' ? (
-        renderLayoutOptions('presets')
+        renderLayoutOptions()
       ) : (
         <InteriorLayoutManualControls {...props} method={method} />
       )}
-
-      {method === 'sketch' ? (
-        <details className="wp-interior-layout-edits">
-          <summary>המרת מדפים וחירור</summary>
-          {renderLayoutOptions('edits')}
-        </details>
-      ) : null}
     </div>
   );
 }

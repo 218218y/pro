@@ -74,6 +74,39 @@ export function createShelfRemoveHoverRecord(args: {
   };
 }
 
+export function createShelfConvertHoverRecord(args: {
+  host: ManualLayoutSketchHoverHost;
+  removeKind: 'sketch' | 'base';
+  removeIdx: number | null;
+  shelfIndex: number | null;
+  variant: string;
+  depthM: number | null;
+  blockedReason?: string | null;
+}): RecordMap {
+  const command = {
+    kind: 'shelf' as const,
+    op: 'convert' as const,
+    removeKind: args.removeKind,
+    removeIdx: args.removeKind === 'sketch' ? args.removeIdx : null,
+    shelfIndex: args.removeKind === 'base' ? args.shelfIndex : null,
+    variant: args.variant,
+    depthM: args.depthM,
+    blockedReason: args.blockedReason ?? null,
+  };
+  return {
+    ts: args.host.ts ?? Date.now(),
+    tool: args.host.tool,
+    ...createSketchHoverHostIdentity(args.host),
+    kind: 'shelf',
+    op: 'convert',
+    removeKind: command.removeKind,
+    removeIdx: command.removeIdx ?? undefined,
+    shelfIndex: command.shelfIndex ?? undefined,
+    variant: command.variant,
+    [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope(command),
+  };
+}
+
 export function createStorageRemoveHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
   removeKind: 'sketch' | 'base';

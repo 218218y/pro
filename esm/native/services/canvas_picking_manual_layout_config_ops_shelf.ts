@@ -219,10 +219,8 @@ export function toggleManualLayoutShelf(
         shelfIndex,
       })
     ) {
-      customData.shelves[args.arrayIdx] = false;
-      customData.shelfVariants[args.arrayIdx] = '';
-      removeBraceShelfIndex(braceShelves, shelfIndex);
-      return { changed: true, blockedBySketchDrawers: true };
+      // A failed conversion must not silently remove the original shelf.
+      return { changed: false, blockedBySketchDrawers: true };
     }
     customData.shelves[args.arrayIdx] = true;
     customData.shelfVariants[args.arrayIdx] = desiredStore;
@@ -243,6 +241,21 @@ export function removeManualLayoutBaseStorage(
 ): void {
   const { customData } = preparePresetBackedManualLayoutGrid(cfg, args);
   customData.storage = false;
+}
+
+export function convertManualLayoutBaseShelf(
+  cfg: ManualLayoutConfigRecord,
+  args: ManualLayoutGridMutationArgs & { shelfIndex: number; shelfVariant: ManualLayoutShelfVariant }
+): void {
+  const { shelfIndex, shelfVariant, divs, topY, bottomY } = args;
+  if (!Number.isInteger(shelfIndex) || shelfIndex < 1 || shelfIndex >= divs) return;
+  const { customData, braceShelves } = preparePresetBackedManualLayoutGrid(cfg, { divs, topY, bottomY });
+  while (customData.shelves.length < divs - 1) customData.shelves.push(false);
+  while (customData.shelfVariants.length < divs - 1) customData.shelfVariants.push('');
+  customData.shelves[shelfIndex - 1] = true;
+  customData.shelfVariants[shelfIndex - 1] = shelfVariant === 'regular' ? '' : shelfVariant;
+  if (shelfVariant === 'brace') addBraceShelfIndex(braceShelves, shelfIndex);
+  else removeBraceShelfIndex(braceShelves, shelfIndex);
 }
 
 export function removeManualLayoutBaseShelf(

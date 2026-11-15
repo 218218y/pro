@@ -12,6 +12,10 @@ import {
   createSketchModuleShelfPreviewGeometry,
   findNearestSketchModuleShelf,
 } from './canvas_picking_sketch_module_vertical_content.js';
+import {
+  doesSketchModuleVerticalRangeCollideWithDrawers,
+  resolveSketchModuleShelfCollisionHeight,
+} from './canvas_picking_sketch_module_vertical_content_collision.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   filterSketchModuleContentItemsForCell,
@@ -20,6 +24,7 @@ import {
 import {
   asRecord,
   createShelfRemoveHoverRecord,
+  createShelfConvertHoverRecord,
   readRecordNumber,
   readRecordValue,
   type SketchModuleShelfRemovePreviewArgs,
@@ -62,7 +67,7 @@ export function resolveSketchModuleShelfRemovePreview(
     isCornerKey,
     removeEpsShelf,
   } = args;
-  let op: 'add' | 'remove' = 'add';
+  let op: 'add' | 'remove' | 'convert' = 'add';
   let variantPreview = variant;
   let nextShelfDepthOverrideM = shelfDepthOverrideM;
   let shelfRemoveKind: 'sketch' | 'base' | '' = '';
@@ -94,7 +99,11 @@ export function resolveSketchModuleShelfRemovePreview(
     const boardY = typeof shelfBoardHit?.point?.y === 'number' ? shelfBoardHit.point.y : null;
     const hitFromBoard = typeof boardY === 'number';
     const isCornerMk = isCornerKey(hitModuleKey);
-    const shelfHitY = hitFromBoard ? boardY : isCornerMk ? nextYClamped : null;
+    const shelfHitY = hitFromBoard
+      ? boardY
+      : isCornerMk || host.tool.startsWith('sketch_shelf:')
+        ? nextYClamped
+        : null;
     if (typeof shelfHitY === 'number') {
       if (shelfCandidates.length) {
         const shelfMatch = findNearestSketchModuleShelf({
@@ -104,15 +113,20 @@ export function resolveSketchModuleShelfRemovePreview(
           pointerY: shelfHitY,
         });
         if (shelfMatch && isWithinInclusiveTolerance(shelfHitY, shelfMatch.yAbs, removeEpsShelf)) {
-          op = 'remove';
+          op =
+            host.tool.startsWith('sketch_shelf:') && (shelfMatch.variant || 'double') !== variant
+              ? 'convert'
+              : 'remove';
           shelfRemoveKind = 'sketch';
           shelfRemoveIdx = shelfCandidates[shelfMatch.index]?.index ?? null;
           nextYClamped = Math.max(bottomY + pad, Math.min(topY - pad, shelfMatch.yAbs));
-          if (shelfMatch.variant) variantPreview = shelfMatch.variant;
-          if (shelfMatch.depthM != null) nextShelfDepthOverrideM = shelfMatch.depthM;
+          if (op === 'remove') {
+            if (shelfMatch.variant) variantPreview = shelfMatch.variant;
+            if (shelfMatch.depthM != null) nextShelfDepthOverrideM = shelfMatch.depthM;
+          }
         }
       }
-      if (op !== 'remove' && cfgRef && typeof cfgRef === 'object') {
+      if (op === 'add' && cfgRef && typeof cfgRef === 'object') {
         const divisions =
           readRecordNumber(info, 'gridDivisions') ?? INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
         if (divisions > 1) {
@@ -140,21 +154,26 @@ export function resolveSketchModuleShelfRemovePreview(
           if (isWithinInclusiveTolerance(shelfHitY, targetY, eps)) {
             const exists = hasShelfAtIndex(cfgRef || {}, shelfIndex);
             if (exists) {
-              op = 'remove';
-              shelfRemoveKind = 'base';
-              baseShelfIndex = shelfIndex;
-              nextYClamped = Math.max(bottomY + pad, Math.min(topY - pad, targetY));
               const braceShelves = readRecordValue(cfgRef, 'braceShelves');
               const isBraceExisting = Array.isArray(braceShelves) && braceShelves.indexOf(shelfIndex) >= 0;
               const custom = asRecord(readRecordValue(cfgRef, 'customData'));
               const shelfVariants = Array.isArray(custom?.shelfVariants) ? custom.shelfVariants : [];
-              const variant = readExistingShelfVariant({
+              const existingVariant = readExistingShelfVariant({
                 braceList: isBraceExisting ? [shelfIndex] : [],
                 shelfIndex,
                 shelfVariants,
-                cfgRef: cfgRef || {},
+                cfgRef,
               });
-              variantPreview = variant === 'regular' && !shelfVariants[shelfIndex - 1] ? 'double' : variant;
+              op =
+                host.tool.startsWith('sketch_shelf:') && existingVariant !== variant ? 'convert' : 'remove';
+              shelfRemoveKind = 'base';
+              baseShelfIndex = shelfIndex;
+              nextYClamped = Math.max(bottomY + pad, Math.min(topY - pad, targetY));
+              if (op === 'remove')
+                variantPreview =
+                  existingVariant === 'regular' && !shelfVariants[shelfIndex - 1]
+                    ? 'double'
+                    : existingVariant;
             }
           }
         }
@@ -164,7 +183,7 @@ export function resolveSketchModuleShelfRemovePreview(
     // preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring
   }
 
-  if (op === 'remove' && shelfRemoveKind) {
+  if ((op === 'remove' || op === 'convert') && shelfRemoveKind) {
     const previewInnerW = targetCell?.width ?? innerW;
     const previewCenterX = targetCell?.centerX ?? internalCenterX;
     const shelfPreview = createSketchModuleShelfPreviewGeometry({
@@ -177,6 +196,17 @@ export function resolveSketchModuleShelfRemovePreview(
       variant: variantPreview,
       shelfDepthOverrideM: nextShelfDepthOverrideM,
     });
+    const blockedBySketchDrawers =
+      op === 'convert' &&
+      doesSketchModuleVerticalRangeCollideWithDrawers({
+        cfgRef,
+        bottomY,
+        topY,
+        totalHeight: spanH,
+        pad,
+        centerY: nextYClamped,
+        heightM: resolveSketchModuleShelfCollisionHeight({ variant, woodThick }),
+      });
     const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
       bottomY,
       topY,
@@ -209,12 +239,23 @@ export function resolveSketchModuleShelfRemovePreview(
       shelfDepthOverrideM: nextShelfDepthOverrideM,
       result: {
         handled: true,
-        hoverRecord: createShelfRemoveHoverRecord({
-          host,
-          removeKind: shelfRemoveKind,
-          removeIdx: shelfRemoveIdx,
-          shelfIndex: baseShelfIndex,
-        }),
+        hoverRecord:
+          op === 'convert'
+            ? createShelfConvertHoverRecord({
+                host,
+                removeKind: shelfRemoveKind,
+                removeIdx: shelfRemoveIdx,
+                shelfIndex: baseShelfIndex,
+                variant,
+                depthM: shelfDepthOverrideM,
+                blockedReason: blockedBySketchDrawers ? 'collision' : null,
+              })
+            : createShelfRemoveHoverRecord({
+                host,
+                removeKind: shelfRemoveKind,
+                removeIdx: shelfRemoveIdx,
+                shelfIndex: baseShelfIndex,
+              }),
         preview: {
           kind: 'shelf',
           variant: shelfPreview.variant,
@@ -225,7 +266,8 @@ export function resolveSketchModuleShelfRemovePreview(
           h: shelfPreview.h,
           d: shelfPreview.d,
           woodThick,
-          op: 'remove',
+          op: blockedBySketchDrawers ? 'blocked' : op === 'convert' ? 'add' : 'remove',
+          blockedReason: blockedBySketchDrawers ? 'collision' : undefined,
           clearanceMeasurements,
         },
       },

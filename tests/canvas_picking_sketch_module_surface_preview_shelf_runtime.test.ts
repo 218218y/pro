@@ -127,6 +127,8 @@ test('sketch shelf nearest matching preserves inclusive policy boundaries, overr
   const shelf = { yNorm: 0.5, variant: 'glass', depthM: 0.32 };
   const shelves = [shelf, { yNorm: 0.75, variant: 'regular' }];
   const atUpperBoundary = resolve({
+    host: { tool: 'sketch_shelf:glass', moduleKey: 0, isBottom: false },
+    variant: 'glass',
     bottomY: 0,
     topY: 1,
     spanH: 1,
@@ -379,16 +381,28 @@ test('custom and built-in layout interpretation preserves shelf existence and br
     assertBaseRemoval(resolve({ cfgRef: { layout }, intersects: [shelfBoardHit(0.8)], yClamped: 0.8 }), 4);
   }
   assertBaseRemoval(
-    resolve({ cfgRef: { layout: 'hanging_split' }, intersects: [shelfBoardHit(0.6)], yClamped: 0.6 }),
+    resolve({
+      cfgRef: { layout: 'hanging_split' },
+      intersects: [shelfBoardHit(0.6)],
+      yClamped: 0.6,
+      host: { tool: 'sketch_shelf:brace', moduleKey: 0, isBottom: false },
+      variant: 'brace',
+    }),
     3
   );
   assert.equal(resolve({ cfgRef: { layout: 'unknown' } }).handled, false);
 
-  const brace = resolve({ cfgRef: { layout: 'shelves', braceShelves: [3] } });
+  const brace = resolve({
+    cfgRef: { layout: 'shelves', braceShelves: [3] },
+    host: { tool: 'sketch_shelf:brace', moduleKey: 0, isBottom: false },
+    variant: 'brace',
+  });
   assert.equal(brace.result?.preview?.variant, 'brace');
   const regular = resolve({ cfgRef: { layout: 'shelves', braceShelves: [] } });
   assert.equal(regular.result?.preview?.variant, 'double');
   const winter = resolve({
+    host: { tool: 'sketch_shelf:winter_brace', moduleKey: 0, isBottom: false },
+    variant: 'winter_brace',
     cfgRef: {
       isCustom: true,
       customData: {
@@ -404,6 +418,7 @@ test('custom and built-in layout interpretation preserves shelf existence and br
 
 test('shelf-board hit filtering and malformed inputs remain resilient', () => {
   const filtered = resolve({
+    host: { tool: 'sketch_rod', moduleKey: 0, isBottom: false },
     intersects: [
       shelfBoardHit(0.6, { __kind: 'shelf_pin' }),
       shelfBoardHit(0.6, { __kind: 'brace_seam' }),
@@ -442,6 +457,7 @@ test('shelf-board hit filtering and malformed inputs remain resilient', () => {
 test('preview geometry and measurement minimum-Z branch preserve focused-owner target dimensions', () => {
   const result = resolve({
     host: { tool: 'sketch_shelf:glass', moduleKey: 0, isBottom: false },
+    variant: 'glass',
     intersects: [shelfBoardHit(0.4)],
     yClamped: 0.4,
     shelves: [{ yNorm: 1 / 3, variant: 'glass', depthM: 0.04 }],
@@ -477,6 +493,7 @@ test('preview geometry and measurement minimum-Z branch preserve focused-owner t
 test('measurement depth-ratio branch and neighbor clearances remain in the remove preview', () => {
   const result = resolve({
     host: { tool: 'sketch_shelf:glass', moduleKey: 0, isBottom: false },
+    variant: 'glass',
     intersects: [shelfBoardHit(0.4)],
     yClamped: 0.4,
     shelves: [
@@ -519,4 +536,49 @@ test('measurement depth-ratio branch and neighbor clearances remain in the remov
   assert.equal(neighbor.textScale, neighborScale);
   assert.equal(result.result?.hoverRecord?.removeKind, 'sketch');
   assert.equal(result.result?.preview?.op, 'remove');
+});
+
+test('shelf tools convert the existing sketch shelf first, then remove only when its type matches', () => {
+  const common: Partial<Args> = {
+    cfgRef: null,
+    intersects: [shelfBoardHit(0.6)],
+    shelves: [{ id: 'keep-id', yNorm: 0.5, variant: 'brace', depthM: 0.51 }],
+  };
+  const conversion = resolve({ ...common });
+  assert.equal(conversion.handled, true);
+  assert.equal(conversion.result?.preview?.op, 'add');
+  assert.equal(conversion.result?.preview?.variant, 'regular');
+  assert.equal(conversion.result?.hoverRecord?.op, 'convert');
+  assert.equal(conversion.result?.hoverRecord?.removeKind, 'sketch');
+  assert.equal(conversion.result?.hoverRecord?.removeIdx, 0);
+
+  const removal = resolve({
+    ...common,
+    shelves: [{ id: 'keep-id', yNorm: 0.5, variant: 'regular' }],
+  });
+  assert.equal(removal.result?.preview?.op, 'remove');
+  assert.equal(removal.result?.hoverRecord?.op, 'remove');
+});
+
+test('conversion of a preset base brace shelf uses its grid index and retains its location', () => {
+  const conversion = resolve({
+    cfgRef: { layout: 'hanging_split', braceShelves: [3] },
+  });
+  assert.equal(conversion.handled, true);
+  assert.equal(conversion.result?.hoverRecord?.op, 'convert');
+  assert.equal(conversion.result?.hoverRecord?.removeKind, 'base');
+  assert.equal(conversion.result?.hoverRecord?.shelfIndex, 3);
+  assert.equal(conversion.result?.preview?.op, 'add');
+  assert.equal(conversion.result?.preview?.variant, 'regular');
+  assert.equal(conversion.yClamped, 0.6);
+});
+
+test('conversion at a sketch shelf with a corner or board-free hover never silently removes it', () => {
+  const conversion = resolve({
+    cfgRef: null,
+    intersects: [],
+    shelves: [{ yNorm: 0.5, variant: 'brace' }],
+  });
+  assert.equal(conversion.result?.hoverRecord?.op, 'convert');
+  assert.equal(conversion.result?.preview?.op, 'add');
 });

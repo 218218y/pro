@@ -26,7 +26,7 @@ export type LayoutTypeOption = {
   id: LayoutTypeId;
   label: string;
   icon: string;
-  group: 'presets' | 'edits';
+  group: 'presets' | 'tools';
 };
 export type ManualToolOption = { id: ManualToolId; label: string };
 
@@ -36,9 +36,7 @@ export const INTERIOR_LAYOUT_TYPES: LayoutTypeOption[] = [
   { id: 'hanging_split', label: 'תלייה כפולה', icon: 'fas fa-grip-lines', group: 'presets' },
   { id: 'mixed', label: 'משולב', icon: 'fas fa-border-all', group: 'presets' },
   { id: 'storage', label: 'אוגר מצעים', icon: 'fas fa-box-open', group: 'presets' },
-  { id: 'brace_shelves', label: 'המרה לקושרת', icon: 'fas fa-link', group: 'edits' },
-  { id: 'regular_shelf', label: 'המרה למדף רגיל', icon: 'fas fa-minus', group: 'edits' },
-  { id: 'full_boring', label: 'חירור מלא', icon: 'fas fa-grip-vertical', group: 'edits' },
+  { id: 'full_boring', label: 'חירור מלא', icon: 'fas fa-grip-vertical', group: 'tools' },
 ];
 
 export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [

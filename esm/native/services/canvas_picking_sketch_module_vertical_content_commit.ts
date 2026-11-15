@@ -14,6 +14,30 @@ import {
   findNearestSketchModuleStorageBarrier,
 } from './canvas_picking_sketch_module_vertical_content_match.js';
 
+function updateSketchShelfVariant(shelf: RecordMap, variant: string, depthM?: number | null): void {
+  shelf.variant = variant || 'double';
+  if (typeof depthM === 'number' && Number.isFinite(depthM) && depthM > 0) shelf.depthM = depthM;
+  else delete shelf.depthM;
+}
+
+export function convertSketchModuleShelfAtIndex(
+  cfg: RecordMap,
+  index: number,
+  variant: string,
+  depthM?: number | null
+): boolean {
+  const extra = cfg.sketchExtras;
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return false;
+  const shelves = (extra as RecordMap).shelves;
+  if (!Array.isArray(shelves) || !Number.isInteger(index) || index < 0 || index >= shelves.length)
+    return false;
+  const shelf = shelves[index];
+  if (!shelf || typeof shelf !== 'object' || Array.isArray(shelf)) return false;
+  if ((shelf.variant || 'double') === (variant || 'double')) return false;
+  updateSketchShelfVariant(shelf as RecordMap, variant, depthM);
+  return true;
+}
+
 export function commitSketchModuleShelf(args: {
   cfg: RecordMap;
   bottomY: number;
@@ -37,7 +61,11 @@ export function commitSketchModuleShelf(args: {
     pointerY,
   });
   if (match && match.dy <= removeEps) {
-    shelves.splice(match.index, 1);
+    if ((match.variant || 'double') === (variant || 'double')) shelves.splice(match.index, 1);
+    else {
+      const matchedShelf = shelves[match.index];
+      if (matchedShelf) updateSketchShelfVariant(matchedShelf, variant, shelfDepthM);
+    }
     return;
   }
   const next: RecordMap = { variant: variant || 'double' };

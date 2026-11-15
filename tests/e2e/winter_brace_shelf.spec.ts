@@ -264,7 +264,7 @@ test('winter shelf split controls fit and keep their actions independent at desk
   }
 });
 
-test('interior shelf shortcuts add, convert and remove shelves through browser pointers', async ({
+test('interior sketch shelf tools add, convert and remove shelves through browser pointers', async ({
   page,
 }) => {
   const issues = collectRuntimeIssues(page);
@@ -304,13 +304,14 @@ test('interior shelf shortcuts add, convert and remove shelves through browser p
   await openMainTab(page, 'interior');
   const layout = page.getByTestId('interior-layout');
   await layout.getByTestId('interior-layout-method-sketch').click();
-  await layout.getByText('המרת מדפים וחירור', { exact: true }).click();
-  const brace = layout.getByTestId('interior-layout-brace_shelves');
-  const regular = layout.getByTestId('interior-layout-regular_shelf');
+  const shelf = layout.getByTestId('interior-manual-tool-shelf-button');
+  const brace = layout.getByTestId('interior-manual-shelf-variant-brace-button');
+  const regular = layout.getByTestId('interior-manual-shelf-variant-regular-button');
+  await shelf.click();
   await brace.click();
   await expect
     .poll(async () => (await readDebugStoreState(page)).mode)
-    .toMatchObject({ primary: 'brace_shelves', opts: { shelfShortcutVariant: 'brace' } });
+    .toMatchObject({ opts: { manualTool: 'sketch_shelf:brace' } });
   let point: { x: number; y: number } | null = null;
   await expect
     .poll(async () => {

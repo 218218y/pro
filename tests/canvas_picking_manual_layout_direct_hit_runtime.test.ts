@@ -620,3 +620,84 @@ test('manual-layout external sketch drawer tool removes an internal drawer box v
   assert.deepEqual(patchMeta, { source: 'sketch.removeInternalDrawerByCrossHit', immediate: true });
   assert.deepEqual(drawers, ['sid-2']);
 });
+
+test('a direct sketch shelf hit converts the base shelf instead of removing, then removes on the next click', () => {
+  const cfg: Record<string, unknown> = {
+    layout: 'shelves',
+    isCustom: true,
+    customData: {
+      shelves: [false, true, false, false, false],
+      shelfVariants: ['', 'brace', '', '', ''],
+      rods: [],
+      storage: false,
+    },
+    braceShelves: [2],
+  };
+  const click = () =>
+    tryApplyManualLayoutSketchDirectHitActions({
+      App: {} as never,
+      __mt: 'sketch_shelf:regular',
+      __activeModuleKey: 0,
+      topY: 2.4,
+      bottomY: 0,
+      mapKey: 0,
+      __gridMap: { '0': { gridDivisions: 6 } },
+      totalHeight: 2.4,
+      hitY0: 0.8,
+      pad: 0,
+      intersects: [{ object: { userData: { partId: 'all_shelves' } }, point: { y: 0.8 } }] as any,
+      __patchConfigForKey: (_mk, patchFn) => {
+        patchFn(cfg);
+        return null;
+      },
+      __wp_isViewportRoot: () => false,
+      __hoverOk: false,
+      __hoverKind: '',
+      __hoverOp: '',
+      __hoverRec: null,
+    });
+  assert.equal(click(), true);
+  assert.deepEqual((cfg.customData as any).shelves, [false, true, false, false, false]);
+  assert.deepEqual((cfg.customData as any).shelfVariants, ['', '', '', '', '']);
+  assert.deepEqual(cfg.braceShelves, []);
+  assert.equal(click(), true);
+  assert.deepEqual((cfg.customData as any).shelves, [false, false, false, false, false]);
+  assert.equal(click(), true);
+  assert.deepEqual((cfg.customData as any).shelves, [false, true, false, false, false]);
+});
+
+test('a direct hit of sketchExtras shelf converts variant in place, without losing ownership metadata', () => {
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    sketchExtras: { shelves: [{ id: 's1', yNorm: 0.5, xNorm: 0.35, scopeOrder: 2, variant: 'brace' }] },
+  };
+  const click = () =>
+    tryApplyManualLayoutSketchDirectHitActions({
+      App: {} as never,
+      __mt: 'sketch_shelf:regular',
+      __activeModuleKey: 0,
+      topY: 2.4,
+      bottomY: 0,
+      mapKey: 0,
+      __gridMap: { '0': { gridDivisions: 6 } },
+      totalHeight: 2.4,
+      hitY0: 1.2,
+      pad: 0,
+      intersects: [{ object: { userData: { partId: 'all_shelves' } }, point: { y: 1.2 } }] as any,
+      __patchConfigForKey: (_mk, patchFn) => {
+        patchFn(cfg);
+        return null;
+      },
+      __wp_isViewportRoot: () => false,
+      __hoverOk: false,
+      __hoverKind: '',
+      __hoverOp: '',
+      __hoverRec: null,
+    });
+  assert.equal(click(), true);
+  assert.deepEqual((cfg.sketchExtras as any).shelves, [
+    { id: 's1', yNorm: 0.5, xNorm: 0.35, scopeOrder: 2, variant: 'regular' },
+  ]);
+  assert.equal(click(), true);
+  assert.deepEqual((cfg.sketchExtras as any).shelves, []);
+});

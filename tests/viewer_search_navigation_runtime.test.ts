@@ -102,12 +102,8 @@ class FakeInput extends FakeElement {
     super.click();
   }
 }
-class FakeDetails extends FakeElement {
-  open = false;
-}
 const view = {
   HTMLInputElement: FakeInput,
-  HTMLDetailsElement: FakeDetails,
   setTimeout: () => 1,
   clearTimeout: () => {},
 };
@@ -202,23 +198,26 @@ test('lazy or conditionally absent target waits; it never falls back to an unrel
   assert.equal(advanceViewerSearchNavigation(panel, standalone, new Set()).progress, 'waiting');
 });
 
-test('native details nesting opens once and does not change the target action', () => {
+test('shelf conversion search opens sketch placement and selects the shelf tool, without stale details controls', () => {
   const route = destination('shelf-conversion');
   const sketch = new FakeElement(view);
-  const details = new FakeDetails(view);
+  const shelf = new FakeElement(view);
   const target = new FakeElement(view);
-  const controls = {
+  const controls: Record<string, FakeElement> = {
     [route.reveal[0].selector]: sketch,
-    [route.reveal[1].selector]: details,
-    [route.selector]: target,
+    [route.reveal[1].selector]: shelf,
   };
   const acted = new Set<number>();
   assert.equal(advanceViewerSearchNavigation(panelWith(controls), route, acted).progress, 'waiting');
+  assert.equal(sketch.clicks, 1);
   sketch.attributes.set('aria-pressed', 'true');
   assert.equal(advanceViewerSearchNavigation(panelWith(controls), route, acted).progress, 'waiting');
-  assert.equal(details.open, true);
+  assert.equal(shelf.clicks, 1);
+  shelf.attributes.set('aria-pressed', 'true');
+  controls[route.selector] = target;
   assert.equal(advanceViewerSearchNavigation(panelWith(controls), route, acted).progress, 'found');
   assert.equal(target.clicks, 0);
+  assert.equal(destination('shelf-boring').selector, '[data-testid="interior-layout-full_boring"]');
 });
 
 test('scroll reveals exact child rather than tab top and applies transient highlighting', () => {

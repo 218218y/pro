@@ -37,6 +37,16 @@ export type ManualLayoutShelfAddCommand = CommandBase & {
   depthM: number | null;
 };
 
+export type ManualLayoutShelfConvertCommand = CommandBase & {
+  kind: 'shelf';
+  op: 'convert';
+  removeKind: 'sketch' | 'base';
+  removeIdx: number | null;
+  shelfIndex: number | null;
+  variant: string;
+  depthM: number | null;
+};
+
 export type ManualLayoutShelfRemoveCommand = {
   kind: 'shelf';
   op: 'remove';
@@ -137,6 +147,7 @@ export type ManualLayoutCommand =
   | ManualLayoutBoxRemoveCommand
   | ManualLayoutShelfAddCommand
   | ManualLayoutShelfRemoveCommand
+  | ManualLayoutShelfConvertCommand
   | ManualLayoutRodAddCommand
   | ManualLayoutRodRemoveCommand
   | ManualLayoutStorageAddCommand
@@ -180,6 +191,16 @@ const COMMAND_FIELDS = {
   'box:remove': new Set(['kind', 'op', 'xCenter', 'yCenter', 'xNorm', 'removeId', 'blockedReason']),
   'shelf:add': new Set(['kind', 'op', 'yNorm', 'variant', 'depthM', 'blockedReason']),
   'shelf:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx', 'shelfIndex']),
+  'shelf:convert': new Set([
+    'kind',
+    'op',
+    'removeKind',
+    'removeIdx',
+    'shelfIndex',
+    'variant',
+    'depthM',
+    'blockedReason',
+  ]),
   'rod:add': new Set(['kind', 'op', 'yNorm', 'blockedReason']),
   'rod:remove': new Set(['kind', 'op', 'removeKind', 'removeIdx', 'rodIndex']),
   'storage:add': new Set(['kind', 'op', 'yNorm', 'blockedReason']),
@@ -282,6 +303,26 @@ function decodeCommand(value: unknown): ManualLayoutCommand | null {
     const removeIdx = readNullableIndex(record.removeIdx);
     const shelfIndex = readNullableIndex(record.shelfIndex);
     if (removeIdx === undefined || shelfIndex === undefined) return null;
+    if (record.op === 'convert') {
+      const variant = readString(record.variant);
+      const depthM = readNullablePositive(record.depthM);
+      if (!variant || depthM === undefined || blockedReason === undefined) return null;
+      if (!(
+        (record.removeKind === 'sketch' && removeIdx != null && shelfIndex === null) ||
+        (record.removeKind === 'base' && removeIdx === null && shelfIndex != null)
+      ))
+        return null;
+      return {
+        kind: 'shelf',
+        op: 'convert',
+        removeKind: record.removeKind,
+        removeIdx,
+        shelfIndex,
+        variant,
+        depthM,
+        blockedReason,
+      };
+    }
     if (record.removeKind === 'sketch' && removeIdx != null && shelfIndex === null)
       return { kind: 'shelf', op: 'remove', removeKind: 'sketch', removeIdx, shelfIndex: null };
     if (record.removeKind === 'base' && removeIdx === null && shelfIndex != null)

@@ -22,6 +22,7 @@ export {
   createRodRemoveHoverRecord,
   createShelfAddHoverRecord,
   createShelfRemoveHoverRecord,
+  createShelfConvertHoverRecord,
   createStorageAddHoverRecord,
   createStorageRemoveHoverRecord,
 } from './canvas_picking_sketch_module_surface_preview_hover_records.js';

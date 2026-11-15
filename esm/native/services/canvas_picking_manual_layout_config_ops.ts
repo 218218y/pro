@@ -13,6 +13,7 @@ export type {
 } from './canvas_picking_manual_layout_config_ops_shared.js';
 
 export {
+  convertManualLayoutBaseShelf,
   fillManualLayoutShelves,
   isManualLayoutShelfBlockedBySketchDrawers,
   normalizeManualLayoutShelfVariant,

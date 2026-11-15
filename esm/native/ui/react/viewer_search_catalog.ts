@@ -27,7 +27,6 @@ const activateFallback = (selector: string): SearchRevealStep => ({
   action: 'activate',
   onlyIfTargetMissing: true,
 });
-const open = (selector: string): SearchRevealStep => ({ selector, action: 'open' });
 const tid = (id: string): string => `[data-testid="${id}"]`;
 const dim = (id: string): string => `[data-wp-active-id="${id}"]`;
 
@@ -53,7 +52,6 @@ const basePlinth = [activate(tid('structure-base-type-plinth'))];
 const baseStage = [...baseLegs, activate(tid('structure-base-platform-stage'))];
 const interiorGrid = [activate(tid('interior-layout-method-grid'))];
 const interiorSketch = [activate(tid('interior-layout-method-sketch'))];
-const interiorEdits = [...interiorSketch, open('.wp-interior-layout-edits')];
 
 function item(
   tab: TabId,
@@ -459,18 +457,18 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   item(
     'interior',
     'shelf-boring',
-    'חירור והמרת מדפים',
-    '.wp-interior-layout-edits',
-    'חורי מדף',
+    'חירור מלא',
+    tid('interior-layout-full_boring'),
+    'חורי מדף לפי סקיצה',
     interiorSketch
   ),
   item(
     'interior',
     'shelf-conversion',
-    'המרת מדף',
-    '.wp-interior-layout-edits [aria-label="המרה וחירור"]',
-    'חירור מדפים',
-    interiorEdits
+    'מדף קושרת והמרת מדפים',
+    tid('interior-manual-shelf-variant-brace-button'),
+    'המרת מדף רגיל לקושרת לפי סקיצה',
+    [...interiorSketch, activate(tid('interior-manual-tool-shelf-button'))]
   ),
   item(
     'interior',

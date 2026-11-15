@@ -94,7 +94,7 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toBeVisible();
   await expect(layout.getByTestId('winter-brace-shelf-button')).toHaveCount(1);
   const items = layout.getByRole('group', { name: 'פריט להצבה' });
-  await expect(items.getByRole('button')).toHaveCount(4);
+  await expect(items.getByRole('button')).toHaveCount(5);
   await items.getByTestId('winter-brace-shelf-button').click();
   await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_shelf:winter_brace' } });
   await expect(item('shelf')).toHaveAttribute('aria-pressed', 'false');
@@ -110,8 +110,9 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(items.getByTestId('winter-brace-shelf-button')).toBeVisible();
 
   const boring = layout.getByTestId('interior-layout-full_boring');
-  await expect(boring).toBeHidden();
-  await layout.getByText('המרת מדפים וחירור', { exact: true }).click();
+  await expect(boring).toBeVisible();
+  await expect(layout.getByTestId('interior-layout-brace_shelves')).toHaveCount(0);
+  await expect(layout.getByTestId('interior-layout-regular_shelf')).toHaveCount(0);
   await boring.click();
   await expect.poll(mode).toMatchObject({ primary: 'layout', opts: { layoutType: 'full_boring' } });
   await expect(boring).toHaveAttribute('aria-pressed', 'true');
@@ -145,8 +146,6 @@ test('interior layout uses dark card and button surfaces across placement method
   await expect(layout).toHaveCSS('background-color', 'rgba(77, 182, 172, 0.12)');
 
   await layout.getByTestId('interior-layout-method-sketch').click();
-  await expect(layout.getByText('המרת מדפים וחירור', { exact: true })).toHaveCSS(
-    'color',
-    'rgb(168, 179, 189)'
-  );
+  await expect(layout.getByTestId('interior-layout-full_boring')).toBeVisible();
+  await expect(layout.getByText('המרת מדפים וחירור', { exact: true })).toHaveCount(0);
 });

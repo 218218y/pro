@@ -251,7 +251,7 @@ test('manual-layout shelf collision distinguishes clear, internal, and external 
   );
 });
 
-test('manual-layout config ops preserve blocked variant-change removal semantics', () => {
+test('manual-layout config ops keep the original shelf when a variant conversion is blocked', () => {
   const cfg: Record<string, unknown> = {
     isCustom: true,
     customData: {
@@ -276,8 +276,8 @@ test('manual-layout config ops preserve blocked variant-change removal semantics
   });
 
   const customData = cfg.customData as { shelves: boolean[]; shelfVariants: string[] };
-  assert.deepEqual(result, { changed: true, blockedBySketchDrawers: true });
-  assert.deepEqual(customData.shelves, [false, false]);
+  assert.deepEqual(result, { changed: false, blockedBySketchDrawers: true });
+  assert.deepEqual(customData.shelves, [true, false]);
   assert.deepEqual(customData.shelfVariants, ['', '']);
 });
 

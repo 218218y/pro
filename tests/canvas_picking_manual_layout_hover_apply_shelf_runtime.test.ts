@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.js';
 import {
   createShelfAddHoverRecord,
+  createShelfConvertHoverRecord,
   createShelfRemoveHoverRecord,
 } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_hover_records.js';
 
@@ -183,4 +184,115 @@ test('manual-layout hover click consumes malformed payloads from every command f
     assert.equal(patchCalls, 0, kind);
     assert.equal(clearCalls, 1, kind);
   }
+});
+
+test('manual-layout hover conversion preserves sketch shelf placement, ownership and neighboring shelves', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [
+        { id: 'keep-id', yNorm: 0.3, xNorm: 0.7, scopeOrder: 3, variant: 'brace', depthM: 0.55 },
+        { id: 'other', yNorm: 0.8, variant: 'glass' },
+      ],
+    },
+  };
+  let patchSource: string | null = null;
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 0,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: createShelfConvertHoverRecord({
+      host,
+      removeKind: 'sketch',
+      removeIdx: 0,
+      shelfIndex: null,
+      variant: 'regular',
+      depthM: null,
+    }),
+    __hoverOk: true,
+    __patchConfigForKey: (_mk, patchFn, meta) => {
+      patchSource = String(meta.source);
+      patchFn(cfg);
+      return null;
+    },
+    __wp_clearSketchHover: () => {},
+  });
+  assert.equal(applied, true);
+  assert.equal(patchSource, 'sketch.hoverConvertShelf');
+  assert.deepEqual((cfg.sketchExtras as any).shelves, [
+    { id: 'keep-id', yNorm: 0.3, xNorm: 0.7, scopeOrder: 3, variant: 'regular' },
+    { id: 'other', yNorm: 0.8, variant: 'glass' },
+  ]);
+});
+
+test('manual-layout hover conversion changes a base shelf to brace without adding a second shelf', () => {
+  const cfg: Record<string, unknown> = {
+    layout: 'shelves',
+    isCustom: true,
+    customData: {
+      shelves: [false, false, true, false, false],
+      shelfVariants: ['', '', '', '', ''],
+      rods: [],
+      storage: false,
+    },
+    braceShelves: [],
+  };
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 0,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: createShelfConvertHoverRecord({
+      host: { ...host, tool: 'sketch_shelf:brace' },
+      removeKind: 'base',
+      removeIdx: null,
+      shelfIndex: 3,
+      variant: 'brace',
+      depthM: null,
+    }),
+    __hoverOk: true,
+    __patchConfigForKey: (_mk, patchFn) => {
+      patchFn(cfg);
+      return null;
+    },
+    __wp_clearSketchHover: () => {},
+  });
+  assert.equal(applied, true);
+  assert.deepEqual((cfg.customData as any).shelves, [false, false, true, false, false]);
+  assert.deepEqual((cfg.customData as any).shelfVariants, ['', '', 'brace', '', '']);
+  assert.deepEqual(cfg.braceShelves, [3]);
+});
+
+test('a blocked shelf conversion leaves original sketch shelf unchanged', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: { shelves: [{ id: 'original', variant: 'brace', yNorm: 0.4 }] },
+  };
+  let patches = 0;
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 0,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: createShelfConvertHoverRecord({
+      host,
+      removeKind: 'sketch',
+      removeIdx: 0,
+      shelfIndex: null,
+      variant: 'regular',
+      depthM: null,
+      blockedReason: 'collision',
+    }),
+    __hoverOk: true,
+    __patchConfigForKey: () => {
+      patches += 1;
+      return null;
+    },
+    __wp_clearSketchHover: () => {},
+  });
+  assert.equal(applied, true);
+  assert.equal(patches, 0);
+  assert.deepEqual((cfg.sketchExtras as any).shelves, [{ id: 'original', variant: 'brace', yNorm: 0.4 }]);
 });

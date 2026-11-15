@@ -13,5 +13,6 @@ export { createSketchModuleShelfPreviewGeometry } from './canvas_picking_sketch_
 export {
   commitSketchModuleRod,
   commitSketchModuleShelf,
+  convertSketchModuleShelfAtIndex,
   commitSketchModuleStorageBarrier,
 } from './canvas_picking_sketch_module_vertical_content_commit.js';

@@ -6,6 +6,7 @@ import {
   clampSketchModuleStorageCenterY,
   commitSketchModuleRod,
   commitSketchModuleShelf,
+  convertSketchModuleShelfAtIndex,
   commitSketchModuleStorageBarrier,
   findNearestSketchModuleRod,
   findNearestSketchModuleShelf,
@@ -156,7 +157,16 @@ function isShelfCommitBlockedBySketchDrawers(
     totalHeight: args.totalHeight,
     pointerY: args.hitY0,
   });
-  if (match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM) return false;
+  if (
+    match &&
+    match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM &&
+    (match.variant || 'double') === args.variant
+  )
+    return false;
+  const centerY =
+    match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM
+      ? match.yAbs
+      : args.bottomY + args.yNorm * args.totalHeight;
 
   return doesSketchModuleVerticalRangeCollideWithDrawers({
     cfgRef: args.cfg,
@@ -164,7 +174,7 @@ function isShelfCommitBlockedBySketchDrawers(
     topY: args.topY,
     totalHeight: args.totalHeight,
     pad: args.pad,
-    centerY: args.bottomY + args.yNorm * args.totalHeight,
+    centerY,
     heightM: resolveSketchModuleShelfCollisionHeight({
       variant: args.variant,
       woodThick: args.woodThick,
@@ -253,9 +263,30 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       if (match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM) {
         const originalIndex = shelves[match.index]?.index;
         const list = readSketchExtrasList(args.cfg, 'shelves');
-        if (originalIndex != null) list.splice(originalIndex, 1);
-        const extra = args.cfg.sketchExtras as Record<string, unknown> | undefined;
-        if (extra) extra.shelves = list;
+        if (originalIndex == null) return true;
+        if ((match.variant || 'double') === variant) {
+          list.splice(originalIndex, 1);
+          const extra = args.cfg.sketchExtras as Record<string, unknown> | undefined;
+          if (extra) extra.shelves = list;
+        } else {
+          if (
+            doesSketchModuleVerticalRangeCollideWithDrawers({
+              cfgRef: args.cfg,
+              drawers: partition.drawers,
+              extDrawers: partition.extDrawers,
+              bottomY: args.bottomY,
+              topY: args.topY,
+              totalHeight: args.totalHeight,
+              pad: args.pad,
+              centerY: match.yAbs,
+              heightM: resolveSketchModuleShelfCollisionHeight({ variant, woodThick: args.woodThick }),
+            })
+          ) {
+            toastSketchVerticalContentCollisionFailure({ App: args.App, kind: 'shelf' });
+            return true;
+          }
+          convertSketchModuleShelfAtIndex(args.cfg, originalIndex, variant, shelfDepthM);
+        }
         return true;
       }
       const heightM = resolveSketchModuleShelfCollisionHeight({ variant, woodThick: args.woodThick });

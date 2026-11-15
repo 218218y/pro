@@ -1,4 +1,9 @@
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
+import {
+  type ManualLayoutConfigRecord,
+  toggleManualLayoutShelf,
+} from './canvas_picking_manual_layout_config_ops.js';
+import { parseSketchShelfTool } from './canvas_picking_sketch_module_surface_commit_shared.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
@@ -10,11 +15,15 @@ import {
   readGridDivisions,
   prepareShelfToggleConfig,
 } from './canvas_picking_sketch_direct_hit_workflow_records.js';
-import { tryRemoveSketchShelfByHit } from './canvas_picking_sketch_direct_hit_workflow_shelves_shared.js';
+import {
+  tryRemoveSketchShelfByHit,
+  tryToggleSketchShelfByHit,
+} from './canvas_picking_sketch_direct_hit_workflow_shelves_shared.js';
 
 export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDirectHitContext): boolean {
   const {
     __activeModuleKey,
+    __mt,
     topY,
     bottomY,
     mapKey,
@@ -55,11 +64,42 @@ export function tryApplySketchDirectHitShelfActions(args: ManualLayoutSketchDire
             cfg0 => {
               const cfg = asConfig(cfg0);
               const divs = divisions;
-              if (tryRemoveSketchShelfByHit(cfg, bottomY, totalHeight, shelfHitY)) return;
+              const isShelfTool = __mt.startsWith('sketch_shelf:');
+              const shelfTool = parseSketchShelfTool(__mt);
+              if (
+                isShelfTool
+                  ? tryToggleSketchShelfByHit(
+                      cfg,
+                      bottomY,
+                      totalHeight,
+                      shelfHitY,
+                      shelfTool.variant,
+                      shelfTool.shelfDepthM
+                    )
+                  : tryRemoveSketchShelfByHit(cfg, bottomY, totalHeight, shelfHitY)
+              )
+                return;
               const customData = prepareShelfToggleConfig(cfg, divs, topY, bottomY);
-              const shelves = ensureBooleanArray(customData, 'shelves');
-              const idx = shelfIndex - 1;
-              shelves[idx] = !shelves[idx];
+              if (isShelfTool) {
+                toggleManualLayoutShelf(cfg as ManualLayoutConfigRecord, {
+                  divs,
+                  topY,
+                  bottomY,
+                  arrayIdx: shelfIndex - 1,
+                  shelfVariant:
+                    shelfTool.variant === 'brace' ||
+                    shelfTool.variant === 'double' ||
+                    shelfTool.variant === 'glass' ||
+                    shelfTool.variant === 'winter_brace'
+                      ? shelfTool.variant
+                      : 'regular',
+                  reset: false,
+                });
+              } else {
+                const shelves = ensureBooleanArray(customData, 'shelves');
+                const idx = shelfIndex - 1;
+                shelves[idx] = !shelves[idx];
+              }
             },
             createCanvasPickingConfigStructuralPatchMeta('sketch.toggleBaseShelf')
           );

@@ -1,3 +1,7 @@
+import {
+  commitSketchModuleShelf,
+  findNearestSketchModuleShelf,
+} from './canvas_picking_sketch_module_vertical_content.js';
 import type { SketchConfigLike } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import {
   prepareShelfToggleConfig,
@@ -7,6 +11,31 @@ import {
 } from './canvas_picking_sketch_direct_hit_workflow_records.js';
 
 export { prepareShelfToggleConfig, readGridDivisions };
+
+export function tryToggleSketchShelfByHit(
+  cfg: SketchConfigLike,
+  bottomY: number,
+  totalHeight: number,
+  shelfHitY: number,
+  variant: string,
+  depthM: number | null
+): boolean {
+  const extra = readSketchExtras(cfg);
+  const shelves = extra && Array.isArray(extra.shelves) ? extra.shelves : [];
+  const match = findNearestSketchModuleShelf({ shelves, bottomY, totalHeight, pointerY: shelfHitY });
+  if (!match || match.dy > 0.02) return false;
+  commitSketchModuleShelf({
+    cfg,
+    bottomY,
+    totalHeight,
+    pointerY: shelfHitY,
+    yNorm: (shelfHitY - bottomY) / totalHeight,
+    variant,
+    shelfDepthM: depthM,
+    removeEps: 0.02,
+  });
+  return true;
+}
 
 export function tryRemoveSketchShelfByHit(
   cfg: SketchConfigLike,

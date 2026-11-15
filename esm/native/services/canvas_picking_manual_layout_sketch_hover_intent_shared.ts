@@ -8,6 +8,7 @@ import type {
   ManualLayoutRodAddCommand,
   ManualLayoutRodRemoveCommand,
   ManualLayoutShelfAddCommand,
+  ManualLayoutShelfConvertCommand,
   ManualLayoutShelfRemoveCommand,
   ManualLayoutStorageAddCommand,
   ManualLayoutStorageRemoveCommand,
@@ -65,7 +66,7 @@ export type ManualLayoutSketchStackHoverIntent = (
   ManualLayoutSketchPartitionOwnership;
 
 export type ManualLayoutSketchShelfHoverIntent = (
-  ManualLayoutShelfAddCommand | ManualLayoutShelfRemoveCommand
+  ManualLayoutShelfAddCommand | ManualLayoutShelfRemoveCommand | ManualLayoutShelfConvertCommand
 ) &
   ManualLayoutSketchPartitionOwnership;
 

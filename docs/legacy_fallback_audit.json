@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T04:56:28.208Z",
+  "generatedAt": "2026-11-15T05:49:15.921Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 618,
@@ -4286,7 +4286,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_shelves_shared.ts",
-      "line": 39,
+      "line": 68,
       "term": "fallback",
       "category": "domain-default",
       "text": "// malformed-shelf-list-fallback: failed optional removal is returned to the caller as no match"
@@ -4328,7 +4328,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
-      "line": 164,
+      "line": 183,
       "term": "fallback",
       "category": "domain-default",
       "text": "// preview-geometry-fallback: optional shelf preview derivation may degrade without blocking authoring"
@@ -5644,7 +5644,7 @@
     },
     {
       "file": "esm/native/ui/react/viewer_search_catalog.ts",
-      "line": 37,
+      "line": 36,
       "term": "activateFallback",
       "category": "domain-default",
       "text": "const adhesiveBlack = [...multi, activateFallback('[data-wp-search-special=\"black_glass\"]')];"

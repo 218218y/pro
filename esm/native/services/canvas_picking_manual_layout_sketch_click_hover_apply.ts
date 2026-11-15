@@ -16,6 +16,8 @@ import {
   readManualLayoutSketchStorageHoverIntent,
 } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import {
+  convertManualLayoutBaseShelf,
+  normalizeManualLayoutShelfVariant,
   removeManualLayoutBaseRod,
   removeManualLayoutBaseShelf,
   removeManualLayoutBaseStorage,
@@ -24,6 +26,7 @@ import {
 import {
   commitSketchModuleRod,
   commitSketchModuleShelf,
+  convertSketchModuleShelfAtIndex,
   commitSketchModuleStorageBarrier,
 } from './canvas_picking_sketch_module_vertical_content.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
@@ -431,6 +434,34 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
         });
       },
       createCanvasPickingConfigStructuralPatchMeta('sketch.hoverAddShelf')
+    );
+    if (committed !== false) __wp_clearSketchHover(App);
+    return true;
+  }
+  if (shelfHover && shelfHover.op === 'convert') {
+    if (shelfHover.blockedReason) {
+      toastSketchBoxContentBlocked(App, 'shelf', shelfHover.blockedReason);
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const committed = __patchConfigForKey(
+      __activeModuleKey,
+      cfg => {
+        if (shelfHover.removeKind === 'sketch' && shelfHover.removeIdx != null) {
+          convertSketchModuleShelfAtIndex(cfg, shelfHover.removeIdx, shelfHover.variant, shelfHover.depthM);
+          return;
+        }
+        if (shelfHover.removeKind === 'base' && shelfHover.shelfIndex != null) {
+          convertManualLayoutBaseShelf(cfg, {
+            divs: readGridDivisions(__gridInfo),
+            topY,
+            bottomY,
+            shelfIndex: shelfHover.shelfIndex,
+            shelfVariant: normalizeManualLayoutShelfVariant(shelfHover.variant),
+          });
+        }
+      },
+      createCanvasPickingConfigStructuralPatchMeta('sketch.hoverConvertShelf')
     );
     if (committed !== false) __wp_clearSketchHover(App);
     return true;

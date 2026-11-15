@@ -58,6 +58,19 @@ test('sketch module shelf commits toggle the nearest shelf and preserve explicit
     removeEps: 0.02,
   });
 
+  assert.deepEqual((cfg.sketchExtras as any).shelves, [{ yNorm: 0.3, variant: 'double', depthM: 0.4 }]);
+
+  // Clicking again with the same tool removes the shelf; an empty position builds a new one.
+  commitSketchModuleShelf({
+    cfg,
+    bottomY: 0,
+    totalHeight: 1,
+    pointerY: 0.3,
+    yNorm: 0.3,
+    variant: 'double',
+    shelfDepthM: 0.4,
+    removeEps: 0.02,
+  });
   assert.deepEqual((cfg.sketchExtras as any).shelves, []);
 
   commitSketchModuleShelf({
