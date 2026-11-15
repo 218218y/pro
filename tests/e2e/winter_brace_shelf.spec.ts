@@ -238,23 +238,19 @@ test('winter shelf split controls fit and keep their actions independent at desk
       await expectShelfButtonsFit(panel);
       await expectCombinedWinterControl(row);
       if (tab === 'interior') await panel.getByTestId('interior-manual-tool-shelf-button').click();
-      const variants =
-        tab === 'interior'
-          ? panel.getByRole('group', { name: 'סוג מדף' })
-          : panel.locator('.wp-sketch-shelf-tools-grid');
-      if (tab === 'interior') expect(await variants.getByRole('button').count()).toBe(4);
-      else {
-        await expect(variants.locator('[data-testid^="sketch-shelf-tool-"]')).toHaveCount(6);
+      else await panel.getByTestId('sketch-shelf-tool-main').click();
+      const variants = panel.getByRole('group', { name: 'סוג מדף' });
+      await expect(variants.getByRole('button')).toHaveCount(4);
+      if (tab === 'sketch') {
         await expect(panel.getByTestId('sketch-layout-full_boring')).toBeVisible();
+        await expect(panel.getByTestId('sketch-shelf-tool-main')).toHaveAttribute('aria-expanded', 'true');
       }
       const variantsBounds = (await variants.boundingBox())!;
       const rowBounds = (await row.boundingBox())!;
-      if (tab === 'interior') expect(rowBounds.y + rowBounds.height).toBeLessThanOrEqual(variantsBounds.y);
-      else {
-        expect(rowBounds.width).toBeLessThanOrEqual(variantsBounds.width / 2 + 1);
-        expect(rowBounds.x + rowBounds.width).toBeLessThanOrEqual(
-          variantsBounds.x + variantsBounds.width + 1
-        );
+      expect(rowBounds.y + rowBounds.height).toBeLessThanOrEqual(variantsBounds.y);
+      if (tab === 'sketch') {
+        const toolGridBounds = (await panel.locator('.wp-sketch-shelf-tools-grid').boundingBox())!;
+        expect(rowBounds.width).toBeLessThanOrEqual(toolGridBounds.width / 2 + 1);
       }
       const modeBefore = (await readDebugStoreState(page)).mode;
       await lock.click();

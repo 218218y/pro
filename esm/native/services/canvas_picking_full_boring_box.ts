@@ -1,7 +1,7 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
-import { asRecord } from '../runtime/record.js';
-import { getThreeMaybe } from '../runtime/three_access.js';
+import { __wp_asRecord as asRecord } from './canvas_picking_core_support_records.js';
+import { previewArgs } from './canvas_picking_interior_hover_preview.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { __wp_readInteriorModuleConfigRef } from './canvas_picking_local_helpers.js';
 import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
@@ -25,7 +25,7 @@ export type FullBoringBoxTarget = {
     internalDepth: number;
     woodThick: number;
   } | null;
-  previewParent: unknown | null;
+  previewParent: unknown;
 };
 
 export type FullBoringBoxHit =
@@ -187,7 +187,7 @@ export function previewFullBoringSketchBox(args: {
   const { bottomY, topY, centerX, innerW, internalZ, internalDepth, woodThick } = target.bounds;
   args.setLayoutPreview({
     App: args.App,
-    THREE: getThreeMaybe(args.App),
+    THREE: previewArgs(args.App).THREE,
     anchorParent: target.previewParent ?? args.wardrobeGroup,
     x: centerX,
     innerW,

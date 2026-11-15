@@ -78,26 +78,33 @@ function resetSketchStorageHeight(props: InteriorLayoutSectionProps): void {
 
 export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps): ReactElement {
   const activeShelfVariant = props.isSketchToolActive ? parseSketchShelfVariant(props.manualToolRaw) : null;
+  const isShelfSelected = SHELF_VARIANT_OPTIONS.some(option => option.variant === activeShelfVariant);
+  const preferredShelfVariant =
+    SHELF_VARIANT_OPTIONS.find(option => option.variant === props.gridShelfVariant)?.variant ?? 'regular';
+
+  function selectShelf(variant: (typeof SHELF_VARIANT_OPTIONS)[number]['variant']): void {
+    props.setGridShelfVariant(variant);
+    props.enterSketchShelfTool(variant);
+  }
 
   return (
     <div className="wp-field">
       <div className="wp-r-label wp-r-label--center">מדפים ותלייה</div>
       <div className="wp-sketch-shelf-tools-grid" role="group" aria-label="מדפים ותלייה לפי סקיצה" dir="rtl">
-        {SHELF_VARIANT_OPTIONS.map(({ variant, label, icon }) => (
-          <OptionButton
-            key={variant}
-            density="micro"
-            selected={activeShelfVariant === variant}
-            icon={<i className={activeShelfVariant === variant ? 'fas fa-check' : icon} aria-hidden="true" />}
-            testId={`sketch-shelf-tool-${variant}`}
-            onClick={() => {
-              if (activeShelfVariant === variant) props.exitManual();
-              else props.enterSketchShelfTool(variant);
-            }}
-          >
-            {label}
-          </OptionButton>
-        ))}
+        <OptionButton
+          density="micro"
+          selected={isShelfSelected}
+          aria-expanded={isShelfSelected}
+          {...(isShelfSelected ? { 'aria-controls': 'wp-sketch-shelf-variant-options' } : {})}
+          icon={<i className="fas fa-layer-group" aria-hidden="true" />}
+          testId="sketch-shelf-tool-main"
+          onClick={() => {
+            if (isShelfSelected) props.exitManual();
+            else selectShelf(preferredShelfVariant);
+          }}
+        >
+          מדף
+        </OptionButton>
         <OptionButton
           density="micro"
           selected={props.isSketchToolActive && props.manualToolRaw === SKETCH_TOOL_ROD}
@@ -108,7 +115,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
             else props.activateManualToolId(SKETCH_TOOL_ROD);
           }}
         >
-          תלייה
+          מוט תלייה
         </OptionButton>
         <OptionButton
           density="micro"
@@ -141,6 +148,31 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
           חירור מלא
         </OptionButton>
       </div>
+      {isShelfSelected ? (
+        <div className="wp-sketch-shelf-variant-settings">
+          <span className="wp-interior-layout-label">סוג מדף</span>
+          <div
+            className="wp-sketch-shelf-variant-options"
+            id="wp-sketch-shelf-variant-options"
+            role="group"
+            aria-label="סוג מדף"
+            dir="rtl"
+          >
+            {SHELF_VARIANT_OPTIONS.map(({ variant, label, icon }) => (
+              <OptionButton
+                key={variant}
+                density="micro"
+                selected={activeShelfVariant === variant}
+                icon={<i className={icon} aria-hidden="true" />}
+                testId={`sketch-shelf-tool-${variant}`}
+                onClick={() => selectShelf(variant)}
+              >
+                {label}
+              </OptionButton>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <InteriorSketchShelfDepthField {...props} />
       <InteriorSketchStorageHeightField {...props} />
     </div>

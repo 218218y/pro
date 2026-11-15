@@ -1716,6 +1716,12 @@ async function loadInstrumentedSketchBoxRenderer(): Promise<{
       ),
     ],
     [
+      './render_interior_sketch_boxes_boring.js',
+      dataModule(
+        "export function renderSketchBoxBoring() { globalThis.__wpDrawerSpanHarness.order.push('Boring'); }"
+      ),
+    ],
+    [
       './render_interior_sketch_layout.js',
       dataModule(
         'export function readSketchBoxDividers() { return []; } export function readSketchBoxHorizontalDividers() { return []; } export function resolveSketchBoxSegmentForContent() { return globalThis.__wpDrawerSpanHarness.segment; }'
@@ -1801,7 +1807,7 @@ test('renderInteriorSketchBoxes preserves drawer-span edge extensions, epsilon b
       App: {},
       measureWardrobeLocalBox: () => null,
     });
-    assert.deepEqual(harness.order, ['Shell', 'Contents', 'Fronts']);
+    assert.deepEqual(harness.order, ['Shell', 'Contents', 'Fronts', 'Boring']);
     assert.deepEqual(harness.frontsResult, harness.contentsResult);
     assert.ok(harness.contentsResult);
     return harness.contentsResult;

@@ -1034,9 +1034,11 @@ test('[interior-tab-sections-runtime] full boring follows winter brace and repla
   assert.deepEqual(calls, ['full_boring']);
 });
 
-test('[sketch-tab] shelf and full-boring controls are compact grid items with independent actions', () => {
+test('[sketch-tab] primary shelf opens four variants beneath the tools, with regular selected by default', () => {
   const calls = [];
   const props = createLayoutProps({
+    gridShelfVariant: 'regular',
+    setGridShelfVariant: variant => calls.push(['remember', variant]),
     enterSketchShelfTool: variant => calls.push(['shelf', variant]),
     enterLayout: layout => calls.push(['layout', layout]),
     activateManualToolId: tool => calls.push(['manual', tool]),
@@ -1046,33 +1048,84 @@ test('[sketch-tab] shelf and full-boring controls are compact grid items with in
   const html = renderToStaticMarkup(React.createElement(InteriorSketchShelvesSection, props));
   assert.match(html, /class="wp-sketch-shelf-tools-grid"/);
   assert.match(html, /aria-label="מדפים ותלייה לפי סקיצה"/);
-  assert.equal((html.match(/data-testid="sketch-shelf-tool-/g) ?? []).length, 6);
-  for (const variant of ['regular', 'double', 'glass', 'brace']) {
-    assert.match(html, new RegExp(`data-testid="sketch-shelf-tool-${variant}"`));
-    assert.equal(findElementByTestId(tree, `sketch-shelf-tool-${variant}`).props.density, 'micro');
-    findElementByTestId(tree, `sketch-shelf-tool-${variant}`).props.onClick();
-  }
+  assert.equal((html.match(/data-testid="sketch-shelf-tool-/g) ?? []).length, 3);
+  assert.equal(findElementByTestId(tree, 'sketch-shelf-tool-main').props['aria-expanded'], false);
+  assert.doesNotMatch(html, /aria-label="סוג מדף"/);
+  assert.equal(findElementByTestId(tree, 'sketch-shelf-tool-regular'), null);
   assert.ok(
     html.indexOf('data-testid="sketch-layout-full_boring"') > html.indexOf('winter-brace-shelf-button')
   );
-  findElementByTestId(tree, 'sketch-layout-full_boring').props.onClick();
+  findElementByTestId(tree, 'sketch-shelf-tool-main').props.onClick();
   assert.deepEqual(calls, [
+    ['remember', 'regular'],
     ['shelf', 'regular'],
-    ['shelf', 'double'],
-    ['shelf', 'glass'],
-    ['shelf', 'brace'],
-    ['layout', 'full_boring'],
   ]);
 
-  const active = InteriorSketchShelvesSection({
+  const activeProps = {
+    ...props,
+    isSketchToolActive: true,
+    manualToolRaw: 'sketch_shelf:regular',
+  };
+  const active = InteriorSketchShelvesSection(activeProps);
+  const activeHtml = renderToStaticMarkup(React.createElement(InteriorSketchShelvesSection, activeProps));
+  assert.equal(findElementByTestId(active, 'sketch-shelf-tool-main').props.selected, true);
+  assert.equal(findElementByTestId(active, 'sketch-shelf-tool-main').props['aria-expanded'], true);
+  assert.equal(findElementByTestId(active, 'sketch-shelf-tool-regular').props.selected, true);
+  assert.match(activeHtml, /aria-label="סוג מדף"/);
+  assert.equal((activeHtml.match(/data-testid="sketch-shelf-tool-/g) ?? []).length, 7);
+  assert.ok(
+    activeHtml.indexOf('data-testid="sketch-shelf-tool-main"') < activeHtml.indexOf('aria-label="סוג מדף"')
+  );
+  for (const variant of ['regular', 'double', 'glass', 'brace']) {
+    assert.equal(findElementByTestId(active, `sketch-shelf-tool-${variant}`).props.density, 'micro');
+    findElementByTestId(active, `sketch-shelf-tool-${variant}`).props.onClick();
+  }
+  findElementByTestId(active, 'sketch-shelf-tool-main').props.onClick();
+  assert.deepEqual(calls, [
+    ['remember', 'regular'],
+    ['shelf', 'regular'],
+    ['remember', 'regular'],
+    ['shelf', 'regular'],
+    ['remember', 'double'],
+    ['shelf', 'double'],
+    ['remember', 'glass'],
+    ['shelf', 'glass'],
+    ['remember', 'brace'],
+    ['shelf', 'brace'],
+    ['exit'],
+  ]);
+
+  const winter = InteriorSketchShelvesSection({
+    ...props,
+    isSketchToolActive: true,
+    manualToolRaw: 'sketch_shelf:winter_brace',
+  });
+  assert.equal(findElementByTestId(winter, 'sketch-shelf-tool-main').props.selected, false);
+  assert.equal(findElementByTestId(winter, 'sketch-shelf-tool-double'), null);
+  const storage = InteriorSketchShelvesSection({
+    ...props,
+    isSketchToolActive: true,
+    manualToolRaw: 'sketch_storage:50',
+  });
+  assert.equal(findElementByTestId(storage, 'sketch-shelf-tool-double'), null);
+
+  findElementByTestId(tree, 'sketch-layout-full_boring').props.onClick();
+  assert.deepEqual(calls.at(-1), ['layout', 'full_boring']);
+  const boringActive = InteriorSketchShelvesSection({
     ...props,
     isLayoutMode: true,
     layoutType: 'full_boring',
   });
-  assert.equal(findElementByTestId(active, 'sketch-layout-full_boring').props.selected, true);
+  assert.equal(findElementByTestId(boringActive, 'sketch-layout-full_boring').props.selected, true);
+  assert.equal(findElementByTestId(boringActive, 'sketch-shelf-tool-regular'), null);
+
   const css = fs.readFileSync(path.resolve('css/react_styles.css'), 'utf8');
-  assert.match(
-    css,
-    /\.wp-sketch-shelf-tools-grid\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
-  );
+  for (const className of ['wp-sketch-shelf-tools-grid', 'wp-sketch-shelf-variant-options']) {
+    assert.match(
+      css,
+      new RegExp(
+        `\\.${className}\\s*\\{\\s*display:\\s*grid;\\s*grid-template-columns:\\s*repeat\\(2,\\s*minmax\\(0,\\s*1fr\\)\\)`
+      )
+    );
+  }
 });
