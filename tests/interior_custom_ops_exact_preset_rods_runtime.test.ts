@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import { INTERIOR_ROD_PLACEMENT_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
+
 import { computeInteriorCustomOps } from '../esm/native/builder/core_storage_compute.js';
 
 test('computeInteriorCustomOps prefers exact preset-backed rodOps over rounded grid rods', () => {
@@ -52,11 +55,20 @@ test('double hanging has only a middle brace and two rods below the roof and bra
   const split = computeInteriorPresetOps('hanging_split');
   assert.deepEqual(split.shelves, [3]);
   assert.equal(split.shelfVariant, 'brace');
+  // Compare visible space from the roof and from the underside of the
+  // real-thickness middle brace, not from the brace's center line.
+  const referenceStep = 2.4 / 6;
+  const upperGap = 6 * referenceStep - split.rods[0]!.yFactor * referenceStep;
+  const braceUnderside = 3 * referenceStep - MATERIAL_THICKNESS_POLICY.wood.thicknessM / 2;
+  const lowerGap = braceUnderside - split.rods[1]!.yFactor * referenceStep;
+  assert.ok(Math.abs(upperGap - lowerGap) < 1e-9);
+  assert.ok(Math.abs(lowerGap + INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM) < 1e-9);
+
   assert.deepEqual(
     split.rods.map(rod => [rod.yFactor, rod.limitFactor]),
     [
       [5.8, 2.8],
-      [2.8, 2.8],
+      [2.7775, 2.7775],
     ]
   );
   for (const rod of split.rods) {
@@ -75,7 +87,7 @@ test('double hanging has only a middle brace and two rods below the roof and bra
     assert.deepEqual(
       custom.rods.map(rod => [rod.yFactor, rod.limitFactor]),
       [
-        [2.8, 2.8],
+        [2.7775, 2.7775],
         [5.8, 2.8],
       ]
     );

@@ -1,4 +1,5 @@
 import { INTERIOR_STORAGE_POLICY } from './interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from './material_thickness_policy.js';
 import { meters } from './units.js';
 
 export const INTERIOR_SHELF_GEOMETRY_POLICY = Object.freeze({
@@ -99,7 +100,8 @@ export const INTERIOR_ROD_POLICY = Object.freeze({
 
 const FULL_SHELF_ROWS = Object.freeze([1, 2, 3, 4, 5]);
 const HANGING_SHELF_ROWS = Object.freeze([5, 4]);
-const SPLIT_SHELF_ROWS = Object.freeze([3]);
+const SPLIT_BRACE_GRID_ROW = 3;
+const SPLIT_SHELF_ROWS = Object.freeze([SPLIT_BRACE_GRID_ROW]);
 
 export const INTERIOR_PRESET_SHELF_ROWS_POLICY = Object.freeze({
   fullShelfRows: FULL_SHELF_ROWS,
@@ -107,13 +109,24 @@ export const INTERIOR_PRESET_SHELF_ROWS_POLICY = Object.freeze({
   splitShelfRows: SPLIT_SHELF_ROWS,
 });
 
+// The split brace is centered on its grid line, but the lower hanging zone
+// begins at its underside. Match the upper rod's default 8 cm surface
+// clearance using the canonical 2.4 m / six-row reference grid (40 cm/row).
+// Keeping the correction in this one policy preserves preset/custom and
+// preview/removal geometry without per-renderer offsets.
+const SPLIT_REFERENCE_GRID_STEP_M = meters(0.4);
+const SPLIT_LOWER_ROD_Y_FACTOR =
+  SPLIT_BRACE_GRID_ROW +
+  (INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM - MATERIAL_THICKNESS_POLICY.wood.thicknessM / 2) /
+    SPLIT_REFERENCE_GRID_STEP_M;
+
 export const INTERIOR_PRESET_ROD_FACTORS_POLICY = Object.freeze({
   mixedRodYFactor: 3.5,
   hangingRodYFactor: 3.8,
   splitUpperRodYFactor: 5.8,
   splitUpperRodLimitFactor: 2.8,
-  splitLowerRodYFactor: 2.8,
-  splitLowerRodLimitFactor: 2.8,
+  splitLowerRodYFactor: SPLIT_LOWER_ROD_Y_FACTOR,
+  splitLowerRodLimitFactor: SPLIT_LOWER_ROD_Y_FACTOR,
   storageRodYFactor: 3.8,
   storageRodLimitFactor: 3.8,
 });

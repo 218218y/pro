@@ -10,7 +10,7 @@ import { MODES, getTools } from '../../../services/api.js';
 import {
   encodeDoorStyleOverridePaintToken,
   type DoorStyleOverrideValue,
-} from '../../../features/door_authoring/api.js';
+} from './design_tab_multicolor_panel_contracts.js';
 import { enterPrimaryMode } from '../actions/modes_actions.js';
 import { setCurtainChoice, setMultiEnabled } from '../../multicolor_service.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';

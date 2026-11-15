@@ -20,7 +20,7 @@ import {
   enterStructureLibraryDoorStyleEditMode,
   enterStructureLibraryGlassEditMode,
 } from './structure_tab_library_glass_edit.js';
-import type { DoorStyleOverrideValue } from '../../../features/door_authoring/api.js';
+import type { DoorStyleOverrideValue } from './design_tab_multicolor_panel_contracts.js';
 
 export type {
   StructureStackLinkField,

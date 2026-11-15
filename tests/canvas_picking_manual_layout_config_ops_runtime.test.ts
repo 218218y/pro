@@ -340,10 +340,10 @@ test('manual-layout config ops remove only the exact preset rod metadata for the
   assert.deepEqual(customData.rodOps, [
     {
       gridIndex: 3,
-      yFactor: 2.8,
+      yFactor: 2.7775,
       enableHangingClothes: true,
       enableSingleHanger: true,
-      limitFactor: 2.8,
+      limitFactor: 2.7775,
       limitAdd: 0,
     },
   ]);

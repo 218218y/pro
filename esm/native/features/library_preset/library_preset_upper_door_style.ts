@@ -1,6 +1,5 @@
 import type { DoorStyleMap } from '../../../../types';
 
-import { resolveDoorVisualSegmentIdentity } from '../../../shared/door_visual_key_contracts_shared.js';
 import { readDoorStyleMap, type DoorStyleOverrideValue } from '../door_authoring/api.js';
 import { normDoorCount } from './library_preset_shared.js';
 
@@ -28,8 +27,13 @@ export function buildLibraryUpperDoorStyleMap(
   // Project every existing segment, including explicit per-segment overrides.
   // Unrelated lower doors, drawers, and other identities remain untouched.
   const entries: Array<[string, DoorStyleMap[string]]> = Object.entries(current).map(([key, value]) => {
-    const { basePartId } = resolveDoorVisualSegmentIdentity(key);
-    const match = /^d([1-9]\d*)$/.exec(basePartId);
+    // DoorStyleMap has already been normalized by the door-authoring owner.
+    // Match its supported upper-door keys without introducing another
+    // Features -> Shared dependency for a general visual identity reader.
+    const match =
+      /^d([1-9]\d*)(?:_(?:full|top|bot|mid\d*))?(?:_(?:accent|groove)_(?:top|bottom|left|right))?$/i.exec(
+        key
+      );
     const isUpper = match !== null && Number(match[1]) <= upperCount;
     const nextValue = isUpper ? style : value;
     if (nextValue !== value) changed = true;

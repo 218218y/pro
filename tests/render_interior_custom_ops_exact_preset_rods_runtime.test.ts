@@ -76,7 +76,7 @@ test('renderInteriorCustomOps preserves double hanging heights after preset conv
   assert.deepEqual(
     harness.rodCalls.map(call => ({ y: Number(call.y.toFixed(2)), limit: Number(call.limit?.toFixed(2)) })),
     [
-      { y: 1.12, limit: 1.12 },
+      { y: 1.11, limit: 1.11 },
       { y: 2.32, limit: 1.12 },
     ]
   );

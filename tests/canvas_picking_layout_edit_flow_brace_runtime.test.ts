@@ -227,7 +227,7 @@ test('both shelf shortcuts can convert the intrinsic double-hanging brace withou
     assert.equal(custom.shelfVariants[2], '');
     assert.deepEqual(
       custom.rodOps.map(rod => rod.yFactor),
-      [5.8, 2.8]
+      [5.8, 2.7775]
     );
   }
 });

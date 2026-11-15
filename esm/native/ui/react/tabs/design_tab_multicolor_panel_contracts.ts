@@ -1,10 +1,14 @@
 import {
   DOOR_SPECIAL_BLACK_GLASS,
   DOOR_SPECIAL_FROSTED_GLASS,
+  encodeDoorStyleOverridePaintToken,
   encodeGlassFrameStylePaintToken,
   type AdhesiveGlassKind,
   type DoorStyleOverrideValue,
 } from '../../../features/door_authoring/api.js';
+export { encodeDoorStyleOverridePaintToken };
+export type { DoorStyleOverrideValue };
+
 import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_multicolor_shared.js';
 
 export const MULTI_ICON_BRUSH = '🖌️';

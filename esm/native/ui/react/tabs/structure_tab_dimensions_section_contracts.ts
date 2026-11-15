@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
+import { encodeGlassFrameStylePaintToken } from '../../../features/door_authoring/api.js';
 import {
-  encodeGlassFrameStylePaintToken,
+  MULTI_DOOR_STYLE_OPTIONS,
   type DoorStyleOverrideValue,
-} from '../../../features/door_authoring/api.js';
-import { MULTI_DOOR_STYLE_OPTIONS } from './design_tab_multicolor_panel_contracts.js';
+} from './design_tab_multicolor_panel_contracts.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
 export const STRUCTURE_CELL_DIMS_SECTION_TEST_ID = 'structure-cell-dims-section';

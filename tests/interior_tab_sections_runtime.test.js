@@ -1013,7 +1013,7 @@ test('double hanging button shows one middle brace and two hanging levels', () =
   assert.ok(html.includes('קושרת אמצעית ושני מוטות'));
   const paths = [...html.matchAll(/<path[^>]+d="([^"]+)"/g)].map(match => match[1]);
   assert.equal(paths[0], 'M9 32H39');
-  assert.equal(paths[1], 'M11 10H37 M11 34H37');
+  assert.equal(paths[1], 'M11 10H37 M11 35H37');
 });
 
 test('[interior-tab-sections-runtime] full boring follows winter brace and replaces standalone conversion actions', () => {

@@ -1799,10 +1799,6 @@
       "entry": "platform_overhang_support.js"
     },
     {
-      "file": "esm/native/ui/react/tabs/structure_tab_library_glass_edit.ts",
-      "entry": "door_authoring/api.js"
-    },
-    {
       "file": "esm/native/ui/react/tabs/structure_tab_library_helpers.ts",
       "entry": "library_preset/library_preset.js"
     },
@@ -1879,16 +1875,8 @@
       "entry": "base_leg_support.js"
     },
     {
-      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "entry": "door_authoring/api.js"
-    },
-    {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_contracts.ts",
       "entry": "base_leg_support.js"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_contracts.ts",
-      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows_controllers.tsx",

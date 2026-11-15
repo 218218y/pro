@@ -339,6 +339,6 @@ test('double hanging hover previews one full-depth brace at the middle and rods 
   );
   assert.deepEqual(
     preview?.rodYs.map((y: number) => Number(y.toFixed(2))),
-    [2.32, 1.12]
+    [2.32, 1.11]
   );
 });

@@ -24,8 +24,8 @@ const PRESET_ILLUSTRATIONS: Partial<Record<LayoutTypeId, PresetIllustration>> = 
   hanging_split: {
     description: 'קושרת אמצעית ושני מוטות',
     shelves: 'M9 32H39',
-    rods: 'M11 10H37 M11 34H37',
-    hangers: 'M24 10V14L16 19H32L24 14 M24 34V38L16 43H32L24 38',
+    rods: 'M11 10H37 M11 35H37',
+    hangers: 'M24 10V14L16 19H32L24 14 M24 35V39L16 44H32L24 39',
   },
   mixed: {
     description: 'מדפים ומוט תלייה',

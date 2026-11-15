@@ -1025,6 +1025,8 @@ test('library global styles honor the active upper count and leave unrelated ove
     d1: 'profile',
     d1_top: 'flat',
     d1_mid3: 'flat',
+    d1_top_accent_left: 'flat',
+    d1_custom: 'flat', // Not a recognized visual door segment.
     d2_full: 'profile',
     d3_full: 'profile',
     d4_full: 'profile',
@@ -1035,6 +1037,8 @@ test('library global styles honor the active upper count and leave unrelated ove
   assert.equal(result.d1_full, 'double_profile', 'legacy base key is canonicalized');
   assert.equal(result.d1_top, 'double_profile');
   assert.equal(result.d1_mid3, 'double_profile');
+  assert.equal(result.d1_top_accent_left, 'double_profile');
+  assert.equal(result.d1_custom, 'flat');
   assert.equal(result.d2_full, 'double_profile');
   assert.equal(result.d3_full, 'profile', 'outside the current upper door count');
   assert.equal(result.d4_full, 'profile');

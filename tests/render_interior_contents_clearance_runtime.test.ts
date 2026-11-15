@@ -818,8 +818,8 @@ test('double hanging builds exactly one full-depth middle brace and two correctl
     assert.equal(boards[0].userData?.__wpShelfIsBrace, true);
     assert.equal(rods.length, 2);
     assertClose(rods[0].y, bottom + 2.32);
-    assertClose(rods[1].y, bottom + 1.12);
+    assertClose(rods[1].y, bottom + 1.111);
     assertClose(rods[0].limit, 1.12);
-    assertClose(rods[1].limit, 1.12);
+    assertClose(rods[1].limit, 1.111);
   }
 });
