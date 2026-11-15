@@ -81,3 +81,35 @@ test('search availability updates after changing wardrobe type without changing 
   await choose(page, 'מסילות הזזה', 'sliding-tracks');
   await expect(page.locator('.wp-r-sliding-tracks-selector')).toHaveClass(/wp-r-search-target-flash/);
 });
+
+test('search covers individual presets and Sketch tools without applying a building action', async ({
+  page,
+}) => {
+  const issues = collectRuntimeIssues(page);
+  await gotoSmokeApp(page);
+  await page.getByTestId('viewer-search-button').click();
+  const search = page.getByTestId('viewer-search-input');
+  await search.fill('מוט תלייה');
+  await expect(page.getByTestId('viewer-search-result-sketch-rod')).toBeVisible();
+  await expect(page.getByTestId('viewer-search-result-manual-rod')).toBeVisible();
+  await page.getByTestId('viewer-search-result-sketch-rod').click();
+  await expect(page.getByTestId('sketch-shelf-tool-rod')).toHaveClass(/wp-r-search-target-flash/);
+  await expect(page.getByTestId('sketch-shelf-tool-rod')).toHaveAttribute('aria-pressed', 'false');
+
+  await choose(page, 'אוגר מצעים', 'sketch-storage');
+  await expect(page.getByTestId('sketch-shelf-tool-storage')).toHaveClass(/wp-r-search-target-flash/);
+  await choose(page, 'מדפים', 'preset-shelves');
+  await expect(page.getByTestId('interior-layout-method-presets')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('interior-layout-shelves')).toHaveClass(/wp-r-search-target-flash/);
+  await expect(page.getByTestId('interior-layout-shelves')).toHaveAttribute('aria-pressed', 'false');
+
+  await choose(page, 'תלייה כפולה', 'preset-hanging_split');
+  await expect(page.getByTestId('interior-layout-hanging_split')).toHaveClass(/wp-r-search-target-flash/);
+  await choose(page, 'משולב', 'preset-mixed');
+  await expect(page.getByTestId('interior-layout-mixed')).toHaveClass(/wp-r-search-target-flash/);
+  await choose(page, 'מדף זכוכית', 'sketch-shelf-glass');
+  await expect(page.getByTestId('sketch-shelf-tool-main')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('sketch-shelf-tool-glass')).toHaveClass(/wp-r-search-target-flash/);
+  await expect(page.getByTestId('sketch-shelf-tool-glass')).toHaveAttribute('aria-pressed', 'false');
+  expectNoRuntimeIssues(issues);
+});

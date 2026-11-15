@@ -548,6 +548,7 @@ test('[interior-tab-sections-runtime] sketch shelf and storage reset buttons res
     activateManualToolId: toolId => calls.push(['activateManualToolId', toolId]),
   });
   const storageTree = InteriorSketchStorageHeightField(storageProps);
+  assert.ok(findElementByTestId(storageTree, 'interior-sketch-storage-height-input'));
   const storageReset = findElementByTestId(storageTree, 'interior-sketch-storage-height-reset-button');
   assert.ok(storageReset);
   storageReset.props.onClick();

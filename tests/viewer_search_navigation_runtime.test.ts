@@ -18,6 +18,11 @@ import {
 } from '../esm/native/ui/react/viewer_search_navigation.js';
 import type { AppContainer, RootStateLike } from '../types/index.js';
 import {
+  INTERIOR_LAYOUT_TYPES,
+  INTERIOR_MANUAL_TOOLS,
+  SHELF_VARIANT_OPTIONS,
+} from '../esm/native/ui/react/tabs/interior_tab_local_state_shared.js';
+import {
   selectViewerSearchContext,
   viewerSearchContextKeys,
 } from '../esm/native/ui/react/viewer_search_context.js';
@@ -75,6 +80,66 @@ test('broad subjects lead to their main controls before dependent or contextual 
   assert.equal(searchViewerDestinations('צבע וילון ורוד')[0]?.id, 'curtain-pink');
 });
 
+test('every preset and Sketch shelf tool is searchable through its actual UI control', () => {
+  const presets = INTERIOR_LAYOUT_TYPES.filter(option => option.group === 'presets');
+  const sketchTools = INTERIOR_MANUAL_TOOLS;
+  for (const option of presets) {
+    const route = destination(`preset-${option.id}`);
+    assert.equal(route.tab, 'interior');
+    assert.equal(route.selector, `[data-testid="interior-layout-${option.id}"]`);
+    assert.deepEqual(route.reveal, [
+      { selector: '[data-testid="interior-layout-method-presets"]', action: 'activate' },
+    ]);
+    assert.ok(searchViewerDestinations(option.label, undefined, 100).some(entry => entry.id === route.id));
+    assert.ok(searchViewerDestinations('תבניות').some(entry => entry.id === route.id));
+  }
+  for (const option of sketchTools) {
+    const gridRoute = destination(`manual-${option.id === 'shelf' ? 'shelves' : option.id}`);
+    assert.equal(gridRoute.tab, 'interior');
+    assert.equal(gridRoute.selector, `[data-testid="interior-manual-tool-${option.id}-button"]`);
+    assert.deepEqual(gridRoute.reveal, [
+      { selector: '[data-testid="interior-layout-method-grid"]', action: 'activate' },
+    ]);
+    const route = destination(`sketch-${option.id}`);
+    assert.equal(route.tab, 'sketch');
+    assert.equal(
+      route.selector,
+      `[data-testid="sketch-shelf-tool-${option.id === 'shelf' ? 'main' : option.id}"]`
+    );
+    assert.equal(route.reveal.length, 0);
+  }
+  for (const option of SHELF_VARIANT_OPTIONS) {
+    const route = destination(`sketch-shelf-${option.variant}`);
+    assert.equal(route.tab, 'sketch');
+    assert.equal(route.selector, `[data-testid="sketch-shelf-tool-${option.variant}"]`);
+    assert.deepEqual(route.reveal, [
+      { selector: '[data-testid="sketch-shelf-tool-main"]', action: 'activate' },
+    ]);
+  }
+  assert.equal(destination('sketch-boring').selector, '[data-testid="sketch-layout-full_boring"]');
+  assert.equal(
+    destination('sketch-storage-height').selector,
+    '[data-testid="interior-sketch-storage-height-input"]'
+  );
+  assert.deepEqual(
+    ['sketch-rod', 'manual-rod'].map(
+      id => searchViewerDestinations('מוט תלייה').find(item => item.id === id)?.id
+    ),
+    ['sketch-rod', 'manual-rod']
+  );
+  assert.deepEqual(
+    ['sketch-storage', 'manual-storage', 'preset-storage'].map(
+      id => searchViewerDestinations('אוגר מצעים').find(item => item.id === id)?.id
+    ),
+    ['sketch-storage', 'manual-storage', 'preset-storage']
+  );
+  assert.ok(searchViewerDestinations('מדפים').some(entry => entry.id === 'preset-shelves'));
+  assert.ok(searchViewerDestinations('תלייה כפולה').some(entry => entry.id === 'preset-hanging_split'));
+  assert.ok(searchViewerDestinations('משולב').some(entry => entry.id === 'preset-mixed'));
+  assert.ok(searchViewerDestinations('מדף זכוכית').some(entry => entry.id === 'sketch-shelf-glass'));
+  assert.equal(searchViewerDestinations('מוט תלייה')[0]?.id, 'sketch-rod');
+});
+
 test('word prefixes support unfinished queries without matching word interiors or entire tabs', () => {
   assert.ok(searchViewerDestinations('רגל').some(entry => entry.id === 'base'));
   assert.equal(searchViewerDestinations('יבוי').length, 0);
@@ -106,6 +171,8 @@ test('availability follows wardrobe state and the canonical single-door derivati
   assert.equal(searchViewerDestinations('מגירות חיצוניות', undefined, 100, sliding).length, 0);
   const chestContext = searchContext({ raw: { doors: 0 }, isChestMode: true });
   assert.equal(searchViewerDestinations('חלוקת פנים', undefined, 100, chestContext).length, 0);
+  assert.equal(searchViewerDestinations('מוט תלייה', undefined, 100, chestContext).length, 0);
+  assert.equal(searchViewerDestinations('תבנית מדפים', undefined, 100, chestContext).length, 0);
   assert.ok(searchViewerDestinations('מסילות למגירות', undefined, 100, chestContext).length);
   const noMain = searchContext({ raw: { doors: 0 } });
   assert.equal(searchViewerDestinations('רגליים', undefined, 100, noMain).length, 0);
@@ -307,6 +374,45 @@ test('grid shelf search must switch from sketch context even if the same tool bu
   const panel = panelWith({ [route.reveal[0].selector]: method, [route.selector]: shelf });
   assert.equal(advanceViewerSearchNavigation(panel, route, new Set()).progress, 'waiting');
   assert.equal(method.clicks, 1, 'must activate grid rather than falsely scroll to sketch shelf tool');
+});
+
+test('preset and Sketch tool navigation reveals the right method without activating the final choice', () => {
+  const preset = destination('preset-hanging_split');
+  const method = new FakeElement(view);
+  const choice = new FakeElement(view);
+  const controls: Record<string, FakeElement> = { [preset.reveal[0].selector]: method };
+  const acted = new Set<number>();
+  assert.equal(advanceViewerSearchNavigation(panelWith(controls), preset, acted).progress, 'waiting');
+  assert.equal(method.clicks, 1);
+  method.attributes.set('aria-pressed', 'true');
+  controls[preset.selector] = choice;
+  assert.equal(advanceViewerSearchNavigation(panelWith(controls), preset, acted).progress, 'found');
+  assert.equal(choice.clicks, 0);
+
+  const sketch = destination('sketch-shelf-glass');
+  const main = new FakeElement(view);
+  const variant = new FakeElement(view);
+  const sketchControls: Record<string, FakeElement> = { [sketch.reveal[0].selector]: main };
+  const sketchActed = new Set<number>();
+  assert.equal(
+    advanceViewerSearchNavigation(panelWith(sketchControls), sketch, sketchActed).progress,
+    'waiting'
+  );
+  assert.equal(main.clicks, 1);
+  main.attributes.set('aria-pressed', 'true');
+  sketchControls[sketch.selector] = variant;
+  assert.equal(
+    advanceViewerSearchNavigation(panelWith(sketchControls), sketch, sketchActed).progress,
+    'found'
+  );
+  assert.equal(variant.clicks, 0);
+  const rod = destination('sketch-rod');
+  const rodButton = new FakeElement(view);
+  assert.equal(
+    advanceViewerSearchNavigation(panelWith({ [rod.selector]: rodButton }), rod, new Set()).progress,
+    'found'
+  );
+  assert.equal(rodButton.clicks, 0);
 });
 
 test('lazy or conditionally absent target waits; it never falls back to an unrelated control', () => {

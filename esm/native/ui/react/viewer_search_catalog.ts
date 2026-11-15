@@ -1,4 +1,9 @@
 import type { TabId } from '../../../../types';
+import {
+  INTERIOR_LAYOUT_TYPES,
+  INTERIOR_MANUAL_TOOLS,
+  SHELF_VARIANT_OPTIONS,
+} from './tabs/interior_tab_local_state_shared.js';
 
 /**
  * Search destinations are explicit UI contracts, not snapshots of whichever tab happens
@@ -74,6 +79,7 @@ const roomWall = [check(tid('settings-room-back-wall-toggle'))];
 const baseLegs = [activate(tid('structure-base-type-legs'))];
 const basePlinth = [activate(tid('structure-base-type-plinth'))];
 const baseStage = [...baseLegs, activate(tid('structure-base-platform-stage'))];
+const interiorPresets = [activate(tid('interior-layout-method-presets'))];
 const interiorGrid = [activate(tid('interior-layout-method-grid'))];
 const interiorSketch = [activate(tid('interior-layout-method-sketch'))];
 
@@ -604,6 +610,18 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   item('interior', 'layout-sketch', 'חלוקה לפי סקיצה', tid('interior-layout-method-sketch'), 'ציור', [], {
     requires: ['not-chest'],
   }),
+  // The same preset definitions drive the rendered buttons and the searchable destinations.
+  ...INTERIOR_LAYOUT_TYPES.filter(option => option.group === 'presets').map(option =>
+    item(
+      'interior',
+      `preset-${option.id}`,
+      `תבנית ${option.label}`,
+      tid(`interior-layout-${option.id}`),
+      'תבניות',
+      interiorPresets,
+      { importance: 'primary', requires: ['not-chest'] }
+    )
+  ),
   item(
     'interior',
     'manual-shelves',
@@ -719,6 +737,51 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     aliases: ['סקיצה'],
     importance: 'primary',
   }),
+  // These are the actual controls in the Sketch tab, not the grid tools in Interior.
+  ...INTERIOR_MANUAL_TOOLS.map(option =>
+    item(
+      'sketch',
+      `sketch-${option.id}`,
+      `${option.label} לפי סקיצה`,
+      tid(`sketch-shelf-tool-${option.id === 'shelf' ? 'main' : option.id}`),
+      option.id === 'shelf' ? 'מדפים' : '',
+      [],
+      { aliases: [option.label], importance: 'primary', requires: ['not-chest'] }
+    )
+  ),
+  // The shelf variants are mounted only after opening the Sketch shelf tool.
+  ...SHELF_VARIANT_OPTIONS.map(option =>
+    item(
+      'sketch',
+      `sketch-shelf-${option.variant}`,
+      `מדף ${option.label} לפי סקיצה`,
+      tid(`sketch-shelf-tool-${option.variant}`),
+      '',
+      [activate(tid('sketch-shelf-tool-main'))],
+      { aliases: [`מדף ${option.label}`], requires: ['not-chest'] }
+    )
+  ),
+  item('sketch', 'sketch-boring', 'חירור מלא לפי סקיצה', tid('sketch-layout-full_boring'), 'מדפים', [], {
+    requires: ['not-chest'],
+  }),
+  item(
+    'sketch',
+    'sketch-shelf-depth',
+    'עומק מדף לפי סקיצה',
+    tid('interior-sketch-shelf-depth-input'),
+    '',
+    [activate(tid('sketch-shelf-tool-main'))],
+    { requires: ['not-chest'] }
+  ),
+  item(
+    'sketch',
+    'sketch-storage-height',
+    'גובה אוגר מצעים לפי סקיצה',
+    tid('interior-sketch-storage-height-input'),
+    '',
+    [activate(tid('sketch-shelf-tool-storage'))],
+    { requires: ['not-chest'] }
+  ),
   item(
     'sketch',
     'no-main',

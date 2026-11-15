@@ -7,14 +7,11 @@ import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
   DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
   DEFAULT_SKETCH_STORAGE_HEIGHT_CM,
+  SHELF_VARIANT_OPTIONS,
 } from './interior_tab_local_state_shared.js';
 import {
   SKETCH_TOOL_ROD,
-  SKETCH_TOOL_SHELF_BRACE,
-  SKETCH_TOOL_SHELF_DOUBLE,
-  SKETCH_TOOL_SHELF_GLASS,
   SKETCH_TOOL_SHELF_PREFIX,
-  SKETCH_TOOL_SHELF_REGULAR,
   SKETCH_TOOL_STORAGE_PREFIX,
   clampSketch,
   cx,
@@ -24,12 +21,7 @@ import {
 } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 
-export const SHELF_VARIANT_OPTIONS = [
-  { prefix: SKETCH_TOOL_SHELF_REGULAR, variant: 'regular', label: 'רגיל', icon: 'fas fa-minus' },
-  { prefix: SKETCH_TOOL_SHELF_DOUBLE, variant: 'double', label: 'כפול', icon: 'fas fa-clone' },
-  { prefix: SKETCH_TOOL_SHELF_GLASS, variant: 'glass', label: 'זכוכית', icon: 'fas fa-gem' },
-  { prefix: SKETCH_TOOL_SHELF_BRACE, variant: 'brace', label: 'קושרת', icon: 'fas fa-link' },
-] as const;
+export { SHELF_VARIANT_OPTIONS } from './interior_tab_local_state_shared.js';
 
 const SKETCH_SHELF_DEPTH_MIN_CM = 5;
 const SKETCH_SHELF_DEPTH_MAX_CM = 120;
@@ -350,6 +342,7 @@ export function InteriorSketchStorageHeightField(props: InteriorLayoutSectionPro
           <input
             id={storageHeightInputId}
             name={storageHeightInputId}
+            data-testid="interior-sketch-storage-height-input"
             type="number"
             className="wp-r-input wp-r-sketch-drawer-height-input"
             value={props.sketchStorageHeightDraft}
