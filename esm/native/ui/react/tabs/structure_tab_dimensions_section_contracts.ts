@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 
-import { encodeGlassFrameStylePaintToken } from '../../../features/door_authoring/api.js';
+import {
+  encodeGlassFrameStylePaintToken,
+  type DoorStyleOverrideValue,
+} from '../../../features/door_authoring/api.js';
+import { MULTI_DOOR_STYLE_OPTIONS } from './design_tab_multicolor_panel_contracts.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
 
 export const STRUCTURE_CELL_DIMS_SECTION_TEST_ID = 'structure-cell-dims-section';
@@ -16,6 +20,7 @@ export const STRUCTURE_CELL_DIMS_RESET_HEX_DOOR_WIDTH_BUTTON_TEST_ID =
   'structure-cell-dims-reset-hex-door-width-button';
 export const STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID = 'structure-library-upper-doors-button';
 export const STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID = 'structure-library-glass-buttons';
+export const STRUCTURE_LIBRARY_DOOR_STYLE_BUTTON_GROUP_TEST_ID = 'structure-library-door-style-buttons';
 export const STRUCTURE_RESTORE_MAIN_WARDROBE_BUTTON_TEST_ID = 'structure-restore-main-wardrobe-button';
 export const STRUCTURE_STACK_SPLIT_SECTION_TEST_ID = 'structure-stack-split-section';
 export const STRUCTURE_STACK_SPLIT_MODE_BUTTON_TEST_ID = 'structure-stack-split-mode-button';
@@ -53,6 +58,16 @@ export const STRUCTURE_LIBRARY_GLASS_OPTIONS: ReadonlyArray<StructureLibraryGlas
     testId: 'structure-library-glass-button-profile',
   },
 ];
+
+// Keep the library's per-door palette identical to Design > Paint each part.
+export const STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS: ReadonlyArray<{
+  id: DoorStyleOverrideValue;
+  label: string;
+  testId: string;
+}> = MULTI_DOOR_STYLE_OPTIONS.map(option => ({
+  ...option,
+  testId: `structure-library-door-style-button-${option.id}`,
+}));
 
 export type StructureDimensionsContentProps = {
   isSliding: boolean;
@@ -105,6 +120,7 @@ export type StructureDimensionsContentProps = {
   onSetStackSplitDecorativeSeparatorFrontOverhangCm: (value: number) => void;
   onToggleLibraryUpperDoors: () => void;
   onPickLibraryGlass: (paintId: string) => void;
+  onPickLibraryDoorStyle: (style: DoorStyleOverrideValue) => void;
   renderStackLinkBadge: (field: StructureStackLinkField, isManual: boolean) => ReactNode;
   onResetAutoWidth: () => void;
   noMainWardrobeActive?: boolean;

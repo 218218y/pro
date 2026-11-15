@@ -7,6 +7,10 @@ import type {
 } from '../../../../../types';
 
 import { MODES, getTools } from '../../../services/api.js';
+import {
+  encodeDoorStyleOverridePaintToken,
+  type DoorStyleOverrideValue,
+} from '../../../features/door_authoring/api.js';
 import { enterPrimaryMode } from '../actions/modes_actions.js';
 import { setCurtainChoice, setMultiEnabled } from '../../multicolor_service.js';
 import { structureTabReportNonFatal } from './structure_tab_shared.js';
@@ -14,6 +18,8 @@ import { structureTabReportNonFatal } from './structure_tab_shared.js';
 export const STRUCTURE_LIBRARY_GLASS_EDIT_TOAST = 'מצב זכוכית לספריות פעיל — לחץ על דלתות לבחירה';
 export const STRUCTURE_LIBRARY_GLASS_EDIT_CURSOR = 'crosshair';
 export const STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE = 'react:structure:libraryGlass:edit';
+export const STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_SOURCE = 'react:structure:libraryDoorStyle:edit';
+export const STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_TOAST = 'מצב סגנון דלתות לספריות פעיל — לחץ על דלת לשינוי';
 
 type EnterPrimaryModeFn = (app: AppContainer, modeId: unknown, opts?: UnknownRecord) => void;
 type GetToolsFn = (app: AppContainer) => ToolsNamespaceLike;
@@ -44,7 +50,21 @@ function normalizePaintId(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function runGlassEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () => void): void {
+type LibraryPaintEditArgs = {
+  app: AppContainer;
+  fb?: UiFeedbackNamespaceLike | null | undefined;
+  paintId: string;
+  deps?: StructureLibraryGlassEditDeps;
+};
+
+type LibraryPaintEditIntent = {
+  source: string;
+  toast: string;
+  reportPrefix: string;
+  resetCurtain: boolean;
+};
+
+function runLibraryPaintEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () => void): void {
   try {
     fn();
   } catch (err) {
@@ -52,17 +72,16 @@ function runGlassEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () =
   }
 }
 
-export function enterStructureLibraryGlassEditMode(args: {
-  app: AppContainer;
-  fb?: UiFeedbackNamespaceLike | null | undefined;
-  paintId: string;
-  deps?: StructureLibraryGlassEditDeps;
-}): boolean {
+/** Both library rows use the same canonical paint mode and paint tool. */
+function enterStructureLibraryPaintEditMode(
+  args: LibraryPaintEditArgs,
+  intent: LibraryPaintEditIntent
+): boolean {
   const paintId = normalizePaintId(args.paintId);
   if (!paintId) return false;
 
   const deps = args.deps || {};
-  const meta: ActionMetaLike = { source: STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE, immediate: true };
+  const meta: ActionMetaLike = { source: intent.source, immediate: true };
   const setMultiEnabledImpl = deps.setMultiEnabled || setMultiEnabled;
   const setCurtainChoiceImpl = deps.setCurtainChoice || setCurtainChoice;
   const enterPrimaryModeImpl = deps.enterPrimaryMode || enterPrimaryMode;
@@ -75,19 +94,21 @@ export function enterStructureLibraryGlassEditMode(args: {
         : structureTabReportNonFatal(op, err, dedupeMs));
   const paintModeId = resolveStructureLibraryPaintModeId(deps.modes || MODES);
 
-  runGlassEditStep('structureLibraryGlassEdit.setMultiEnabled', reportNonFatal, () =>
+  runLibraryPaintEditStep(`${intent.reportPrefix}.setMultiEnabled`, reportNonFatal, () =>
     setMultiEnabledImpl(args.app, true, meta)
   );
-  runGlassEditStep('structureLibraryGlassEdit.setCurtainChoice', reportNonFatal, () =>
-    setCurtainChoiceImpl(args.app, 'none')
-  );
-  runGlassEditStep('structureLibraryGlassEdit.enterPrimaryMode', reportNonFatal, () =>
+  if (intent.resetCurtain) {
+    runLibraryPaintEditStep(`${intent.reportPrefix}.setCurtainChoice`, reportNonFatal, () =>
+      setCurtainChoiceImpl(args.app, 'none')
+    );
+  }
+  runLibraryPaintEditStep(`${intent.reportPrefix}.enterPrimaryMode`, reportNonFatal, () =>
     enterPrimaryModeImpl(args.app, paintModeId, {
       cursor: STRUCTURE_LIBRARY_GLASS_EDIT_CURSOR,
-      toast: STRUCTURE_LIBRARY_GLASS_EDIT_TOAST,
+      toast: intent.toast,
     })
   );
-  runGlassEditStep('structureLibraryGlassEdit.setPaintColor', reportNonFatal, () => {
+  runLibraryPaintEditStep(`${intent.reportPrefix}.setPaintColor`, reportNonFatal, () => {
     const tools = getToolsImpl(args.app);
     if (typeof tools.setPaintColor !== 'function')
       throw new TypeError('tools.setPaintColor is not available');
@@ -95,4 +116,35 @@ export function enterStructureLibraryGlassEditMode(args: {
   });
 
   return true;
+}
+
+export function enterStructureLibraryGlassEditMode(args: LibraryPaintEditArgs): boolean {
+  return enterStructureLibraryPaintEditMode(args, {
+    source: STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE,
+    toast: STRUCTURE_LIBRARY_GLASS_EDIT_TOAST,
+    reportPrefix: 'structureLibraryGlassEdit',
+    resetCurtain: true,
+  });
+}
+
+export function enterStructureLibraryDoorStyleEditMode(args: {
+  app: AppContainer;
+  fb?: UiFeedbackNamespaceLike | null | undefined;
+  style: DoorStyleOverrideValue;
+  deps?: StructureLibraryGlassEditDeps;
+}): boolean {
+  return enterStructureLibraryPaintEditMode(
+    {
+      app: args.app,
+      fb: args.fb,
+      paintId: encodeDoorStyleOverridePaintToken(args.style),
+      ...(args.deps ? { deps: args.deps } : {}),
+    },
+    {
+      source: STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_SOURCE,
+      toast: STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_TOAST,
+      reportPrefix: 'structureLibraryDoorStyleEdit',
+      resetCurtain: false,
+    }
+  );
 }

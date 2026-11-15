@@ -1,9 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { STRUCTURE_LIBRARY_GLASS_OPTIONS } from '../esm/native/ui/react/tabs/structure_tab_dimensions_section_contracts.ts';
+import {
+  STRUCTURE_LIBRARY_GLASS_OPTIONS,
+  STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS,
+} from '../esm/native/ui/react/tabs/structure_tab_dimensions_section_contracts.ts';
 import {
   STRUCTURE_LIBRARY_GLASS_EDIT_SOURCE,
+  STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_SOURCE,
+  STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_TOAST,
+  enterStructureLibraryDoorStyleEditMode,
   STRUCTURE_LIBRARY_GLASS_EDIT_TOAST,
   enterStructureLibraryGlassEditMode,
   resolveStructureLibraryPaintModeId,
@@ -102,5 +108,69 @@ test('structure library glass edit mode reports side-effect failures through the
     ['structureLibraryGlassEdit.setCurtainChoice', 'curtain failed'],
     ['structureLibraryGlassEdit.enterPrimaryMode', 'mode failed'],
     ['structureLibraryGlassEdit.setPaintColor', 'tools.setPaintColor is not available'],
+  ]);
+});
+
+test('library door style palette matches the design per-part palette, in the same order', () => {
+  assert.deepEqual(
+    STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS.map(option => [option.id, option.label, option.testId]),
+    [
+      ['flat', 'פוסט', 'structure-library-door-style-button-flat'],
+      ['profile', 'פרופיל', 'structure-library-door-style-button-profile'],
+      ['double_profile', 'פרופיל כפול', 'structure-library-door-style-button-double_profile'],
+    ]
+  );
+});
+
+test('library per-door style brush enters the same paint mode and does not touch curtain settings', () => {
+  const calls: unknown[][] = [];
+  const app = {} as never;
+  const deps = {
+    modes: { PAINT: 'paint' },
+    setMultiEnabled: (_app: unknown, on: boolean, meta?: unknown) => calls.push(['multi', on, meta]),
+    setCurtainChoice: (_app: unknown, value: unknown) => calls.push(['curtain', value]),
+    enterPrimaryMode: (_app: unknown, mode: unknown, options?: unknown) =>
+      calls.push(['mode', mode, options]),
+    getTools: () => ({ setPaintColor: (id: string, meta?: unknown) => calls.push(['paint', id, meta]) }),
+  };
+  for (const style of STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS) {
+    calls.length = 0;
+    assert.equal(enterStructureLibraryDoorStyleEditMode({ app, style: style.id, deps }), true);
+    assert.deepEqual(calls, [
+      ['multi', true, { source: STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_SOURCE, immediate: true }],
+      ['mode', 'paint', { cursor: 'crosshair', toast: STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_TOAST }],
+      [
+        'paint',
+        `__wp_door_style__:${style.id}`,
+        { source: STRUCTURE_LIBRARY_DOOR_STYLE_EDIT_SOURCE, immediate: true },
+      ],
+    ]);
+  }
+});
+
+test('library door style brush reports failures at the correct owner without resetting curtains', () => {
+  const reports: unknown[][] = [];
+  const app = {} as never;
+  enterStructureLibraryDoorStyleEditMode({
+    app,
+    style: 'profile',
+    deps: {
+      setMultiEnabled: () => {
+        throw new Error('multi failed');
+      },
+      setCurtainChoice: () => {
+        throw new Error('must not be called');
+      },
+      enterPrimaryMode: () => {
+        throw new Error('mode failed');
+      },
+      getTools: () => ({}),
+      reportNonFatal: (op, err) => reports.push([op, err instanceof Error ? err.message : String(err)]),
+    },
+  });
+  assert.deepEqual(reports, [
+    ['structureLibraryDoorStyleEdit.setMultiEnabled', 'multi failed'],
+    ['structureLibraryDoorStyleEdit.enterPrimaryMode', 'mode failed'],
+    ['structureLibraryDoorStyleEdit.setPaintColor', 'tools.setPaintColor is not available'],
   ]);
 });

@@ -161,6 +161,7 @@ function StructureTabInner(props: { active: boolean }) {
       workflows.setStackSplitDecorativeSeparatorFrontOverhangCm,
     onToggleLibraryUpperDoors: workflows.toggleLibraryUpperDoors,
     onPickLibraryGlass: workflows.pickLibraryGlass,
+    onPickLibraryDoorStyle: workflows.pickLibraryDoorStyle,
     renderStackLinkBadge: workflows.renderStackLinkBadge,
     onResetAutoWidth: workflows.resetAutoWidth,
     noMainWardrobeActive,

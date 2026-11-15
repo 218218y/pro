@@ -16,7 +16,7 @@ import type {
 } from './library_preset_types.js';
 
 import { createLibraryPresetRuntime } from './library_preset_runtime.js';
-import { readDoorStyleMap, resolveDoorVisualSegmentIdentity } from '../door_authoring/api.js';
+import { readDoorStyleMap } from '../door_authoring/api.js';
 import {
   captureModulesConfigurationSnapshot,
   cloneDoorSpecialMap,
@@ -104,43 +104,6 @@ export function applyBottomLibraryDoorPolicy(target: LibraryDoorMaps, bottomDoor
       }
     }
   }
-}
-
-/**
- * A library owns the upper-door frame style separately from the global door style.
- * A global profile selection updates every upper door (including explicitly painted
- * split segments); a flat selection changes only the lower doors via ui.doorStyle.
- * Return null when there is no upper-door change, leaving the persisted map intact.
- */
-export function buildLibraryUpperDoorStyleMap(
-  currentMap: unknown,
-  topDoors: unknown,
-  wardrobeType: 'hinged' | 'sliding',
-  style: 'flat' | 'profile' | 'double_profile'
-): DoorStyleMap | null {
-  if (style === 'flat') return null;
-  const requestedDoors = Number(topDoors);
-  if (!Number.isInteger(requestedDoors) || requestedDoors < 1) {
-    throw new Error('[WardrobePro] Library door style requires a valid upper-door count.');
-  }
-  const topDoorsCount = normDoorCount(requestedDoors, wardrobeType);
-  const next = readDoorStyleMap(currentMap);
-  let changed = false;
-  const setStyle = (key: string) => {
-    if (next[key] === style) return;
-    next[key] = style;
-    changed = true;
-  };
-
-  // A segment-specific override takes precedence over its full-door owner.
-  // Re-style existing segments too, without adding unnecessary segment entries.
-  for (const key of Object.keys(next)) {
-    const { basePartId } = resolveDoorVisualSegmentIdentity(key);
-    const match = /^d([1-9]\d*)$/.exec(basePartId);
-    if (match && Number(match[1]) <= topDoorsCount) setStyle(key);
-  }
-  for (let id = 1; id <= topDoorsCount; id++) setStyle(`d${id}_full`);
-  return changed ? next : null;
 }
 
 export function buildLibraryUiOverride(

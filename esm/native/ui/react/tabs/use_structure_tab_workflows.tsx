@@ -16,7 +16,11 @@ import {
 import { useStructureTabWorkflowControllers } from './use_structure_tab_workflows_controllers.js';
 import { useStructureTabWorkflowControllerEffects } from './use_structure_tab_workflows_effects.js';
 import { useStructureTabRenderStackLinkBadge } from './use_structure_tab_workflows_render.js';
-import { enterStructureLibraryGlassEditMode } from './structure_tab_library_glass_edit.js';
+import {
+  enterStructureLibraryDoorStyleEditMode,
+  enterStructureLibraryGlassEditMode,
+} from './structure_tab_library_glass_edit.js';
+import type { DoorStyleOverrideValue } from '../../../features/door_authoring/api.js';
 
 export type {
   StructureStackLinkField,
@@ -193,6 +197,13 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     [app, fb]
   );
 
+  const pickLibraryDoorStyle = useCallback(
+    (style: DoorStyleOverrideValue) => {
+      enterStructureLibraryDoorStyleEditMode({ app, fb, style });
+    },
+    [app, fb]
+  );
+
   const resetAllCellDimsOverrides = useCallback(() => {
     workflowController.resetAllCellDimsOverrides();
   }, [workflowController]);
@@ -235,6 +246,7 @@ export function useStructureTabWorkflows(args: UseStructureTabWorkflowsArgs): Us
     toggleLibraryMode,
     toggleLibraryUpperDoors,
     pickLibraryGlass,
+    pickLibraryDoorStyle,
     resetAllCellDimsOverrides,
     clearCellDimsWidth,
     clearCellDimsHeight,

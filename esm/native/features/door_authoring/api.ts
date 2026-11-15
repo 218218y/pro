@@ -93,7 +93,6 @@ export {
 
 export {
   buildDoorVisualOwnerAliasKeys,
-  resolveDoorVisualSegmentIdentity,
   hasAnyDoorVisualSegmentMapEntry,
   readDoorVisualMapEntry,
   readDoorVisualMapValue,

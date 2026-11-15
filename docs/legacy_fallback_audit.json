@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T05:49:15.921Z",
+  "generatedAt": "2026-11-15T08:42:02.828Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 618,
@@ -5616,21 +5616,21 @@
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "line": 42,
+      "line": 46,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "line": 74,
+      "line": 78,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"
     },
     {
       "file": "esm/native/ui/react/tabs/use_structure_tab_workflows.tsx",
-      "line": 90,
+      "line": 94,
       "term": "STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID",
       "category": "domain-default",
       "text": "modeId: String(state.cellDimsModeId || STRUCTURE_CELL_DIMS_MODE_FALLBACK_ID),"

@@ -8,6 +8,7 @@ import type {
   BaseLegStyle,
 } from '../../../features/base_leg_support.js';
 import type { StructureTabNumericKey } from './structure_tab_shared.js';
+import type { DoorStyleOverrideValue } from '../../../features/door_authoring/api.js';
 import type { StructureUiPartial } from './structure_tab_structural_controller_contracts.js';
 import type { StructureTabViewState } from './use_structure_tab_view_state_contracts.js';
 
@@ -35,6 +36,7 @@ export type UseStructureTabWorkflowsResult = {
   toggleLibraryMode: () => void;
   toggleLibraryUpperDoors: () => void;
   pickLibraryGlass: (paintId: string) => void;
+  pickLibraryDoorStyle: (style: DoorStyleOverrideValue) => void;
   resetAllCellDimsOverrides: () => void;
   clearCellDimsWidth: () => void;
   clearCellDimsHeight: () => void;

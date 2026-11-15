@@ -100,7 +100,7 @@ export function readDesignTabRoundedFrameSideSelection(cfg: unknown): {
   const rec = asRecord(cfg) || {};
   return {
     partIds: readRemovedFrameSidePartIds(rec),
-    shelvesMap: { ...(asRecord(rec[ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]) || {}) },
+    shelvesMap: { ...asRecord(rec[ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]) },
     mapName: ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
   };
 }

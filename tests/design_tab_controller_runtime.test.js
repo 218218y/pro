@@ -326,7 +326,7 @@ test('[design-tab-controller-runtime] library profile selection persists upper o
       calls.push(['applyProjectConfigSnapshot', target, patch, meta]);
       state.config.doorStyleMap = patch.doorStyleMap;
     },
-    patchViaActions: (target, patch, meta) => {
+    patchViaActions: (target, patch, _meta) => {
       Object.assign(state.ui, patch.ui);
       return true;
     },

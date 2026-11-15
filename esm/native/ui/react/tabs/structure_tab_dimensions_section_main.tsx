@@ -5,6 +5,8 @@ import { DimField } from './structure_tab_controls.js';
 import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
   STRUCTURE_LIBRARY_GLASS_BUTTON_GROUP_TEST_ID,
+  STRUCTURE_LIBRARY_DOOR_STYLE_BUTTON_GROUP_TEST_ID,
+  STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS,
   STRUCTURE_LIBRARY_GLASS_OPTIONS,
   STRUCTURE_LIBRARY_UPPER_DOORS_BUTTON_TEST_ID,
   STRUCTURE_RESTORE_MAIN_WARDROBE_BUTTON_TEST_ID,
@@ -25,6 +27,7 @@ export function StructureDimensionsMainFields(props: {
   onResetAutoWidth: StructureDimensionsContentProps['onResetAutoWidth'];
   onToggleLibraryUpperDoors: StructureDimensionsContentProps['onToggleLibraryUpperDoors'];
   onPickLibraryGlass: StructureDimensionsContentProps['onPickLibraryGlass'];
+  onPickLibraryDoorStyle: StructureDimensionsContentProps['onPickLibraryDoorStyle'];
   noMainWardrobeActive?: StructureDimensionsContentProps['noMainWardrobeActive'];
   onRestoreMainWardrobe?: StructureDimensionsContentProps['onRestoreMainWardrobe'];
 }): ReactElement {
@@ -142,6 +145,30 @@ export function StructureDimensionsMainFields(props: {
                   data-testid={option.testId}
                   data-glass-style={option.id}
                   onClick={() => props.onPickLibraryGlass(option.paintId)}
+                  title={option.label}
+                >
+                  {option.label}
+                </OptionButton>
+              ))}
+            </OptionButtonGroup>
+          </div>
+
+          <div data-testid={STRUCTURE_LIBRARY_DOOR_STYLE_BUTTON_GROUP_TEST_ID} style={{ marginTop: 8 }}>
+            <OptionButtonGroup
+              columns={3}
+              density="compact"
+              className="wp-r-library-door-style-options"
+              label="בחירת סגנון לכל דלת בנפרד"
+            >
+              {STRUCTURE_LIBRARY_DOOR_STYLE_OPTIONS.map(option => (
+                <OptionButton
+                  key={option.id}
+                  density="compact"
+                  layout="iconRow"
+                  className="wp-flex-1"
+                  data-testid={option.testId}
+                  data-door-style={option.id}
+                  onClick={() => props.onPickLibraryDoorStyle(option.id)}
                   title={option.label}
                 >
                   {option.label}

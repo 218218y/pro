@@ -25,6 +25,7 @@ export function StructureDimensionsContent(props: StructureDimensionsContentProp
       onResetAutoWidth={props.onResetAutoWidth}
       onToggleLibraryUpperDoors={props.onToggleLibraryUpperDoors}
       onPickLibraryGlass={props.onPickLibraryGlass}
+      onPickLibraryDoorStyle={props.onPickLibraryDoorStyle}
       noMainWardrobeActive={noMainWardrobeActive}
       onRestoreMainWardrobe={props.onRestoreMainWardrobe}
     />
