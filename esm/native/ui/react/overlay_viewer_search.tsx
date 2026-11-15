@@ -24,7 +24,7 @@ export function ViewerSearchControl(): ReactElement {
   const resultScroll = useRef<HTMLDivElement>(null);
   const resultListId = 'wp-viewer-search-results';
   const enabledTabs = useMemo(() => getViewerSearchEnabledTabs(app), [app]);
-  const contextState = useStoreSelectorShallow(selectViewerSearchContext, ['ui', 'config']);
+  const contextState = useStoreSelectorShallow(selectViewerSearchContext, ['ui', 'config'], 'structure');
   const context = useMemo(() => viewerSearchContextKeys(contextState), [contextState]);
   const results = useMemo(
     () => searchViewerDestinations(query, enabledTabs, MAX_RESULTS, context),
