@@ -3,6 +3,7 @@ import type { CorniceDimensionsCm } from '../../../../../types/cornice_type.js';
 import type { AppContainer, ConfigStateLike, GrooveOrientation, UiStateLike } from '../../../../../types';
 
 import {
+  applyProjectConfigSnapshot,
   patchUi,
   runHistoryBatch,
   setCfgScalar,
@@ -15,10 +16,8 @@ import {
   applyStructuralUiMutation,
   createStructuralMutationMeta,
 } from '../actions/structural_build_refresh_actions.js';
-import {
-  ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
-  readRemovedFrameSidePartIds,
-} from '../../../features/part_identity/api.js';
+import { buildLibraryUpperDoorStyleMap } from '../../../features/library_preset/library_preset.js';
+import { readDesignTabRoundedFrameSideSelection } from './design_tab_view_state_runtime.js';
 import {
   materializeActiveGrooveLinesCountMap,
   readStoreStateMaybe,
@@ -89,16 +88,6 @@ function readCurrentConfigRecord(app: AppContainer): ConfigStateLike {
   }
 }
 
-function readCurrentRoundedFrameSideShelvesMap(app: AppContainer): Record<string, unknown> {
-  const cfg = readCurrentConfigRecord(app);
-  const map = cfg[ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME];
-  return map && typeof map === 'object' && !Array.isArray(map) ? { ...(map as Record<string, unknown>) } : {};
-}
-
-function readRemovedFrameSidePartIdList(app: AppContainer): string[] {
-  return readRemovedFrameSidePartIds(readCurrentConfigRecord(app));
-}
-
 export function createDesignTabControllerRuntime(
   args: CreateDesignTabControllerRuntimeArgs
 ): DesignTabControllerRuntime {
@@ -107,15 +96,49 @@ export function createDesignTabControllerRuntime(
   return {
     setDoorStyle(style: DesignTabDoorStyle) {
       const next = String(style || '');
-      if (!next || readCurrentUiString(app, 'doorStyle') === next) return;
-      applyStructuralUiMutation(
+      if (!next) return;
+      const source = 'react:design:doorStyle';
+      const state = readStoreStateMaybe(app);
+      const uiChanged = state?.ui?.doorStyle !== next;
+      const cfg = state?.config;
+      const upperDoorStyleMap = cfg?.isLibraryMode
+        ? buildLibraryUpperDoorStyleMap(
+            cfg.doorStyleMap,
+            state?.ui?.raw?.doors,
+            cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged',
+            style
+          )
+        : null;
+      if (!uiChanged && !upperDoorStyleMap) return;
+
+      const updateUiStyle = () =>
+        applyStructuralUiMutation(
+          app,
+          source,
+          { doorStyle: next },
+          meta => setUiDoorStyle(app, next, meta),
+          COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
+        );
+      if (!upperDoorStyleMap) {
+        updateUiStyle();
+        return;
+      }
+
+      // Root actions.patch rejects config map writes. Use the semantic config
+      // snapshot writer, with one history entry and one coalesced rebuild.
+      runHistoryBatch(
         app,
-        'react:design:doorStyle',
-        { doorStyle: next },
-        meta => {
-          setUiDoorStyle(app, next, meta);
+        () => {
+          applyProjectConfigSnapshot(
+            app,
+            { doorStyleMap: upperDoorStyleMap },
+            createStructuralMutationMeta(source, {
+              buildTiming: uiChanged ? 'none' : 'coalesced',
+            })
+          );
+          if (uiChanged) updateUiStyle();
         },
-        COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
+        createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
       );
     },
 
@@ -217,10 +240,12 @@ export function createDesignTabControllerRuntime(
     },
 
     toggleRoundedFrameSideShelves() {
-      const partIds = readRemovedFrameSidePartIdList(app);
+      const {
+        partIds,
+        shelvesMap: current,
+        mapName,
+      } = readDesignTabRoundedFrameSideSelection(readCurrentConfigRecord(app));
       if (!partIds.length) return;
-
-      const current = readCurrentRoundedFrameSideShelvesMap(app);
       const allRounded = partIds.every(partId => current[partId] === true);
       const nextMap = { ...current };
       for (const partId of partIds) nextMap[partId] = allRounded ? null : true;
@@ -232,7 +257,7 @@ export function createDesignTabControllerRuntime(
           applyStructuralConfigMutation(
             app,
             source,
-            { [ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]: nextMap },
+            { [mapName]: nextMap },
             meta => {
               replaceRoundedFrameSideShelvesMap(app, nextMap, meta);
             },

@@ -6,6 +6,7 @@ import {
 } from './library_preset_flow.js';
 import { normDoorCount } from './library_preset_shared.js';
 import { readLibraryPresetDefaultDoorCount } from './library_preset_flow_shared.js';
+export { buildLibraryUpperDoorStyleMap } from './library_preset_flow_shared.js';
 
 import type { LibraryPresetController, LibraryPresetPreState } from './library_preset_types.js';
 export {

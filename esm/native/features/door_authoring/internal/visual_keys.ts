@@ -14,6 +14,7 @@ import { formatIdentityValue, readIdentityValue } from '../../../../shared/ident
 export type DoorVisualMapEntry = { key: string; value: unknown };
 export {
   buildDoorVisualLookupKeys,
+  resolveDoorVisualSegmentIdentity,
   stripDoorVisualSurfaceSuffix,
   toCanonicalDoorVisualMapKey,
   toDoorStyleOverrideMapKey,

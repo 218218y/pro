@@ -7,7 +7,11 @@ import {
   ensureLibraryPresetInvariants,
   restoreLibraryPresetPreState,
 } from '../esm/native/features/library_preset/library_preset_flow.ts';
-import { createLibraryPresetController } from '../esm/native/features/library_preset/library_preset.ts';
+import {
+  buildLibraryUpperDoorStyleMap,
+  createLibraryPresetController,
+} from '../esm/native/features/library_preset/library_preset.ts';
+import { resolveEffectiveDoorStyle } from '../esm/native/features/door_authoring/api.ts';
 import { buildLibraryModuleConfigLists } from '../esm/native/features/library_preset/library_preset_shared.ts';
 import type {
   LibraryPresetEnsureArgs,
@@ -976,4 +980,64 @@ test('library preset controller resumes the last library door count and width af
   );
   assert.equal(recomputes.at(-1)?.uiOverride.raw?.doors, 8);
   assert.equal(recomputes.at(-1)?.uiOverride.raw?.width, 320);
+});
+
+test('library global profile styles apply to all upper doors and flat remains lower-only', () => {
+  const seededMap = {
+    d1_full: 'profile',
+    d2_full: 'profile',
+    d3_full: 'profile',
+    d2_mid2: 'flat', // Explicit segment overrides win over the full-door owner.
+    d1001_full: 'double_profile', // Explicit lower override is not a library upper door.
+    drawer_1: 'flat',
+    lower_d1_full: 'profile',
+  } as const;
+  const selectedDouble = buildLibraryUpperDoorStyleMap(seededMap, 3, 'hinged', 'double_profile');
+  assert.ok(selectedDouble);
+  assert.equal(selectedDouble.d1_full, 'double_profile');
+  assert.equal(selectedDouble.d2_full, 'double_profile');
+  assert.equal(selectedDouble.d3_full, 'double_profile');
+  assert.equal(selectedDouble.d2_mid2, 'double_profile');
+  assert.equal(selectedDouble.d1001_full, 'double_profile');
+  assert.equal(selectedDouble.drawer_1, 'flat');
+  assert.equal(selectedDouble.lower_d1_full, 'profile');
+  assert.equal(resolveEffectiveDoorStyle('double_profile', selectedDouble, 'd2_mid2'), 'double_profile');
+  assert.equal(resolveEffectiveDoorStyle('double_profile', selectedDouble, 'd3_full'), 'double_profile');
+  assert.equal(resolveEffectiveDoorStyle('double_profile', selectedDouble, 'd1002_full'), 'double_profile');
+  assert.equal(buildLibraryUpperDoorStyleMap(selectedDouble, 3, 'hinged', 'double_profile'), null);
+
+  // Post changes the global lower-door style, but never rewrites upper frames.
+  assert.equal(buildLibraryUpperDoorStyleMap(selectedDouble, 3, 'hinged', 'flat'), null);
+  assert.equal(resolveEffectiveDoorStyle('flat', selectedDouble, 'd1_full'), 'double_profile');
+  assert.equal(resolveEffectiveDoorStyle('flat', selectedDouble, 'd2_mid2'), 'double_profile');
+  assert.equal(resolveEffectiveDoorStyle('flat', selectedDouble, 'd1002_full'), 'flat');
+
+  const selectedProfile = buildLibraryUpperDoorStyleMap(selectedDouble, 3, 'hinged', 'profile');
+  assert.ok(selectedProfile);
+  assert.equal(resolveEffectiveDoorStyle('profile', selectedProfile, 'd2_mid2'), 'profile');
+  assert.equal(resolveEffectiveDoorStyle('profile', selectedProfile, 'd3_full'), 'profile');
+  assert.equal(resolveEffectiveDoorStyle('profile', selectedProfile, 'd1002_full'), 'profile');
+  assert.equal(seededMap.d2_mid2, 'flat', 'the source map must not be mutated');
+});
+
+test('library global styles honor the active upper count and leave unrelated override identities untouched', () => {
+  const map = {
+    d1: 'profile',
+    d1_top: 'flat',
+    d1_mid3: 'flat',
+    d2_full: 'profile',
+    d3_full: 'profile',
+    d4_full: 'profile',
+    d1001_full: 'flat',
+  } as const;
+  const result = buildLibraryUpperDoorStyleMap(map, 2, 'sliding', 'double_profile');
+  assert.ok(result);
+  assert.equal(result.d1_full, 'double_profile', 'legacy base key is canonicalized');
+  assert.equal(result.d1_top, 'double_profile');
+  assert.equal(result.d1_mid3, 'double_profile');
+  assert.equal(result.d2_full, 'double_profile');
+  assert.equal(result.d3_full, 'profile', 'outside the current upper door count');
+  assert.equal(result.d4_full, 'profile');
+  assert.equal(result.d1001_full, 'flat');
+  assert.throws(() => buildLibraryUpperDoorStyleMap(map, undefined, 'hinged', 'profile'), /upper-door count/);
 });

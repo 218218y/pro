@@ -16,6 +16,9 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
         path.join(process.cwd(), 'esm/shared/dimensions/carcass_cornice_render_policy.ts')
       );
     }
+    if (specifier === '../../../features/library_preset/library_preset.js') {
+      return { buildLibraryUpperDoorStyleMap: stubs.buildLibraryUpperDoorStyleMap || (() => null) };
+    }
     if (specifier === '../actions/store_actions.js') {
       return {
         runHistoryBatch:
@@ -31,6 +34,9 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
             throw new Error('Design tab controller must use semantic map writers, not setCfgMap');
           }),
         setCfgScalar: stubs.setCfgScalar || ((...args) => stubs.calls?.push(['setCfgScalar', ...args])),
+        applyProjectConfigSnapshot:
+          stubs.applyProjectConfigSnapshot ||
+          ((...args) => stubs.calls?.push(['applyProjectConfigSnapshot', ...args])),
         setUiCorniceType:
           stubs.setUiCorniceType || ((...args) => stubs.calls?.push(['setUiCorniceType', ...args])),
         setUiDoorStyle: stubs.setUiDoorStyle || ((...args) => stubs.calls?.push(['setUiDoorStyle', ...args])),
@@ -74,16 +80,20 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
           ((...args) => stubs.calls?.push(['requestBuilderStructuralRefresh', ...args])),
       };
     }
-    if (specifier === '../../../features/part_identity/api.js') {
-      const readMap = (cfg, name) =>
-        cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
+    if (specifier === './design_tab_view_state_runtime.js') {
       return {
-        ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME: 'roundedFrameSideShelvesMap',
-        readRemovedFrameSidePartIds: cfg => {
-          const removed = readMap(cfg, 'removedDoorsMap');
-          return ['body_left', 'lower_body_left', 'body_right', 'lower_body_right'].filter(
-            partId => removed[`removed_${partId}`] === true
-          );
+        readDesignTabRoundedFrameSideSelection: cfg => {
+          const readMap = name =>
+            cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
+          const removed = readMap('removedDoorsMap');
+          const mapName = 'roundedFrameSideShelvesMap';
+          return {
+            partIds: ['body_left', 'lower_body_left', 'body_right', 'lower_body_right'].filter(
+              partId => removed[`removed_${partId}`] === true
+            ),
+            shelvesMap: { ...readMap(mapName) },
+            mapName,
+          };
         },
       };
     }
@@ -291,4 +301,134 @@ test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped re
 
   assert.equal(calls[1][0], 'replaceRoundedFrameSideShelvesMap');
   assert.deepEqual({ ...calls[1][2] }, { body_left: true, lower_body_left: true });
+});
+
+test('[design-tab-controller-runtime] library profile selection persists upper overrides and global style in one history batch', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const state = {
+    ui: { doorStyle: 'flat', raw: { doors: 3 } },
+    config: {
+      isLibraryMode: true,
+      wardrobeType: 'hinged',
+      doorStyleMap: { d1_full: 'profile', d2_full: 'profile', d3_full: 'profile' },
+    },
+  };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    readStoreStateMaybe: () => state,
+    buildLibraryUpperDoorStyleMap: (map, count, wardrobeType, style) => {
+      calls.push(['buildLibraryUpperDoorStyleMap', map, count, wardrobeType, style]);
+      if (style === 'flat') return null;
+      return Object.fromEntries(Object.entries(map).map(([key]) => [key, style]));
+    },
+    applyProjectConfigSnapshot: (target, patch, meta) => {
+      calls.push(['applyProjectConfigSnapshot', target, patch, meta]);
+      state.config.doorStyleMap = patch.doorStyleMap;
+    },
+    patchViaActions: (target, patch, meta) => {
+      Object.assign(state.ui, patch.ui);
+      return true;
+    },
+  });
+  const controller = mod.createDesignTabControllerRuntime({ app, setFeatureToggle: () => undefined });
+
+  controller.setDoorStyle('double_profile');
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([
+      [
+        'buildLibraryUpperDoorStyleMap',
+        { d1_full: 'profile', d2_full: 'profile', d3_full: 'profile' },
+        3,
+        'hinged',
+        'double_profile',
+      ],
+      ['runHistoryBatch', app, { source: 'react:design:doorStyle', immediate: false }],
+      [
+        'applyProjectConfigSnapshot',
+        app,
+        { doorStyleMap: { d1_full: 'double_profile', d2_full: 'double_profile', d3_full: 'double_profile' } },
+        { source: 'react:design:doorStyle', immediate: false, noBuild: true },
+      ],
+      [
+        'patchViaActions',
+        app,
+        { ui: { doorStyle: 'double_profile' } },
+        { source: 'react:design:doorStyle', immediate: false },
+      ],
+    ])
+  );
+
+  calls.length = 0;
+  controller.setDoorStyle('flat');
+  assert.equal(state.ui.doorStyle, 'flat');
+  assert.deepEqual(
+    { ...state.config.doorStyleMap },
+    {
+      d1_full: 'double_profile',
+      d2_full: 'double_profile',
+      d3_full: 'double_profile',
+    },
+    'post must preserve the last upper library frame style'
+  );
+  assert.equal(
+    calls.some(call => call[0] === 'applyProjectConfigSnapshot'),
+    false
+  );
+  assert.equal(
+    calls.some(call => call[0] === 'runHistoryBatch'),
+    false
+  );
+
+  calls.length = 0;
+  controller.setDoorStyle('profile');
+  assert.equal(state.ui.doorStyle, 'profile');
+  assert.deepEqual(
+    { ...state.config.doorStyleMap },
+    {
+      d1_full: 'profile',
+      d2_full: 'profile',
+      d3_full: 'profile',
+    }
+  );
+  assert.equal(calls.filter(call => call[0] === 'applyProjectConfigSnapshot').length, 1);
+  assert.equal(calls.filter(call => call[0] === 'patchViaActions').length, 1);
+});
+
+test('[design-tab-controller-runtime] same global style can still synchronize newly seeded library upper doors', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const state = {
+    ui: { doorStyle: 'double_profile', raw: { doors: 2 } },
+    config: {
+      isLibraryMode: true,
+      wardrobeType: 'sliding',
+      doorStyleMap: { d1_full: 'profile', d2_full: 'profile' },
+    },
+  };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    readStoreStateMaybe: () => state,
+    buildLibraryUpperDoorStyleMap: (map, count, wardrobeType, style) => {
+      assert.equal(count, 2);
+      assert.equal(wardrobeType, 'sliding');
+      return style === 'double_profile' ? { d1_full: style, d2_full: style } : null;
+    },
+  });
+  mod
+    .createDesignTabControllerRuntime({ app, setFeatureToggle: () => undefined })
+    .setDoorStyle('double_profile');
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([
+      ['runHistoryBatch', app, { source: 'react:design:doorStyle', immediate: false }],
+      [
+        'applyProjectConfigSnapshot',
+        app,
+        { doorStyleMap: { d1_full: 'double_profile', d2_full: 'double_profile' } },
+        { source: 'react:design:doorStyle', immediate: false },
+      ],
+    ])
+  );
 });

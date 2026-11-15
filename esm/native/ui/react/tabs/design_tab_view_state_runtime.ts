@@ -17,7 +17,11 @@ import {
   type DesignTabCorniceType,
   type DesignTabDoorStyle,
 } from './design_tab_shared.js';
-import { readRemovedFrameSideShelfState } from '../../../features/part_identity/api.js';
+import {
+  ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
+  readRemovedFrameSidePartIds,
+  readRemovedFrameSideShelfState,
+} from '../../../features/part_identity/api.js';
 import { readUiRawIntFromSnapshot, readUiRawNumberFromSnapshot } from '../selectors/ui_raw_selectors.js';
 
 import type { GrooveOrientation, UnknownRecord } from '../../../../../types';
@@ -85,6 +89,20 @@ function normalizeFrontColorShelfInheritanceMode(value: unknown): 'all' | 'brace
 
 function readDraftString(value: unknown): string {
   return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+}
+
+/** The design controller shares the same canonical frame-side selection as the view state. */
+export function readDesignTabRoundedFrameSideSelection(cfg: unknown): {
+  partIds: string[];
+  shelvesMap: Record<string, unknown>;
+  mapName: typeof ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME;
+} {
+  const rec = asRecord(cfg) || {};
+  return {
+    partIds: readRemovedFrameSidePartIds(rec),
+    shelvesMap: { ...(asRecord(rec[ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]) || {}) },
+    mapName: ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
+  };
 }
 
 export function readDesignTabCfgState(cfg: unknown): DesignTabCfgState {

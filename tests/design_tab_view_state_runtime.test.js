@@ -53,6 +53,13 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
       const readMap = (cfg, name) =>
         cfg && typeof cfg === 'object' && cfg[name] && typeof cfg[name] === 'object' ? cfg[name] : {};
       return {
+        ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME: 'roundedFrameSideShelvesMap',
+        readRemovedFrameSidePartIds: cfg => {
+          const removed = readMap(cfg, 'removedDoorsMap');
+          return ['body_left', 'lower_body_left', 'body_right', 'lower_body_right'].filter(
+            partId => removed[`removed_${partId}`] === true
+          );
+        },
         readRemovedFrameSideShelfState: cfg => {
           const removed = readMap(cfg, 'removedDoorsMap');
           const rounded = readMap(cfg, 'roundedFrameSideShelvesMap');
@@ -77,6 +84,35 @@ function loadDesignTabViewStateRuntimeModule(stubs = {}) {
     mock: specifier => localRequire(specifier),
   });
 }
+
+test('[design-tab-view-state-runtime] shares rounded frame-side selections without mutating source maps', () => {
+  const mod = loadDesignTabViewStateRuntimeModule();
+  const sourceMap = { body_left: true, lower_body_right: null, custom: 'keep' };
+  const cfg = {
+    removedDoorsMap: { removed_body_left: true, removed_lower_body_right: true },
+    roundedFrameSideShelvesMap: sourceMap,
+  };
+  const selection = mod.readDesignTabRoundedFrameSideSelection(cfg);
+  assert.equal(
+    JSON.stringify(selection),
+    JSON.stringify({
+      partIds: ['body_left', 'lower_body_right'],
+      shelvesMap: sourceMap,
+      mapName: 'roundedFrameSideShelvesMap',
+    })
+  );
+  assert.notStrictEqual(selection.shelvesMap, sourceMap);
+  selection.shelvesMap.body_left = null;
+  assert.equal(sourceMap.body_left, true);
+  assert.equal(
+    JSON.stringify(mod.readDesignTabRoundedFrameSideSelection(null)),
+    JSON.stringify({
+      partIds: [],
+      shelvesMap: {},
+      mapName: 'roundedFrameSideShelvesMap',
+    })
+  );
+});
 
 test('[design-tab-view-state-runtime] derives cfg/ui/design feature state through one stable seam', () => {
   const mod = loadDesignTabViewStateRuntimeModule();
