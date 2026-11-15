@@ -1,9 +1,6 @@
 import type { TabId } from '../../../../types';
-import {
-  INTERIOR_LAYOUT_TYPES,
-  INTERIOR_MANUAL_TOOLS,
-  SHELF_VARIANT_OPTIONS,
-} from './tabs/interior_tab_local_state_shared.js';
+import { INTERIOR_LAYOUT_TYPES, INTERIOR_MANUAL_TOOLS } from './tabs/interior_tab_local_state_shared.js';
+import { SHELF_VARIANT_OPTIONS } from './tabs/interior_layout_shelf_variant_options.js';
 
 /**
  * Search destinations are explicit UI contracts, not snapshots of whichever tab happens

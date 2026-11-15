@@ -20,8 +20,8 @@ import type { AppContainer, RootStateLike } from '../types/index.js';
 import {
   INTERIOR_LAYOUT_TYPES,
   INTERIOR_MANUAL_TOOLS,
-  SHELF_VARIANT_OPTIONS,
 } from '../esm/native/ui/react/tabs/interior_tab_local_state_shared.js';
+import { SHELF_VARIANT_OPTIONS } from '../esm/native/ui/react/tabs/interior_layout_shelf_variant_options.js';
 import {
   selectViewerSearchContext,
   viewerSearchContextKeys,

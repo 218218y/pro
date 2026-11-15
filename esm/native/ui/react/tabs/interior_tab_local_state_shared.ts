@@ -1,9 +1,3 @@
-import {
-  SKETCH_TOOL_SHELF_REGULAR,
-  SKETCH_TOOL_SHELF_DOUBLE,
-  SKETCH_TOOL_SHELF_GLASS,
-  SKETCH_TOOL_SHELF_BRACE,
-} from './interior_tab_helpers_sketch_tools.js';
 import type {
   DoorTrimUiColor,
   DoorTrimUiSpan,
@@ -50,14 +44,6 @@ export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [
   { id: 'rod', label: 'מוט תלייה' },
   { id: 'storage', label: 'אוגר מצעים' },
 ];
-
-// Shared by both sketch tool surfaces and the search catalog.
-export const SHELF_VARIANT_OPTIONS = [
-  { prefix: SKETCH_TOOL_SHELF_REGULAR, variant: 'regular', label: 'רגיל', icon: 'fas fa-minus' },
-  { prefix: SKETCH_TOOL_SHELF_DOUBLE, variant: 'double', label: 'כפול', icon: 'fas fa-clone' },
-  { prefix: SKETCH_TOOL_SHELF_GLASS, variant: 'glass', label: 'זכוכית', icon: 'fas fa-gem' },
-  { prefix: SKETCH_TOOL_SHELF_BRACE, variant: 'brace', label: 'קושרת', icon: 'fas fa-link' },
-] as const;
 
 export const INTERIOR_GRID_DIVS: readonly [8, 7, 6, 5, 4, 3, 2] = [8, 7, 6, 5, 4, 3, 2];
 export const INTERIOR_EXT_COUNTS: readonly [1, 2, 3, 4, 5, 6] = [1, 2, 3, 4, 5, 6];

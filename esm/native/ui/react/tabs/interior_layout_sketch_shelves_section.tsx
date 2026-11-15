@@ -7,7 +7,6 @@ import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
   DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
   DEFAULT_SKETCH_STORAGE_HEIGHT_CM,
-  SHELF_VARIANT_OPTIONS,
 } from './interior_tab_local_state_shared.js';
 import {
   SKETCH_TOOL_ROD,
@@ -20,8 +19,9 @@ import {
   parseSketchShelfVariant,
 } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
+import { SHELF_VARIANT_OPTIONS } from './interior_layout_shelf_variant_options.js';
 
-export { SHELF_VARIANT_OPTIONS } from './interior_tab_local_state_shared.js';
+export { SHELF_VARIANT_OPTIONS } from './interior_layout_shelf_variant_options.js';
 
 const SKETCH_SHELF_DEPTH_MIN_CM = 5;
 const SKETCH_SHELF_DEPTH_MAX_CM = 120;
