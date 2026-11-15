@@ -5,7 +5,7 @@ import fs from 'node:fs';
 test('P2: wp_runtime_config.mjs exports DI config (no window globals)', async () => {
   // Ensure we do not accidentally create legacy globals in Node.
   // (In the browser we also avoid using window globals for config.)
-  assert.equal(globalThis /** @type {any} */.__WARDROBE_PRO_CONFIG__, undefined);
+  assert.equal(globalThis./** @type {any} */ __WARDROBE_PRO_CONFIG__, undefined);
 
   const mod = /** @type {any} */ (
     await import(new URL('../wp_runtime_config.mjs', import.meta.url).toString())
