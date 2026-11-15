@@ -124,10 +124,11 @@ function loadStructureTabControlsModule(stubs = {}) {
     if (specifier === '../components/index.js') {
       return {
         Button: renderButton,
-        OptionButton: ({ selected = false, children, icon, onClick, ...props }) => ({
+        OptionButton: ({ selected = false, children, icon, onClick, testId, ...props }) => ({
           type: 'button',
           props: {
             ...props,
+            'data-testid': testId,
             children: icon ? [icon, children] : children,
             'aria-pressed': selected,
             onClick,
@@ -206,6 +207,16 @@ test('[structure-tab-controls] board material writes collapse to canonical coale
     patchViaActions: () => true,
   });
   const tree = mod.TypeSelector();
+  const ids = new Set(flattenButtons(tree).map(button => button.props['data-testid']));
+  for (const id of [
+    'structure-type-hinged-button',
+    'structure-type-sliding-button',
+    'structure-board-material-sandwich-button',
+    'structure-board-material-melamine-button',
+    'structure-door-mount-overlay-button',
+    'structure-door-mount-inset-button',
+  ])
+    assert.ok(ids.has(id), `search destination is missing from the rendered control: ${id}`);
   const melamineBtn = flattenButtons(tree).find(btn => btn.props?.['data-board-material'] === 'melamine');
   const sandwichBtn = flattenButtons(tree).find(btn => btn.props?.['data-board-material'] === 'sandwich');
   melamineBtn.props.onClick();

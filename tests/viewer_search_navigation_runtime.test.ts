@@ -16,7 +16,11 @@ import {
   navigateToViewerSearchDestination,
   subscribeViewerSearchNavigation,
 } from '../esm/native/ui/react/viewer_search_navigation.js';
-import type { AppContainer } from '../types/index.js';
+import type { AppContainer, RootStateLike } from '../types/index.js';
+import {
+  selectViewerSearchContext,
+  viewerSearchContextKeys,
+} from '../esm/native/ui/react/viewer_search_context.js';
 
 function destination(id: string): ViewerSearchDestination {
   const value = findViewerSearchDestination(id);
@@ -40,6 +44,92 @@ test('search ranks exact matches, matches multiword Hebrew aliases and never dup
   assert.equal(searchViewerDestinations('גובה מראה')[0]?.id, 'mirror-height');
   assert.equal(searchViewerDestinations('ארון הזזה')[0]?.id, 'type-sliding');
   assert.equal(normalizeViewerSearchText('מַרְאָה–וִילוֹן'), 'מראה וילון');
+});
+
+test('broad subjects lead to their main controls before dependent or contextual settings', () => {
+  for (const [query, id] of Object.entries({
+    רגליים: 'base',
+    בסיס: 'base',
+    במה: 'leg-platform',
+    מראה: 'mirror',
+    זכוכית: 'glass-curtain',
+    וילון: 'curtain',
+    מדפים: 'manual-shelves',
+    ידיות: 'handles',
+    שידה: 'chest',
+    ספריה: 'library',
+    חריטות: 'grooves',
+    קירות: 'room-architecture',
+    חלונות: 'room-window',
+    צבע: 'front-color',
+    תאורה: 'light-control',
+    גיבוי: 'backup',
+  }))
+    assert.equal(searchViewerDestinations(query)[0]?.id, id, query);
+  assert.deepEqual(
+    searchViewerDestinations('רגליים', undefined, 100).map(entry => entry.id),
+    ['base', 'leg-style', 'leg-color', 'leg-height', 'leg-width', 'leg-platform', 'leg-platform-side']
+  );
+  assert.equal(searchViewerDestinations('גובה רגליים')[0]?.id, 'leg-height');
+  assert.equal(searchViewerDestinations('בליטת במה')[0]?.id, 'leg-platform-side');
+  assert.equal(searchViewerDestinations('צבע וילון ורוד')[0]?.id, 'curtain-pink');
+});
+
+test('word prefixes support unfinished queries without matching word interiors or entire tabs', () => {
+  assert.ok(searchViewerDestinations('רגל').some(entry => entry.id === 'base'));
+  assert.equal(searchViewerDestinations('יבוי').length, 0);
+  assert.ok(!searchViewerDestinations('מבנה', undefined, 200).some(entry => entry.id === 'leg-height'));
+  assert.equal(searchViewerDestinations('מַרְאָה')[0]?.id, 'mirror');
+  for (const route of VIEWER_SEARCH_DESTINATIONS) {
+    assert.ok(
+      searchViewerDestinations(route.label, undefined, 200).some(entry => entry.id === route.id),
+      route.id
+    );
+  }
+});
+
+function searchContext(ui: RootStateLike['ui'], config: RootStateLike['config'] = {}) {
+  return viewerSearchContextKeys(selectViewerSearchContext({ ui, config } as RootStateLike));
+}
+
+test('availability follows wardrobe state and the canonical single-door derivation', () => {
+  const hinged = searchContext({ raw: { doors: 4 } });
+  assert.equal(searchViewerDestinations('מסילות הזזה', undefined, 100, hinged).length, 0);
+  assert.equal(searchViewerDestinations('מיקום דלת בודדת', undefined, 100, hinged).length, 0);
+  const odd = searchContext({ raw: { doors: 3 } });
+  assert.equal(searchViewerDestinations('מיקום דלת בודדת', undefined, 100, odd)[0]?.id, 'single-door');
+  assert.ok(odd.has('hinge-direction'));
+  const custom = searchContext({ raw: { doors: 4 }, structureSelect: '[1, 3]' });
+  assert.ok(custom.has('hinge-direction'));
+  const sliding = searchContext({ raw: { doors: 2 } }, { wardrobeType: 'sliding' });
+  assert.equal(searchViewerDestinations('מסילות הזזה', undefined, 100, sliding)[0]?.id, 'sliding-tracks');
+  assert.equal(searchViewerDestinations('מגירות חיצוניות', undefined, 100, sliding).length, 0);
+  const chestContext = searchContext({ raw: { doors: 0 }, isChestMode: true });
+  assert.equal(searchViewerDestinations('חלוקת פנים', undefined, 100, chestContext).length, 0);
+  assert.ok(searchViewerDestinations('מסילות למגירות', undefined, 100, chestContext).length);
+  const noMain = searchContext({ raw: { doors: 0 } });
+  assert.equal(searchViewerDestinations('רגליים', undefined, 100, noMain).length, 0);
+  assert.equal(searchViewerDestinations('קירות', undefined, 100, noMain)[0]?.id, 'room-architecture');
+  const cornerOnly = searchContext({ raw: { doors: 0 }, cornerMode: true });
+  assert.ok(cornerOnly.has('wardrobe-dimensions'));
+  assert.ok(!cornerOnly.has('cabinet'));
+  const removedSide = searchContext({ raw: { doors: 4 } }, { removedDoorsMap: { removed_body_left: true } });
+  assert.equal(searchViewerDestinations('מדפים צדדיים', undefined, 100, hinged).length, 0);
+  assert.equal(
+    searchViewerDestinations('מדפים צדדיים', undefined, 100, removedSide)[0]?.id,
+    'rounded-shelves'
+  );
+});
+
+test('all room routes belong to Sketch and respect its allowed-tab boundary', () => {
+  for (const id of ['room-architecture', 'room-openings', 'room-window', 'room-door']) {
+    const route = destination(id);
+    assert.equal(route.tab, 'sketch');
+    assert.ok(searchViewerDestinations(route.label, new Set(['sketch']), 100).some(entry => entry.id === id));
+    assert.ok(
+      !searchViewerDestinations(route.label, new Set(['settings']), 100).some(entry => entry.id === id)
+    );
+  }
 });
 
 test('site2 filters out inaccessible tabs from suggestions', () => {
@@ -82,7 +172,7 @@ class FakeElement {
   getClientRects() {
     return this.exposed ? [this.rect] : [];
   }
-  closest() {
+  closest(): FakeElement | null {
     return null;
   }
   getAttribute(key: string) {
@@ -133,6 +223,35 @@ test('nested mirror route checks multicolor, activates the mirror swatch, then f
   assert.equal(resolved.progress, 'found');
   assert.equal(resolved.target, target);
   assert.equal(target.clicks, 0, 'navigation must never modify a destination field');
+});
+
+test('texture expands its React panel once; drawer placement enables its own section first', () => {
+  const texture = destination('texture');
+  const button = new FakeElement(view);
+  const elements: Record<string, FakeElement> = { [texture.reveal[0].selector]: button };
+  const acted = new Set<number>();
+  assert.equal(advanceViewerSearchNavigation(panelWith(elements), texture, acted).progress, 'waiting');
+  assert.equal(button.clicks, 1);
+  advanceViewerSearchNavigation(panelWith(elements), texture, acted);
+  assert.equal(button.clicks, 1, 'must wait for the React commit rather than toggle closed');
+  button.attributes.set('aria-expanded', 'true');
+  elements[texture.selector] = new FakeElement(view);
+  assert.equal(advanceViewerSearchNavigation(panelWith(elements), texture, acted).progress, 'found');
+  const drawers = destination('internal-drawer-mode');
+  const toggle = new FakeInput(view);
+  advanceViewerSearchNavigation(panelWith({ [drawers.reveal[0].selector]: toggle }), drawers, new Set());
+  assert.equal(toggle.checked, true);
+});
+
+test('search highlights a visible ToggleRow without changing its checkbox value', () => {
+  const row = new FakeElement(view);
+  const toggle = new FakeInput(view);
+  toggle.closest = (selector?: string) => (selector === '.wp-r-toggle-row' ? row : null);
+  const route = destination('internal-drawers');
+  const result = advanceViewerSearchNavigation(panelWith({ [route.selector]: toggle }), route, new Set());
+  assert.equal(result.target, row);
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.clicks, 0);
 });
 
 test('glass dimensions keep an existing frosted-glass editor instead of switching it to black', () => {

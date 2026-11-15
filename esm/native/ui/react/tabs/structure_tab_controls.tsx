@@ -102,7 +102,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
                 key={option.id}
                 selected={selected}
                 className={readStructureTypeOptionClassName(selected)}
-                data-testid={`structure-type-${option.id}-button`}
+                testId={`structure-type-${option.id}-button`}
                 aria-pressed={selected}
                 data-structure-type={option.id}
                 icon={<i className={option.iconClassName} aria-hidden="true" />}
@@ -130,7 +130,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
               selected={selected}
               density="compact"
               className={readStructureTypeOptionClassName(selected, { compact: true, material: true })}
-              data-testid={`structure-board-material-${option.id}-button`}
+              testId={`structure-board-material-${option.id}-button`}
               aria-pressed={selected}
               data-board-material={option.id}
               onClick={() => {
@@ -167,7 +167,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
                   selected={selected}
                   density="compact"
                   className={readStructureTypeOptionClassName(selected, { compact: true, material: true })}
-                  data-testid={`structure-door-mount-${option.id}-button`}
+                  testId={`structure-door-mount-${option.id}-button`}
                   aria-pressed={selected}
                   data-door-mount-mode={option.id}
                   onClick={() => {
