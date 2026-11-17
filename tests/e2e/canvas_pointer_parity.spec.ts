@@ -31,6 +31,7 @@ test.describe('Canvas pointer parity smoke', () => {
       readFileSync('tests/fixtures/project_import/minimal_empty_owned_branches_project.json', 'utf8')
     );
     project.settings.wardrobeType = 'hinged';
+    project.settings.doorStyle = 'flat';
     project.modulesConfiguration = Array.from({ length: 2 }, () => ({
       doors: 1,
       layout: 'shelves',

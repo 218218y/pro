@@ -91,7 +91,7 @@ function createScene(
     );
     return point;
   }
-  return { App, cfg, state, previews, writes, hover, wardrobeGroup };
+  return { App, cfg, state, previews, writes, hover, wardrobeGroup, camera };
 }
 
 test('a stationary red rod removal hover still removes the rod after the hover TTL', t => {
@@ -199,6 +199,20 @@ test('a missing current hover target cannot consume the previous removal or buil
   assert.equal(cfg.sketchExtras?.rods?.length, 1);
   assert.deepEqual(cfg.sketchExtras?.shelves ?? [], []);
   assert.equal(__wp_readSketchHover(App), null);
+});
+
+test('both divider tools resolve their first click without a preceding hover event', () => {
+  for (const tool of ['sketch_box_divider', 'sketch_box_divider_horizontal']) {
+    const { App, cfg, camera, writes } = createScene(tool, 0, {});
+    const point = new THREE.Vector3(0, 1, 0.25).project(camera);
+    assert.equal(__wp_readSketchHover(App), null);
+    __coreHandleCanvasClickNDC(App, point.x, point.y);
+    const key = tool === 'sketch_box_divider' ? 'dividers' : 'horizontalDividers';
+    assert.equal(cfg.sketchExtras?.[key]?.length, 1, tool);
+    __coreHandleCanvasClickNDC(App, point.x, point.y);
+    assert.deepEqual(cfg.sketchExtras?.[key] ?? [], [], tool);
+    assert.equal(writes.length, 2, tool);
+  }
 });
 
 test('a rod removal hover near a module edge commits to the selector host instead of a nearer side', () => {
