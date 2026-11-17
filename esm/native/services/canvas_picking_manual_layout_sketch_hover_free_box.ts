@@ -1,3 +1,4 @@
+import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_boxes.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type {
   ResolveSketchFreeBoxHoverPlacementArgs,
@@ -81,10 +82,9 @@ export function tryHandleManualLayoutSketchHoverFreePlacementPreview(
     placementWall,
     placementSurface,
   } = context;
-  const heightCm = readNumber(freeBoxSpec, 'heightCm');
   const widthCm = readNumber(freeBoxSpec, 'widthCm');
   const depthCm = readNumber(freeBoxSpec, 'depthCm');
-  const boxH = Math.max(0.05, (heightCm ?? 0) / 100);
+  const boxH = resolveSketchFreeBoxToolHeightM(freeBoxSpec?.heightCm);
   const widthOverrideM = widthCm != null && widthCm > 0 ? widthCm / 100 : null;
   const depthOverrideM = depthCm != null && depthCm > 0 ? depthCm / 100 : null;
   const placementPreview = resolveSketchFreePlacementBoxPreview({

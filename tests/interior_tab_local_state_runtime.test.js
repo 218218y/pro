@@ -49,7 +49,7 @@ const {
 test('[interior-local-state-runtime] defaults stay canonical for drafts/options', () => {
   const defaults = createInteriorTabLocalStateDefaults();
 
-  assert.equal(defaults.sketchBoxHeightCm, 40);
+  assert.equal(defaults.sketchBoxHeightCm, '');
   assert.equal(DEFAULT_SKETCH_STORAGE_HEIGHT_CM, 50);
   assert.equal(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM, 45);
   assert.equal(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM, boundaryExports.DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM);

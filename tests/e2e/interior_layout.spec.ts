@@ -149,3 +149,29 @@ test('interior layout uses dark card and button surfaces across placement method
   await expect(layout.getByTestId('interior-layout-full_boring')).toBeVisible();
   await expect(layout.getByText('המרת מדפים וחירור', { exact: true })).toHaveCount(0);
 });
+
+test('sketch boxes default to automatic height and retain manual/reset controls @critical', async ({
+  page,
+}) => {
+  const issues = collectRuntimeIssues(page);
+  await gotoSmokeApp(page);
+  await openMainTab(page, 'sketch');
+  const sketch = page.locator('#reactSidebarRoot .tab-content[data-tab="sketch"]:visible').last();
+  const mode = async () => (await readDebugStoreState(page)).mode;
+  await sketch.getByRole('button', { name: 'הוסף קופסא', exact: true }).click();
+  const boxHeight = sketch.getByLabel('גובה קופסא (ס"מ)', { exact: true });
+  await expect(boxHeight).toHaveValue('');
+  await expect(boxHeight).toHaveAttribute('placeholder', 'אוטומטי');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:auto' } });
+  await boxHeight.fill('65');
+  await boxHeight.press('Tab');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:65' } });
+  await sketch.getByRole('button', { name: 'איפוס גובה הקופסא לאוטומטי', exact: true }).click();
+  await expect(boxHeight).toHaveValue('');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:auto' } });
+
+  await boxHeight.fill('');
+  await boxHeight.press('Tab');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:auto' } });
+  expectNoRuntimeIssues(issues);
+});

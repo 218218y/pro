@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import { tryCommitSketchModuleSurfaceTool } from '../esm/native/services/canvas_picking_sketch_module_surface_commit.ts';
 import { createManualLayoutSketchBoxHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
+import { resolveSketchModuleSurfacePreview } from '../esm/native/services/canvas_picking_sketch_module_surface_preview.ts';
+import { __wp_parseSketchBoxToolSpec } from '../esm/native/services/canvas_picking_sketch_box_runtime.ts';
 
 function resolveSketchBoxGeometry(args: {
   innerW: number;
@@ -76,6 +78,80 @@ function makeArgs(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+test('automatic box hover follows live shelves and commits the same enlarged slot after shelf removal', () => {
+  const cfg = {
+    isCustom: true,
+    gridDivisions: 4,
+    customData: { shelves: [true, true, true], rods: [] },
+    sketchExtras: { boxes: [] as Array<Record<string, unknown>> },
+  };
+  const preview = (pointerY: number) =>
+    resolveSketchModuleSurfacePreview({
+      host: { tool: 'sketch_box:auto', moduleKey: 0, isBottom: false, ts: 1 },
+      tool: 'sketch_box:auto',
+      hitModuleKey: 0,
+      intersects: [],
+      info: cfg,
+      cfgRef: cfg,
+      sketchExtras: cfg.sketchExtras,
+      hitLocalX: 0,
+      yClamped: pointerY,
+      bottomY: -1,
+      topY: 1,
+      spanH: 2,
+      pad: 0.02,
+      woodThick: 0.018,
+      innerW: 1.2,
+      internalCenterX: 0,
+      internalDepth: 0.55,
+      internalZ: 0,
+      isBox: true,
+      isStorage: false,
+      isShelf: false,
+      isRod: false,
+      variant: '',
+      shelfDepthOverrideM: null,
+      boxH: null,
+      boxWidthOverrideM: null,
+      boxDepthOverrideM: null,
+      storageH: 0.5,
+      boxes: cfg.sketchExtras.boxes,
+      storageBarriers: [],
+      shelves: [],
+      rods: [],
+      isCornerKey: () => false,
+      resolveSketchBoxGeometry,
+      readSketchBoxDividers: () => [],
+      resolveSketchBoxSegments: () => [],
+    });
+  const lower = preview(-0.8);
+  const middle = preview(-0.2);
+  assert.equal(lower.preview?.op, 'add');
+  assert.ok(Math.abs(Number(lower.preview?.boxH) - 0.471) < 1e-9);
+  assert.ok(Math.abs(Number(middle.preview?.boxH) - 0.482) < 1e-9);
+  assert.notEqual(lower.preview?.y, middle.preview?.y);
+  assert.equal(preview(0).preview?.op, 'blocked');
+
+  // The canonical shelf-removal path updates customData, which placement reads afresh.
+  cfg.customData.shelves[0] = false;
+  const enlarged = preview(-0.8);
+  assert.ok(Math.abs(Number(enlarged.preview?.boxH) - 0.971) < 1e-9);
+  const args = makeArgs({
+    cfg,
+    tool: 'sketch_box:auto',
+    parseSketchBoxToolSpec: __wp_parseSketchBoxToolSpec,
+    hoverOk: true,
+    hoverRec: enlarged.hoverRecord,
+    hitY0: -0.8,
+    hitYClamped: -0.8,
+  });
+  assert.equal(tryCommitSketchModuleSurfaceTool(args as never), true);
+  assert.equal(cfg.sketchExtras.boxes.length, 1);
+  const box = cfg.sketchExtras.boxes[0];
+  assert.equal(box.heightM, enlarged.preview?.boxH);
+  assert.ok(Math.abs(-1 + Number(box.yNorm) * 2 - Number(enlarged.preview?.y)) < 1e-9);
+});
 
 test('tryCommitSketchModuleSurfaceTool adds a module sketch box through the focused box owner', () => {
   const args = makeArgs();

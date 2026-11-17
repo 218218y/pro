@@ -80,7 +80,7 @@ export type InteriorTabWorkflowController = {
   ) => void;
   setDoorTrimColorAndMaybeRefresh: (color: DoorTrimUiColor) => void;
   enterSketchShelfTool: (variant: string) => void;
-  enterSketchBoxTool: (heightCm: number, widthCm: number | '', depthCm: number | '') => void;
+  enterSketchBoxTool: (heightCm: number | '', widthCm: number | '', depthCm: number | '') => void;
   enterSketchBoxCorniceTool: (type: SketchBoxCorniceType) => void;
   enterSketchBoxBaseTool: (
     type: SketchBoxBaseType,

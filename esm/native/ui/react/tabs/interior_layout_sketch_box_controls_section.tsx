@@ -122,11 +122,11 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
           min={SKETCH_BOX_HEIGHT_MIN_CM}
           max={SKETCH_BOX_HEIGHT_MAX_CM}
           step={5}
-          resetTitle="איפוס גובה הקופסא"
-          resetDisabled={
-            props.sketchBoxHeightCm === DEFAULT_SKETCH_BOX_HEIGHT_CM &&
-            props.sketchBoxHeightDraft.trim() === String(DEFAULT_SKETCH_BOX_HEIGHT_CM)
-          }
+          placeholder="אוטומטי"
+          allowEmpty={true}
+          emptyStepStartValue={DEFAULT_SKETCH_BOX_HEIGHT_CM}
+          resetTitle="איפוס גובה הקופסא לאוטומטי"
+          resetDisabled={props.sketchBoxHeightCm === '' && props.sketchBoxHeightDraft.trim() === ''}
           onReset={() => {
             resetSketchBoxHeightDraft(props);
           }}

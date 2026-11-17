@@ -20,6 +20,7 @@ export {
   isWithinSketchFreePlacementBounds,
   resolveSketchFreeBoxAttachPlacement,
   resolveSketchFreeBoxGeometry,
+  resolveSketchFreeBoxToolHeightM,
   resolveSketchFreeBoxHoverPlacement,
   resolveSketchFreeBoxNonOverlappingPlacement,
   resolveSketchFreeBoxOutsideWardrobeSnapX,

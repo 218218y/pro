@@ -71,7 +71,7 @@ export const SKETCH_TOOL_BOX_CORNICE_PREFIX = 'sketch_box_cornice:';
 export const SKETCH_TOOL_BOX_BASE_PREFIX = 'sketch_box_base:';
 export const SKETCH_TOOL_INT_DRAWERS = SKETCH_INTERNAL_DRAWERS_TOOL_ID;
 export const SKETCH_TOOL_EXT_DRAWERS_PREFIX = SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX;
-export const SKETCH_TOOL_BOX_PREFIX = 'sketch_box:'; // suffix = height (cm)
+export const SKETCH_TOOL_BOX_PREFIX = 'sketch_box:'; // suffix = height (cm) or auto
 export const SKETCH_TOOL_STORAGE_PREFIX = 'sketch_storage:'; // suffix = height (cm)
 const SKETCH_BOX_DIM_SEP = '@';
 export const SKETCH_BOX_HEIGHT_MIN_CM = 5;
@@ -98,7 +98,7 @@ export {
 };
 
 export type SketchBoxToolSpec = {
-  heightCm: number;
+  heightCm: number | null;
   widthCm: number | null;
   depthCm: number | null;
 };
@@ -126,8 +126,8 @@ export function parseSketchBoxTool(tool: string): SketchBoxToolSpec | null {
   if (!raw) return null;
 
   const [heightRaw = '', widthRaw = '', depthRaw = ''] = raw.split(SKETCH_BOX_DIM_SEP);
-  const heightCm = Number(heightRaw.trim());
-  if (!Number.isFinite(heightCm)) return null;
+  const heightCm = heightRaw.trim() === 'auto' ? null : Number(heightRaw.trim());
+  if (heightCm !== null && !Number.isFinite(heightCm)) return null;
 
   const parseOptional = (value: string): number | null => {
     const trimmed = String(value || '').trim();
@@ -143,8 +143,12 @@ export function parseSketchBoxTool(tool: string): SketchBoxToolSpec | null {
   };
 }
 
-export function mkSketchBoxTool(heightCm: number, widthCm: number | null, depthCm: number | null): string {
-  const h = Math.round(heightCm);
+export function mkSketchBoxTool(
+  heightCm: number | null,
+  widthCm: number | null,
+  depthCm: number | null
+): string {
+  const h = heightCm === null ? 'auto' : String(Math.round(heightCm));
   const w = widthCm != null && Number.isFinite(widthCm) && widthCm > 0 ? String(Math.round(widthCm)) : '';
   const d = depthCm != null && Number.isFinite(depthCm) && depthCm > 0 ? String(Math.round(depthCm)) : '';
 

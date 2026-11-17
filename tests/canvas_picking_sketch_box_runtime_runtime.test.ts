@@ -14,6 +14,14 @@ import {
   SKETCH_BOX_SHELL_GEOMETRY_POLICY,
 } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 
+test('box tool decodes automatic height independently of optional width and depth', () => {
+  assert.deepEqual(__wp_parseSketchBoxToolSpec('sketch_box:auto@45@35'), {
+    heightCm: null,
+    widthCm: 45,
+    depthCm: 35,
+  });
+});
+
 test('sketch-box runtime parses width/depth overrides and rejects unrelated tools', () => {
   assert.deepEqual(__wp_parseSketchBoxToolSpec('sketch_box:60@90@45'), {
     heightCm: 60,

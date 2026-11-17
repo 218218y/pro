@@ -102,7 +102,7 @@ export type InteriorLayoutSectionProps = {
   currentGridDivisions: number;
   gridShelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace';
   sketchShelvesOpen: boolean;
-  sketchBoxHeightCm: number;
+  sketchBoxHeightCm: number | '';
   sketchBoxHeightDraft: string;
   sketchBoxWidthCm: number | '';
   sketchBoxWidthDraft: string;
@@ -155,7 +155,7 @@ export type InteriorLayoutSectionProps = {
   gridDivs: number[];
   formFieldIdScope?: string;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchBoxHeightCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxHeightCm: Dispatch<SetStateAction<number | ''>>;
   setSketchBoxHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxWidthCm: Dispatch<SetStateAction<number | ''>>;
   setSketchBoxWidthDraft: Dispatch<SetStateAction<string>>;
@@ -220,7 +220,7 @@ export type InteriorLayoutSectionProps = {
     crossSizeCm?: number | ''
   ) => void;
   enterSketchShelfTool: (variant: string) => void;
-  enterSketchBoxTool: (heightCm: number, widthCm: number | '', depthCm: number | '') => void;
+  enterSketchBoxTool: (heightCm: number | '', widthCm: number | '', depthCm: number | '') => void;
   enterSketchBoxCorniceTool: (type: SketchBoxCorniceType) => void;
   enterSketchBoxBaseTool: (
     type: SketchBoxBaseType,

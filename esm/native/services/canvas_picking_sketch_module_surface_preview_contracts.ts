@@ -41,7 +41,7 @@ export type ResolveSketchModuleSurfacePreviewArgs = {
   allowExistingStorageRemove?: boolean;
   variant: string;
   shelfDepthOverrideM: number | null;
-  boxH: number;
+  boxH: number | null;
   boxWidthOverrideM: number | null;
   boxDepthOverrideM: number | null;
   storageH: number;

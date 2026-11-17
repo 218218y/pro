@@ -1,10 +1,8 @@
 import {
-  DEFAULT_SKETCH_BOX_HEIGHT_CM,
   SKETCH_BOX_HEIGHT_MAX_CM,
   SKETCH_BOX_HEIGHT_MIN_CM,
   SKETCH_BOX_OPTIONAL_DIM_MAX_CM,
   SKETCH_BOX_OPTIONAL_DIM_MIN_CM,
-  clampSketch,
 } from './interior_tab_helpers.js';
 import type { InteriorSketchBoxControlsSectionProps } from './interior_layout_sketch_section_types.js';
 import type {
@@ -20,7 +18,11 @@ const OPTIONAL_DIM_BOUNDS: Readonly<{ min: number; max: number }> = {
 
 export function updateSketchBoxHeightDraft(props: InteriorSketchBoxControlsSectionProps, raw: string): void {
   props.setSketchBoxHeightDraft(raw);
-  if (raw.trim() === '') return;
+  if (raw.trim() === '') {
+    props.setSketchBoxHeightCm('');
+    syncSketchBoxTool(props, '', props.sketchBoxWidthCm, props.sketchBoxDepthCm);
+    return;
+  }
 
   const next = Number(raw);
   if (!Number.isFinite(next)) return;
@@ -33,18 +35,21 @@ export function updateSketchBoxHeightDraft(props: InteriorSketchBoxControlsSecti
 export function commitSketchBoxHeightDraft(props: InteriorSketchBoxControlsSectionProps): void {
   const raw = props.sketchBoxHeightDraft.trim();
   const parsed = Number(raw);
-  const next = isWithinBounds(parsed, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM)
-    ? parsed
-    : clampSketch(props.sketchBoxHeightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM);
+  const next =
+    raw === ''
+      ? ''
+      : isWithinBounds(parsed, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM)
+        ? parsed
+        : props.sketchBoxHeightCm;
   props.setSketchBoxHeightCm(next);
   props.setSketchBoxHeightDraft(String(next));
   syncSketchBoxTool(props, next, props.sketchBoxWidthCm, props.sketchBoxDepthCm);
 }
 
 export function resetSketchBoxHeightDraft(props: InteriorSketchBoxControlsSectionProps): void {
-  props.setSketchBoxHeightCm(DEFAULT_SKETCH_BOX_HEIGHT_CM);
-  props.setSketchBoxHeightDraft(String(DEFAULT_SKETCH_BOX_HEIGHT_CM));
-  syncSketchBoxTool(props, DEFAULT_SKETCH_BOX_HEIGHT_CM, props.sketchBoxWidthCm, props.sketchBoxDepthCm);
+  props.setSketchBoxHeightCm('');
+  props.setSketchBoxHeightDraft('');
+  syncSketchBoxTool(props, '', props.sketchBoxWidthCm, props.sketchBoxDepthCm);
 }
 
 export function updateSketchBoxOptionalDimensionDraft(

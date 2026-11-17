@@ -160,7 +160,10 @@ export function createInteriorTabSketchViewStateController(
       if (!isSketchToolActive) return;
       const spec = parseSketchBoxTool(manualToolRaw);
       if (!spec) return;
-      const nextHeight = clampSketch(spec.heightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM);
+      const nextHeight =
+        spec.heightCm === null
+          ? ''
+          : clampSketch(spec.heightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM);
       const nextWidth =
         typeof spec.widthCm === 'number'
           ? clampSketch(spec.widthCm, SKETCH_BOX_OPTIONAL_DIM_MIN_CM, SKETCH_BOX_OPTIONAL_DIM_MAX_CM)

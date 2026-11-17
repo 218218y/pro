@@ -16,7 +16,7 @@ import type {
 
 export type RecordMap = Record<string, unknown>;
 export type SketchBoxToolSpec = RecordMap & {
-  heightCm?: number;
+  heightCm?: number | null;
   widthCm?: number | null;
   depthCm?: number | null;
 };
@@ -101,7 +101,7 @@ export function parseSketchModuleBoxTool(args: {
   tool: string;
   parseSketchBoxToolSpec: (tool: string) => SketchBoxToolSpec | null;
   maxHeightM?: number | null;
-}): { boxH: number; boxWM: number | null; boxDM: number | null } {
+}): { boxH: number | null; boxWM: number | null; boxDM: number | null } {
   const spec = args.parseSketchBoxToolSpec(args.tool);
   const heightCm = readNumber(spec ? spec.heightCm : null);
   const widthCm = readNumber(spec ? spec.widthCm : null);
@@ -111,9 +111,14 @@ export function parseSketchModuleBoxTool(args: {
     maxHeightM != null && maxHeightM > 0 ? maxHeightM : SKETCH_BOX_SHELL_GEOMETRY_POLICY.maxOuterHeightM;
   return {
     boxH:
-      heightCm != null
-        ? Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, Math.min(heightCeiling, cmToM(heightCm)))
-        : SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM,
+      spec?.heightCm === null
+        ? null
+        : heightCm != null
+          ? Math.max(
+              SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM,
+              Math.min(heightCeiling, cmToM(heightCm))
+            )
+          : SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM,
     boxWM: widthCm != null && widthCm > 0 ? cmToM(widthCm) : null,
     boxDM: depthCm != null && depthCm > 0 ? cmToM(depthCm) : null,
   };

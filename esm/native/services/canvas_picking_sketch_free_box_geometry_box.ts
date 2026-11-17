@@ -1,6 +1,13 @@
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
 
+export function resolveSketchFreeBoxToolHeightM(heightCm: unknown): number {
+  const policy = SKETCH_BOX_SHELL_GEOMETRY_POLICY;
+  if (heightCm === null) return policy.defaultOuterHeightM;
+  const height = asNumberOrNull(heightCm);
+  return Math.max(policy.minOuterHeightM, height != null && height > 0 ? height / 100 : 0);
+}
+
 export function resolveSketchFreeBoxGeometry(args: {
   wardrobeWidth: number;
   wardrobeDepth: number;

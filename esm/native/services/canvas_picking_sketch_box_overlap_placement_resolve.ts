@@ -90,72 +90,53 @@ function boxXOverlaps(args: { centerX: number; boxW: number; other: ResolvedModu
   return Math.abs(centerX - otherCenterX) < boxW / 2 + otherW / 2 - 1e-7;
 }
 
-function alignCenterWithinPointerSlot(args: {
+function resolvePointerSlot(args: {
   desiredCenterX: number;
   desiredCenterY: number;
   boxW: number;
-  boxH: number;
   bottomY: number;
   spanH: number;
   pad: number;
   resolved: ResolvedModuleBoxLike[];
-}): number {
-  const desiredCenterY = Number(args.desiredCenterY);
-  const boxH = Number(args.boxH);
-  const bottomY = Number(args.bottomY);
-  const spanH = Number(args.spanH);
-  const pad = Number(args.pad);
+}): { bottomY: number; topY: number } | null {
   if (
-    !Number.isFinite(desiredCenterY) ||
-    !Number.isFinite(boxH) ||
-    !(boxH > 0) ||
-    !Number.isFinite(bottomY) ||
-    !Number.isFinite(spanH) ||
-    !(spanH > 0)
-  ) {
-    return desiredCenterY;
-  }
-
-  const freeBottomY = bottomY + pad;
-  const freeTopY = bottomY + spanH - pad;
-  if (!(freeTopY > freeBottomY)) return desiredCenterY;
+    ![args.desiredCenterX, args.desiredCenterY, args.boxW, args.bottomY, args.spanH, args.pad].every(
+      Number.isFinite
+    )
+  )
+    return null;
+  const freeBottomY = args.bottomY + args.pad;
+  const freeTopY = args.bottomY + args.spanH - args.pad;
+  if (!(freeTopY > freeBottomY) || !Number.isFinite(args.desiredCenterY)) return null;
 
   const blockersByY = args.resolved
     .filter(box => boxXOverlaps({ centerX: args.desiredCenterX, boxW: args.boxW, other: box }))
-    .map(box => ({
-      minY: box.centerY - box.boxH / 2,
-      maxY: box.centerY + box.boxH / 2,
-    }))
-    .filter(
-      box =>
-        Number.isFinite(box.minY) &&
-        Number.isFinite(box.maxY) &&
-        box.maxY > freeBottomY &&
-        box.minY < freeTopY
-    )
+    .map(box => ({ minY: box.centerY - box.boxH / 2, maxY: box.centerY + box.boxH / 2 }))
+    .filter(box => box.maxY > freeBottomY && box.minY < freeTopY)
     .sort((a, b) => a.minY - b.minY);
 
+  const pointerY = Math.max(freeBottomY, Math.min(freeTopY, args.desiredCenterY));
   let slotBottomY = freeBottomY;
   for (const blocker of blockersByY) {
     const blockerMinY = Math.max(freeBottomY, blocker.minY);
     const blockerMaxY = Math.min(freeTopY, blocker.maxY);
-
-    if (desiredCenterY >= blockerMinY && desiredCenterY <= blockerMaxY) {
-      return desiredCenterY;
-    }
-
-    if (desiredCenterY < blockerMinY) {
-      const lo = slotBottomY + boxH / 2;
-      const hi = blockerMinY - boxH / 2;
-      return hi >= lo ? Math.max(lo, Math.min(hi, desiredCenterY)) : desiredCenterY;
-    }
-
+    if (pointerY >= blockerMinY && pointerY <= blockerMaxY) return null;
+    if (pointerY < blockerMinY) return { bottomY: slotBottomY, topY: blockerMinY };
     slotBottomY = Math.max(slotBottomY, blockerMaxY);
   }
+  return { bottomY: slotBottomY, topY: freeTopY };
+}
 
-  const lo = slotBottomY + boxH / 2;
-  const hi = freeTopY - boxH / 2;
-  return hi >= lo ? Math.max(lo, Math.min(hi, desiredCenterY)) : desiredCenterY;
+function alignCenterWithinPointerSlot(
+  args: Parameters<typeof resolvePointerSlot>[0] & {
+    boxH: number;
+  }
+): number {
+  const slot = resolvePointerSlot(args);
+  if (!slot) return args.desiredCenterY;
+  const lo = slot.bottomY + args.boxH / 2;
+  const hi = slot.topY - args.boxH / 2;
+  return hi >= lo ? Math.max(lo, Math.min(hi, args.desiredCenterY)) : args.desiredCenterY;
 }
 
 function resolvePlacementCandidateY(args: {
@@ -209,7 +190,7 @@ export function resolveSketchModuleBoxPlacement(args: {
   desiredCenterX: number;
   desiredCenterY: number;
   boxW: number;
-  boxH: number;
+  boxH: number | null;
   bottomY: number;
   spanH: number;
   pad: number;
@@ -225,23 +206,57 @@ export function resolveSketchModuleBoxPlacement(args: {
 }): {
   centerX: number;
   centerY: number;
+  boxH: number;
   adjusted: boolean;
   blocked: boolean;
   anchorBoxId: string | null;
 } {
   const desiredCenterX = Number(args.desiredCenterX);
-  const desiredCenterY = clampSketchModuleBoxCenterY({
-    centerY: Number(args.desiredCenterY),
-    boxH: Number(args.boxH),
-    bottomY: Number(args.bottomY),
-    spanH: Number(args.spanH),
-    pad: Number(args.pad),
-  });
+  const desiredCenterY =
+    args.boxH === null
+      ? Number(args.desiredCenterY)
+      : clampSketchModuleBoxCenterY({
+          centerY: Number(args.desiredCenterY),
+          boxH: Number(args.boxH),
+          bottomY: Number(args.bottomY),
+          spanH: Number(args.spanH),
+          pad: Number(args.pad),
+        });
   const boxW = Number(args.boxW);
   const boxH = Number(args.boxH);
   const bottomY = Number(args.bottomY);
   const spanH = Number(args.spanH);
   const pad = Number(args.pad);
+  const resolved = resolveModuleBoxes(args).concat(
+    resolvePlacementBlockersAsBoxes({
+      ...(args.blockers !== undefined ? { blockers: args.blockers } : {}),
+      desiredCenterX,
+      boxW,
+    })
+  );
+  if (args.boxH === null) {
+    const slot = resolvePointerSlot({
+      desiredCenterX,
+      desiredCenterY,
+      boxW,
+      bottomY,
+      spanH,
+      pad,
+      resolved,
+    });
+    // Match the minimum usable shell height used to resolve existing boxes.
+    const minHeight = args.woodThick * 2 + 0.02;
+    const height = slot ? slot.topY - slot.bottomY : minHeight;
+    const blocked = !slot || height < minHeight || !Number.isFinite(boxW) || !(boxW > 0);
+    return {
+      centerX: desiredCenterX,
+      centerY: slot ? (slot.bottomY + slot.topY) / 2 : desiredCenterY,
+      boxH: height,
+      adjusted: !!slot && Math.abs((slot.bottomY + slot.topY) / 2 - desiredCenterY) > 1e-6,
+      blocked,
+      anchorBoxId: null,
+    };
+  }
   if (
     !Number.isFinite(desiredCenterX) ||
     !Number.isFinite(desiredCenterY) ||
@@ -255,6 +270,7 @@ export function resolveSketchModuleBoxPlacement(args: {
   ) {
     return {
       centerX: desiredCenterX,
+      boxH,
       centerY: desiredCenterY,
       adjusted: false,
       blocked: false,
@@ -262,16 +278,10 @@ export function resolveSketchModuleBoxPlacement(args: {
     };
   }
 
-  const resolved = resolveModuleBoxes(args).concat(
-    resolvePlacementBlockersAsBoxes({
-      ...(args.blockers !== undefined ? { blockers: args.blockers } : {}),
-      desiredCenterX,
-      boxW,
-    })
-  );
   if (!resolved.length) {
     return {
       centerX: desiredCenterX,
+      boxH,
       centerY: desiredCenterY,
       adjusted: false,
       blocked: false,
@@ -303,6 +313,7 @@ export function resolveSketchModuleBoxPlacement(args: {
   if (!initialOverlaps.length) {
     return {
       centerX: desiredCenterX,
+      boxH,
       centerY: alignedCenterY,
       adjusted: Math.abs(alignedCenterY - desiredCenterY) > 1e-6,
       blocked: false,
@@ -313,6 +324,7 @@ export function resolveSketchModuleBoxPlacement(args: {
   if (args.confineToPointerSlot) {
     return {
       centerX: desiredCenterX,
+      boxH,
       centerY: alignedCenterY,
       adjusted: Math.abs(alignedCenterY - desiredCenterY) > 1e-6,
       blocked: true,
@@ -373,6 +385,7 @@ export function resolveSketchModuleBoxPlacement(args: {
   if (!best) {
     return {
       centerX: desiredCenterX,
+      boxH,
       centerY: desiredCenterY,
       adjusted: false,
       blocked: true,
@@ -382,6 +395,7 @@ export function resolveSketchModuleBoxPlacement(args: {
 
   return {
     centerX: desiredCenterX,
+    boxH,
     centerY: best.centerY,
     adjusted: Math.abs(best.centerY - desiredCenterY) > 1e-6,
     blocked: false,

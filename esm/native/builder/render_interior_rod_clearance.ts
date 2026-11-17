@@ -46,6 +46,8 @@ type DrawerRange = {
   maxY: number;
 };
 
+type RodClearanceBlocker = number | DrawerRange;
+
 function clampSingleHangerScaleForModuleWidth(moduleWidth: unknown): number {
   const width = readRuntimeNumber(moduleWidth);
   if (width == null) return 1;
@@ -115,7 +117,7 @@ function resolveShelfTopY(args: { shelfY: number; shelfThick: number }): number 
 }
 
 function pushShelfBlocker(args: {
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   effectiveBottomY: number;
   localGridStep: number;
   index: number;
@@ -133,7 +135,7 @@ function pushShelfBlocker(args: {
 }
 
 function pushShelfContentBlocker(args: {
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   shelfY: number;
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
@@ -167,7 +169,7 @@ function resolveRodY(args: {
   return effectiveBottomY + factor * localGridStep + yAdd;
 }
 
-function pushRodBlockers(args: { blockers: number[]; rods: RodPoint[] }): void {
+function pushRodBlockers(args: { blockers: RodClearanceBlocker[]; rods: RodPoint[] }): void {
   const { blockers, rods } = args;
   for (const rod of rods) {
     const y = rod.y;
@@ -180,7 +182,7 @@ function collectPresetBlockers(args: {
   layout: string;
   effectiveBottomY: number;
   localGridStep: number;
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
@@ -254,7 +256,7 @@ function collectCustomBlockers(args: {
   customData: UnknownRecord;
   effectiveBottomY: number;
   localGridStep: number;
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
@@ -319,7 +321,7 @@ function resolveSketchInternalDrawerPad(woodThick: number): number {
   );
 }
 
-function pushDrawerRangeBlocker(args: { blockers: number[]; range: DrawerRange }): boolean {
+function pushDrawerRangeBlocker(args: { blockers: RodClearanceBlocker[]; range: DrawerRange }): boolean {
   const { blockers, range } = args;
   if (!Number.isFinite(range.minY) || !Number.isFinite(range.maxY)) return false;
   if (!(range.maxY > range.minY)) return false;
@@ -388,7 +390,7 @@ function collectSketchDrawerBlockers(args: {
   effectiveBottomY: number;
   effectiveTopY: number;
   span: number;
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   woodThick: number;
 }): boolean {
   const { extras, effectiveBottomY, effectiveTopY, span, blockers, woodThick } = args;
@@ -424,7 +426,7 @@ function collectSketchExtraBlockers(args: {
   config: UnknownRecord | null;
   effectiveBottomY: number;
   effectiveTopY: number;
-  blockers: number[];
+  blockers: RodClearanceBlocker[];
   woodThick: number;
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
@@ -446,6 +448,18 @@ function collectSketchExtraBlockers(args: {
     const y = effectiveBottomY + n * span;
     return Math.max(lo, Math.min(hi, y));
   };
+
+  // A box occupies its whole height, including a top at or above the rod.
+  // Keep its range so an intersecting top cannot be mistaken for another rod.
+  for (const box of readRecordArray(extras.boxes)) {
+    if (box.freePlacement === true) continue;
+    const yNorm = readRuntimeNumber(box.yNorm);
+    const height = readRuntimeNumber(box.heightM);
+    if (yNorm == null || height == null || !(height > 0)) continue;
+    const centerY = effectiveBottomY + Math.max(0, Math.min(1, yNorm)) * span;
+    blockers.push({ minY: centerY - height / 2, maxY: centerY + height / 2 });
+    hasEvidence = true;
+  }
 
   const shelves = readRecordArray(extras.shelves);
   for (const shelf of shelves) {
@@ -507,7 +521,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   const effectiveTopYRaw = readRuntimeNumber(args.effectiveTopY);
   const effectiveTopY = effectiveTopYRaw != null ? effectiveTopYRaw : derivedTopY;
 
-  const blockers: number[] = [effectiveBottomY];
+  const blockers: RodClearanceBlocker[] = [effectiveBottomY];
   let hasEvidence = false;
   const customData = isRecord(config?.customData) ? config.customData : null;
 
@@ -547,6 +561,12 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   let blockerY = effectiveBottomY;
   const sameRodTolerance = Math.max(1e-5, Math.abs(localGridStep || 0) * 1e-4);
   for (const blocker of blockers) {
+    if (typeof blocker !== 'number') {
+      if (blocker.minY >= yPos) continue;
+      if (blocker.maxY >= yPos - sameRodTolerance) return 0;
+      blockerY = Math.max(blockerY, blocker.maxY);
+      continue;
+    }
     if (!Number.isFinite(blocker)) continue;
     if (blocker < yPos - sameRodTolerance && blocker > blockerY) blockerY = blocker;
   }

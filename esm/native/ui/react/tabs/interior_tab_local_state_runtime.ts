@@ -32,7 +32,7 @@ export function useInteriorTabLocalState() {
   const defaults = useMemo(() => createInteriorTabLocalStateDefaults(), []);
 
   const [sketchShelvesOpen, setSketchShelvesOpen] = useState<boolean>(() => defaults.sketchShelvesOpen);
-  const [sketchBoxHeightCm, setSketchBoxHeightCm] = useState<number>(() => defaults.sketchBoxHeightCm);
+  const [sketchBoxHeightCm, setSketchBoxHeightCm] = useState<number | ''>(() => defaults.sketchBoxHeightCm);
   const [sketchBoxWidthCm, setSketchBoxWidthCm] = useState<number | ''>(() => defaults.sketchBoxWidthCm);
   const [sketchBoxDepthCm, setSketchBoxDepthCm] = useState<number | ''>(() => defaults.sketchBoxDepthCm);
   const [sketchStorageHeightCm, setSketchStorageHeightCm] = useState<number>(

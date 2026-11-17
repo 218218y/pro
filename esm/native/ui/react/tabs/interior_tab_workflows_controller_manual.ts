@@ -105,11 +105,11 @@ export function createInteriorTabManualWorkflowController(
     enterSketchShelfTool,
     enterSketchDivision,
 
-    enterSketchBoxTool(heightCm: number, widthCm: number | '', depthCm: number | '') {
+    enterSketchBoxTool(heightCm: number | '', widthCm: number | '', depthCm: number | '') {
       enterManualLayoutMode(
         app,
         mkSketchBoxTool(
-          clampSketch(heightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM),
+          heightCm === '' ? null : clampSketch(heightCm, SKETCH_BOX_HEIGHT_MIN_CM, SKETCH_BOX_HEIGHT_MAX_CM),
           clampInteriorSketchOptionalDim(widthCm),
           clampInteriorSketchOptionalDim(depthCm)
         )

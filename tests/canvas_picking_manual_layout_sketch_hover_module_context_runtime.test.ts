@@ -290,6 +290,19 @@ test('manual-layout hover base context preserves box defaults, clamps, and posit
   }
 });
 
+test('automatic box context keeps the pointer in the selected cell before resolving its height', () => {
+  const ctx = resolveManualLayoutSketchHoverModuleBaseContext(
+    createBaseArgs({
+      tool: 'sketch_box:auto',
+      freeBoxSpec: { heightCm: null, widthCm: null, depthCm: null },
+      hitY: 0.95,
+    }).args
+  );
+  assert.ok(ctx);
+  assert.equal(ctx.boxH, null);
+  assert.equal(ctx.yClamped, 0.95);
+});
+
 test('manual-layout hover base context preserves shelf parsing and centimeter conversion', () => {
   const valid = resolveManualLayoutSketchHoverModuleBaseContext(
     createBaseArgs({ tool: 'sketch_shelf:glass@35' }).args

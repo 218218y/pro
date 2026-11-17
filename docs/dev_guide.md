@@ -183,6 +183,9 @@ Performance evidence is split into two categories:
 
 ## Build/render rules
 
+- New Sketch Boxes use automatic height by default. `sketch_box:auto` keeps the height unresolved until the shared placement owner finds the pointer's free vertical slot between floor/roof, shelves, drawer stacks and other contents. Hover and commit use the same live blocker geometry; removing a shelf enlarges the pending placement. A numeric height remains an explicit override, and resetting or clearing the height restores automatic sizing. Standalone boxes outside a wardrobe use the shell policy's default height when there is no bounded cell. Placed boxes persist concrete dimensions and do not resize when their surroundings change.
+- Rod content clearance treats module Sketch Boxes as occupied vertical ranges. A box reaching the rod leaves no hanging space, suppressing the single hanger and hanging garments while preserving the rod itself; boxes entirely above the rod and standalone boxes do not consume the space below it.
+
 - Double hanging (`hanging_split`) has one full-depth middle brace at row 3 of the canonical six-part grid, with rods just below the roof and brace. `computeInteriorPresetOps` owns the shelf variant as well as placement; build, hover, free-box placement, and conversion to editable custom data must preserve both.
 
 - Winter brace shelves (`winter_brace`, shown as קושרת חורף) use the normal shelf identity, material and sketch persistence paths with an open four-sided frame. Change `INTERIOR_SHELF_GEOMETRY_POLICY.winterBraceFrameWidthCm` in `esm/shared/dimensions/interior_fittings_policy.ts` to set all four rims in centimeters (default 8; e.g. 6). Build and placement previews share the same frame planner. Narrow cells limit the rim to a quarter of the smaller span so the opening stays usable; geometry tests follow the configured value and exercise several widths rather than pinning the default.

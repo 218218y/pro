@@ -15,6 +15,7 @@ export {
 } from './canvas_picking_sketch_free_box_hit.js';
 export {
   resolveSketchFreeBoxGeometry,
+  resolveSketchFreeBoxToolHeightM,
   clampSketchFreeBoxCenterY,
   getSketchFreePlacementVerticalSlack,
   getSketchFreePlacementRoomFloorY,

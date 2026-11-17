@@ -92,7 +92,7 @@ export type ManualLayoutSketchHoverModuleContext = ManualLayoutSketchHoverModule
   shelfDepthM: number | null;
   shelfDepthOverrideM: number | null;
   boxSpec: UnknownRecord | null;
-  boxH: number;
+  boxH: number | null;
   boxWidthOverrideM: number | null;
   boxDepthOverrideM: number | null;
   storageH: number;
