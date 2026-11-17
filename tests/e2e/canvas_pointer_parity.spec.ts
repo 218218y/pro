@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 
 import {
   applyCellDimsToReachableLinearModuleViaBrowserPointer,
@@ -6,6 +7,7 @@ import {
   collectRuntimeIssues,
   expectNoRuntimeIssues,
   gotoSmokeApp,
+  openMainTab,
   inspectCanvasViaDebugNdc,
   readBuildDebugStats,
   readDebugStoreState,
@@ -16,9 +18,92 @@ import {
   setCellDimsMode,
   setDoorAuthoringMode,
   setDoorFeatureToggle,
+  waitForProjectActionEvent,
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('a stationary shelf-tool pointer removes a hanging rod instead of building a shelf @critical', async ({
+    page,
+  }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    const project = JSON.parse(
+      readFileSync('tests/fixtures/project_import/minimal_empty_owned_branches_project.json', 'utf8')
+    );
+    project.settings.wardrobeType = 'hinged';
+    project.modulesConfiguration = Array.from({ length: 2 }, () => ({
+      doors: 1,
+      layout: 'shelves',
+      isCustom: true,
+      gridDivisions: 6,
+      extDrawersCount: 0,
+      hasShoeDrawer: false,
+      customData: { shelves: [], rods: [], storage: false },
+      sketchExtras: { rods: [{ id: 'pointer-rod', yNorm: 0.5 }] },
+    }));
+    const loaded = waitForProjectActionEvent(page, 'load');
+    await page.getByTestId('header-project-load-input').setInputFiles({
+      name: 'rod-removal.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(project)),
+    });
+    expect((await loaded).ok).toBe(true);
+    await openMainTab(page, 'interior');
+    await page.getByTestId('interior-layout-method-sketch').click();
+    await page.getByTestId('interior-manual-tool-shelf-button').click();
+    await page.getByTestId('interior-manual-shelf-variant-regular-button').click();
+    await expect
+      .poll(async () => (await readDebugStoreState(page)).mode)
+      .toMatchObject({ opts: { manualTool: 'sketch_shelf:regular' } });
+    // Locate the actual rod height through the production picking surface, keeping
+    // the test independent of the camera's framing and selector screen position.
+    let point: { x: number; y: number } | null = null;
+    await expect
+      .poll(async () => {
+        point = await page.evaluate(() => {
+          const canvas = window.__WP_DEBUG__!.canvas;
+          let best: { x: number; y: number; distance: number } | null = null;
+          for (const x of [-0.3, -0.15, 0, 0.15, 0.3]) {
+            for (let row = -50; row <= 50; row++) {
+              const y = row / 100;
+              const hit = canvas.inspectNdc(x, y);
+              if (hit?.moduleIndex !== 0 || hit.moduleHitY == null || hit.partId?.startsWith('d1')) continue;
+              const distance = Math.abs(hit.moduleHitY - 1.2);
+              if (!best || distance < best.distance) best = { x, y, distance };
+            }
+          }
+          return best && best.distance < 0.015 ? { x: best.x, y: best.y } : null;
+        });
+        return point !== null;
+      })
+      .toBe(true);
+    const bounds = (await page.locator('#viewer-container canvas').first().boundingBox())!;
+    const client = {
+      x: bounds.x + ((point!.x + 1) / 2) * bounds.width,
+      y: bounds.y + ((1 - point!.y) / 2) * bounds.height,
+    };
+    await page.mouse.move(client.x, client.y);
+    // Exercise a visible, stationary preview past the command freshness window.
+    await page.waitForTimeout(1500);
+    await page.mouse.down();
+    await page.mouse.up();
+    await expect
+      .poll(async () => {
+        const config = (await readDebugStoreState(page)).config as {
+          modulesConfiguration: Array<{ sketchExtras: { rods: unknown[]; shelves?: unknown[] } }>;
+        };
+        return config.modulesConfiguration.map(module => ({
+          rods: module.sketchExtras.rods.length,
+          shelves: module.sketchExtras.shelves?.length ?? 0,
+        }));
+      })
+      .toEqual([
+        { rods: 0, shelves: 0 },
+        { rods: 1, shelves: 0 },
+      ]);
+    expectNoRuntimeIssues(issues);
+  });
+
   test('viewer pans with mouse and focused arrow keys without applying canvas edits @critical', async ({
     page,
   }) => {

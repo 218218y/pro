@@ -184,6 +184,8 @@ Performance evidence is split into two categories:
 
 ## Build/render rules
 
+- Manual-layout sketch clicks synchronously resolve the current hover command before free-box or module routing. The command owns both the operation and the target module/stack; stationary preview expiry or a nearer neighboring side must never turn removal into a build. A missing current command consumes the click without falling through to another operation.
+
 - New Sketch Boxes use automatic height by default. `sketch_box:auto` keeps the height unresolved until the shared placement owner finds the pointer's free vertical slot between floor/roof, shelves, drawer stacks and other contents. Hover and commit use the same live blocker geometry; removing a shelf enlarges the pending placement. A numeric height remains an explicit override, and resetting or clearing the height restores automatic sizing. Standalone boxes outside a wardrobe use the shell policy's default height when there is no bounded cell. Placed boxes persist concrete dimensions and do not resize when their surroundings change.
 - Rod content clearance treats module Sketch Boxes as occupied vertical ranges. A box reaching the rod leaves no hanging space, suppressing the single hanger and hanging garments while preserving the rod itself; boxes entirely above the rod and standalone boxes do not consume the space below it.
 

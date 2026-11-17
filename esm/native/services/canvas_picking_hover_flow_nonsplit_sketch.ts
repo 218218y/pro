@@ -39,7 +39,12 @@ import {
 } from './canvas_picking_core_helpers.js';
 import type { HandleCanvasNonSplitHoverArgs } from './canvas_picking_hover_flow_nonsplit_contracts.js';
 
-export function tryHandleCanvasNonSplitSketchHover(args: HandleCanvasNonSplitHoverArgs): boolean {
+export function tryHandleCanvasNonSplitSketchHover(
+  args: Pick<
+    HandleCanvasNonSplitHoverArgs,
+    'App' | 'ndcX' | 'ndcY' | 'primaryMode' | 'raycaster' | 'mouse' | 'hideLayoutPreview'
+  >
+): boolean {
   const {
     App,
     ndcX,
