@@ -14,31 +14,31 @@
     }
   },
   "ast": {
-    "version": "0.158.0",
-    "compatibleProjectRange": ">=0.158.0 <0.159.0",
+    "version": "0.159.0",
+    "compatibleProjectRange": ">=0.159.0 <0.160.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",
         "installPath": "node_modules/oxc-parser",
-        "file": "vendor/offline/ast/oxc-parser-0.158.0.tgz",
-        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.158.0.tgz",
-        "integrity": "sha512-BKmaZZXp667kLC8Od/ivIkbw6yaxTSqw8ViI1Tvl21E6r+6NLdwDmo43LpL2Ebt/PDMu1d4tcdBucMSor+cL1g=="
+        "file": "vendor/offline/ast/oxc-parser-0.159.0.tgz",
+        "url": "https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.159.0.tgz",
+        "integrity": "sha512-Z1OaHU1EeTtobDHlYOAijfCTZr13PpWs/ZvwbJHaz5zOHfV6fLSmYZwB6klE8cggz51syi8HmLikHju0orJr4g=="
       },
       {
         "lockPath": "node_modules/@oxc-project/types",
         "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/types-0.158.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.158.0.tgz",
-        "integrity": "sha512-xZ66qA4WmLbTLlxH3mqMd8f9UKbaOzOT0ATwFf4DH/14pMgpUrtqtjyYzOQmgfl2a0iRAAMbQ9G1th/67jRzGw=="
+        "file": "vendor/offline/ast/types-0.159.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.159.0.tgz",
+        "integrity": "sha512-QWjWhxheluOJ82kDHNyps00UvRpQCtI34B5A/SzpgQycUD/79FuvT4I0aQIfE/bdPwKmX4QPftnywFBH6FxJhQ=="
       }
     ],
     "bindings": {
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.158.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.158.0.tgz",
-        "integrity": "sha512-COR5cFRE6DqmxZGE9QCJG1X7uUYxNdSYkMR7J9igRLnZqZ8ki6kJIa5S4czYHeIjdNyYn4vo1CsK3rQsK5sjrA=="
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.159.0.tgz",
+        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.159.0.tgz",
+        "integrity": "sha512-dH2vcVJi2sqSd2S51WB/LXyoJKho+TL7UoCDOuMZ+0mggFF9Gf4fjspo89hZnT/KrINBJg3UsGlfogHGHUmQNA=="
       }
     }
   },
@@ -109,21 +109,21 @@
     "launcher": "bin/tsc"
   },
   "oxlint": {
-    "version": "1.93.0",
+    "version": "1.94.0",
     "package": {
       "lockPath": "node_modules/oxlint",
       "installPath": "node_modules/oxlint",
-      "file": "vendor/offline/oxlint/oxlint-1.93.0.tgz",
-      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.93.0.tgz",
-      "integrity": "sha512-19JMsQFX+YvEbcUTFQxjTwhvs0Ibg0D6CFneSLgpwnACWcY/6LjhpGpkPodh0T5aIT1pjMTLlYaeBFzaVgugTA=="
+      "file": "vendor/offline/oxlint/oxlint-1.94.0.tgz",
+      "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.94.0.tgz",
+      "integrity": "sha512-Fnt+3wSKRhtLmvgRfxgRX0excSPCoyiXRol4eWKZLtXxWMQtwQ3KjKQUYXOw5loyinfnZfGzh4RCYf7opfL0vw=="
     },
     "platforms": {
       "linux-x64": {
         "lockPath": "node_modules/@oxlint/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxlint/binding-linux-x64-gnu",
-        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.93.0.tgz",
-        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.93.0.tgz",
-        "integrity": "sha512-F2CGjb9LAkzH+IYTZSzd1klQ1vk5z6Utjax64WeLByCkYXbVDbsun+Oy2hLfW2MDSKCvW+jwy/9ld0EPgdeu+A==",
+        "file": "vendor/offline/oxlint/binding-linux-x64-gnu-1.94.0.tgz",
+        "url": "https://registry.npmjs.org/@oxlint/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.94.0.tgz",
+        "integrity": "sha512-iUfCFJN8ZIresSnpTfiIkhF3s8X+XA4I9KJ249QwR2QYTMwh0+pla1pj1xaFi+HtR9McjM4Jaemf70HzX7ilOQ==",
         "runtime": "gnu"
       }
     },
@@ -1067,12 +1067,12 @@
           },
           {
             "name": "minimatch",
-            "version": "11.0.8",
+            "version": "11.0.9",
             "lockPath": "node_modules/minimatch",
             "installPath": "node_modules/minimatch",
-            "file": "vendor/offline/eslint/minimatch-11.0.8.tgz",
-            "url": "https://registry.npmjs.org/minimatch/-/minimatch-11.0.8.tgz",
-            "integrity": "sha512-nFQuYSTVrGvysVBps5Ih+0BdnYFN/Cj3C816r6+p7yK+FHrVLGE4O4N9AFwykrlNlvM2HYt+Rad1Uiro6h88Ig=="
+            "file": "vendor/offline/eslint/minimatch-11.0.9.tgz",
+            "url": "https://registry.npmjs.org/minimatch/-/minimatch-11.0.9.tgz",
+            "integrity": "sha512-KCFkfyjqerNlSstjlhIGNXIKZGA/6O4V4RlhZ+Dsr621SPPw0mzlypE9D9ZOoPiVefHID+j7/XuMMlqfD/F60Q=="
           },
           {
             "name": "ms",
@@ -1239,6 +1239,6 @@
         ]
       }
     },
-    "lockfileSha256": "69ecf799caa3689cf5ae46195f4d878a39bb111dbe49b7b658f48392b57f2d34"
+    "lockfileSha256": "aff3e8197ce9754a4716e76ef1f968c5f5d58689905ad58e78a98b5be7e58a3b"
   }
 }
