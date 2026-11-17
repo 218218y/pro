@@ -89,7 +89,11 @@ export function DoorTrimAxisPanel(props: DoorTrimAxisPanelProps): ReactElement {
 
   return (
     <>
-      <div className="wp-r-label wp-r-label--center" style={{ marginTop: 14, marginBottom: 8 }}>
+      <div
+        data-testid={`sketch-door-trim-${props.axis}`}
+        className="wp-r-label wp-r-label--center"
+        style={{ marginTop: 14, marginBottom: 8 }}
+      >
         {props.title}
       </div>
       <div className="wp-door-trim-span-grid" style={{ marginBottom: 8 }}>

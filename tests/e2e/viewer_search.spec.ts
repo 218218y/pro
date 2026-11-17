@@ -113,3 +113,33 @@ test('search covers individual presets and Sketch tools without applying a build
   await expect(page.getByTestId('sketch-shelf-tool-glass')).toHaveAttribute('aria-pressed', 'false');
   expectNoRuntimeIssues(issues);
 });
+
+test('search exposes omitted Sketch actions and results beyond the first twelve @critical', async ({
+  page,
+}) => {
+  const issues = collectRuntimeIssues(page);
+  await gotoSmokeApp(page);
+  await choose(page, 'הוספת קופסא', 'box-add');
+  const sketch = page.locator('.tab-content.active[data-tab="sketch"]');
+  await expect(sketch.getByTestId('sketch-control-box-add')).toHaveClass(/wp-r-search-target-flash/);
+  await expect(sketch.getByTestId('sketch-control-box-add')).toHaveAttribute('aria-pressed', 'false');
+  for (const [query, id] of [
+    ['מחיצה שוכבת', 'box-horizontal-divider'],
+    ['מחיצה עומדת', 'box-divider'],
+  ] as const) {
+    await choose(page, query, id);
+    await expect(sketch.getByTestId(`sketch-control-${id}`)).toHaveClass(/wp-r-search-target-flash/);
+    await expect(sketch.getByTestId(`sketch-control-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  }
+  await choose(page, 'פסי עיטור לדלת', 'door-trim');
+  await expect(sketch.getByTestId('sketch-door-trim-toggle')).toHaveAttribute('aria-expanded', 'false');
+  await choose(page, 'פס עיטור שוכב', 'door-trim-horizontal');
+  await expect(sketch.getByTestId('sketch-door-trim-horizontal')).toHaveClass(/wp-r-search-target-flash/);
+  await expect(sketch.getByTestId('sketch-door-trim-toggle')).toHaveAttribute('aria-expanded', 'true');
+  await page.getByTestId('viewer-search-button').click();
+  await page.getByTestId('viewer-search-input').fill('קופסא');
+  expect(await page.getByRole('option').count()).toBeGreaterThan(12);
+  await page.getByTestId('viewer-search-result-box-cornice-type').click();
+  await expect(sketch.getByTestId('sketch-control-box-cornice-type')).toHaveClass(/wp-r-search-target-flash/);
+  expectNoRuntimeIssues(issues);
+});

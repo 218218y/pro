@@ -217,7 +217,7 @@ function ArchitectureWallColorPicker(props: { model: SettingsVisualRoomSectionMo
   const customSelected = !DEFAULT_WALL_COLORS.some(color => color.val.toLowerCase() === selectedColor);
 
   return (
-    <div className="wp-r-mt-8">
+    <div className="wp-r-mt-8" data-testid="settings-room-wall-colors">
       <div className="wp-r-label">צבע הקירות:</div>
       <div className="color-picker-row wp-r-room-color-picker-row">
         {DEFAULT_WALL_COLORS.map(color => (
@@ -613,7 +613,10 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">סגנון ריצוף:</div>
-        <div className="type-selector wp-r-type-selector wp-r-floor-type-selector">
+        <div
+          className="type-selector wp-r-type-selector wp-r-floor-type-selector"
+          data-testid="settings-room-floor-type"
+        >
           {FLOOR_TYPE_OPTIONS.map(option => (
             <ActionTile
               key={option.id}
@@ -629,7 +632,7 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">גוון רצפה:</div>
-        <div className="color-picker-row wp-r-room-color-picker-row">
+        <div className="color-picker-row wp-r-room-color-picker-row" data-testid="settings-room-floor-colors">
           {model.floorStylesForType.map(style => (
             <FloorStyleSwatch
               key={style.id}
@@ -652,7 +655,10 @@ export function SettingsVisualRoomSection(props: { model: SettingsVisualRoomSect
 
       <div className="wp-r-mt-8">
         <div className="wp-r-label">צבע מעטפת החדר (360°):</div>
-        <div className="color-picker-row wp-r-room-color-picker-row">
+        <div
+          className="color-picker-row wp-r-room-color-picker-row"
+          data-testid="settings-room-envelope-colors"
+        >
           {model.roomData.wallColors.map(color => {
             const value = String(color.val || '');
             const selected = value && String(model.wallColor || '').toLowerCase() === value.toLowerCase();

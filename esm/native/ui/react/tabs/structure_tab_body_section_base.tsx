@@ -205,7 +205,10 @@ export function StructureBodyBaseControls(props: {
           ) : null}
 
           {props.baseLegPlatformMode === 'stage' ? (
-            <div className="wp-r-leg-size-fields wp-r-platform-overhang-fields">
+            <div
+              className="wp-r-leg-size-fields wp-r-platform-overhang-fields"
+              data-testid="structure-base-platform-overhang"
+            >
               {props.baseLegPlatformSideMode === 'overhang' ? (
                 <StructurePlatformOverhangField
                   label="בליטה מהצדדים (ס״מ)"

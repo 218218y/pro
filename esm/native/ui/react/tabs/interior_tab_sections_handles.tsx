@@ -209,13 +209,18 @@ export function InteriorHandlesSection(props: InteriorHandlesSectionProps): Reac
 
           <div className="wp-mt-8">
             <OptionBtn
+              testId="interior-handle-manual-position"
               className="wp-r-handle-btn wp-r-handle-manual-position-btn"
               selected={props.isManualHandlePositionMode}
               onClick={props.enterManualHandlePositionMode}
             >
               מיקום ידיות ידני
             </OptionBtn>
-            <OptionBtn selected={props.isHandleResetMode} onClick={props.enterHandleResetMode}>
+            <OptionBtn
+              testId="interior-handle-reset"
+              selected={props.isHandleResetMode}
+              onClick={props.enterHandleResetMode}
+            >
               חזרה לברירת המחדל של הארון
             </OptionBtn>
           </div>

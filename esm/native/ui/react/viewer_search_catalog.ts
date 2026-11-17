@@ -1,6 +1,11 @@
 import type { TabId } from '../../../../types';
 import { INTERIOR_LAYOUT_TYPES, INTERIOR_MANUAL_TOOLS } from './tabs/interior_tab_local_state_shared.js';
 import { SHELF_VARIANT_OPTIONS } from './tabs/interior_layout_shelf_variant_options.js';
+import {
+  SKETCH_BOX_CONTROLS,
+  sketchBoxControlTestId,
+  type SketchBoxControlDefinition,
+} from './tabs/sketch_box_control_catalog.js';
 
 /**
  * Search destinations are explicit UI contracts, not snapshots of whichever tab happens
@@ -591,6 +596,60 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     importance: 'primary',
     requires: ['cabinet'],
   }),
+  item(
+    'design',
+    'cornice-type',
+    'סוג קרניז לארון',
+    tid('design-cornice-type'),
+    'רגיל גל ישר כתר',
+    [check(tid('design-cornice-toggle'))],
+    { requires: ['cabinet'] }
+  ),
+  item(
+    'design',
+    'cornice-dimensions',
+    'מידות קרניז לארון',
+    tid('design-cornice-dimensions'),
+    'גובה בליטה צד חזית כתר',
+    [check(tid('design-cornice-toggle'))],
+    { requires: ['cabinet'] }
+  ),
+  item('design', 'groove-height', 'גובה חריטה ידנית', '#wp-r-groove-draft-height', '', [
+    ...groove,
+    expand(tid('design-groove-manual-button')),
+  ]),
+  item('design', 'groove-width', 'רוחב חריטה ידנית', '#wp-r-groove-draft-width', '', [
+    ...groove,
+    expand(tid('design-groove-manual-button')),
+  ]),
+
+  item(
+    'structure',
+    'leg-platform-overhang',
+    'מידות בליטת במה לארון',
+    tid('structure-base-platform-overhang'),
+    'בליטה חזית צדדים בסיס רגליים',
+    baseStage,
+    { importance: 'secondary', requires: ['main'] }
+  ),
+  item(
+    'structure',
+    'library-door-style',
+    'סגנון דלתות לספריה',
+    tid('structure-library-door-style-buttons'),
+    'ספריות פוסט פרופיל כפול',
+    library,
+    { requires: ['cabinet', 'hinged'] }
+  ),
+  item(
+    'design',
+    'split-transparency',
+    'דלתות שקופות בזמן חיתוך ידני',
+    tid('design-split-transparent-doors-button'),
+    'שקיפות',
+    [...split, press(tid('design-split-custom-mode-button'))],
+    { requires: ['not-chest'] }
+  ),
 
   // פנים: חלוקה, מדפים, כלי סקיצה, מגירות וידיות
   item('interior', 'layout', 'חלוקת פנים', tid('interior-layout'), 'מדפים חלוקה', [], {
@@ -728,8 +787,45 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     '[data-testid="interior-advanced-handles-toggle"]',
     'ידית לפי דלת'
   ),
+  item(
+    'interior',
+    'handle-manual-position',
+    'מיקום ידיות ידני',
+    tid('interior-handle-manual-position'),
+    'גובה ידית מיקום ידית',
+    [check(tid('interior-advanced-handles-toggle'))]
+  ),
+  item('interior', 'handle-reset', 'החזרת ידית לברירת המחדל', tid('interior-handle-reset'), 'איפוס ידיות', [
+    check(tid('interior-advanced-handles-toggle')),
+  ]),
+  item(
+    'interior',
+    'handle-catalog',
+    'כל סוגי הידיות',
+    '[data-testid="handle-picker-global"] summary',
+    'קטלוג ידית כפתור קשת מוט קלאסית רוכבת'
+  ),
 
   // סקיצה חופשית וקופסאות
+  ...Object.entries(SKETCH_BOX_CONTROLS).map(([id, definition]) => {
+    const control: SketchBoxControlDefinition = definition;
+    return item(
+      'sketch',
+      id,
+      control.label,
+      tid(sketchBoxControlTestId(id)),
+      `קופסא קופסה קופסאות ${control.keywords ?? ''}`,
+      (control.reveal ?? []).map(step => ({
+        selector: tid(sketchBoxControlTestId(step.control)),
+        action: step.action,
+      })),
+      {
+        aliases: control.aliases ?? [],
+        importance: control.importance ?? 'secondary',
+        requires: ['not-chest'],
+      }
+    );
+  }),
   item('sketch', 'sketch-main', 'כלי חלוקה לפי סקיצה', '.wp-sketch-row', 'חלוקה', [], {
     aliases: ['סקיצה'],
     importance: 'primary',
@@ -813,6 +909,121 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     importance: 'secondary',
     requires: ['not-chest'],
   }),
+  item(
+    'sketch',
+    'door-trim',
+    'פסי עיטור לדלת',
+    tid('sketch-door-trim-toggle'),
+    'פס עיטור פסים קישוט דלתות',
+    [],
+    { aliases: ['פסי עיטור', 'פס עיטור'], importance: 'primary' }
+  ),
+  item(
+    'sketch',
+    'door-trim-color',
+    'צבע פסי עיטור',
+    tid('sketch-door-trim-colors'),
+    'גימור פס שחור ניקל זהב',
+    [expand(tid('sketch-door-trim-toggle'))]
+  ),
+  ...(['horizontal', 'vertical'] as const).flatMap(axis => {
+    const direction = axis === 'horizontal' ? 'שוכב' : 'עומד';
+    const reveal = [expand(tid('sketch-door-trim-toggle'))];
+    return [
+      item(
+        'sketch',
+        `door-trim-${axis}`,
+        `פס עיטור ${direction}`,
+        tid(`sketch-door-trim-${axis}`),
+        'פסי עיטור לדלת לפי מידות',
+        reveal
+      ),
+      item(
+        'sketch',
+        `door-trim-${axis}-length`,
+        `אורך פס עיטור ${direction}`,
+        `#wp-r-door-trim-${axis}-custom-size`,
+        'מידות גובה רוחב',
+        reveal
+      ),
+      item(
+        'sketch',
+        `door-trim-${axis}-width`,
+        `עובי פס עיטור ${direction}`,
+        `#wp-r-door-trim-${axis}-cross-size`,
+        'מידות גובה רוחב',
+        reveal
+      ),
+    ];
+  }),
+  item(
+    'sketch',
+    'sketch-external-drawers',
+    'מגירות חיצוניות לפי סקיצה',
+    tid('sketch-external-drawers-toggle'),
+    'הוספת מגירה חיצונית',
+    [],
+    { requires: ['not-chest', 'hinged'] }
+  ),
+  ...(['shoe', 'regular'] as const).map(kind =>
+    item(
+      'sketch',
+      `sketch-drawers-${kind}`,
+      kind === 'shoe' ? 'מגירות נעליים לפי סקיצה' : 'מגירות רגילות לפי סקיצה',
+      tid(`interior-sketch-external-drawers-${kind}-button`),
+      'מגירה חיצונית',
+      [expand(tid('sketch-external-drawers-toggle'))],
+      { requires: ['not-chest', 'hinged'] }
+    )
+  ),
+  item(
+    'sketch',
+    'sketch-external-drawer-count',
+    'מספר מגירות חיצוניות לפי סקיצה',
+    tid('sketch-external-drawer-count'),
+    'כמות מגירות',
+    [
+      expand(tid('sketch-external-drawers-toggle')),
+      activate(tid('interior-sketch-external-drawers-regular-button')),
+    ],
+    { requires: ['not-chest', 'hinged'] }
+  ),
+  item(
+    'sketch',
+    'sketch-external-drawer-height',
+    'גובה מגירה חיצונית לפי סקיצה',
+    tid('sketch-external-drawer-height'),
+    'מידות מגירות',
+    [expand(tid('sketch-external-drawers-toggle'))],
+    { requires: ['not-chest', 'hinged'] }
+  ),
+  item(
+    'sketch',
+    'sketch-internal-drawers',
+    'מגירות פנימיות לפי סקיצה',
+    tid('sketch-internal-drawers-toggle'),
+    'הוספת מגירה פנימית',
+    [],
+    { requires: ['not-chest'] }
+  ),
+  item(
+    'sketch',
+    'sketch-internal-drawer-height',
+    'גובה מגירה פנימית לפי סקיצה',
+    tid('sketch-internal-drawer-height'),
+    'מידות מגירות',
+    [],
+    { requires: ['not-chest'] }
+  ),
+  item(
+    'sketch',
+    'sketch-drawer-runners',
+    'מסילות למגירות לפי סקיצה',
+    tid('sketch-drawer-runner-card'),
+    'טריקה שקטה blum פנימיות חיצוניות',
+    [],
+    { requires: ['not-chest'] }
+  ),
 
   // הגדרות, ייצוא וסביבה
   item('settings', 'snapshot', 'צילום הדמיה', tid('export-snapshot-button'), 'תמונה ייצוא', [], {
@@ -847,6 +1058,62 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     aliases: ['קירות', 'קיר', 'אדריכלות', 'חדר'],
     importance: 'primary',
   }),
+  item(
+    'sketch',
+    'room-left-wall',
+    'קיר צד שמאל',
+    tid('settings-room-left-wall-toggle'),
+    'הוספת קירות',
+    roomWall
+  ),
+  item(
+    'sketch',
+    'room-right-wall',
+    'קיר צד ימין',
+    tid('settings-room-right-wall-toggle'),
+    'הוספת קירות',
+    roomWall
+  ),
+  item('sketch', 'room-wall-width', 'רוחב הקיר', '#wp-room-wall-width', 'מידות חדר קירות', roomWall),
+  item('sketch', 'room-wall-height', 'גובה הקיר', '#wp-room-wall-height', 'מידות חדר קירות', roomWall),
+  item(
+    'sketch',
+    'room-alignment',
+    'מיקום הארון על הקיר',
+    '.wp-r-room-align-actions',
+    'יישור הארון מרכז צמוד',
+    roomWall
+  ),
+  item(
+    'sketch',
+    'room-column',
+    'הוספת עמוד בולט',
+    tid('settings-room-column-add'),
+    'עמוד עמודים בליטה מהקיר',
+    roomWall,
+    { aliases: ['עמוד', 'עמודים'], importance: 'primary' }
+  ),
+  item(
+    'sketch',
+    'room-visibility',
+    'הסתרת קירות ועמודים',
+    tid('settings-room-architecture-visibility'),
+    'הצגת קירות חדר',
+    roomWall
+  ),
+  item('settings', 'floor-type', 'סוג ריצוף', tid('settings-room-floor-type'), 'רצפה פרקט אריחים', [], {
+    aliases: ['ריצוף', 'פרקט', 'אריחים'],
+    importance: 'primary',
+  }),
+  item('settings', 'floor-color', 'צבע רצפה', tid('settings-room-floor-colors'), 'גוון ריצוף'),
+  item('settings', 'wall-color', 'צבע קירות', tid('settings-room-wall-colors'), 'צבע קיר גוון'),
+  item(
+    'settings',
+    'room-envelope-color',
+    'צבע מעטפת החדר',
+    tid('settings-room-envelope-colors'),
+    'סביבה חדר 360'
+  ),
   item('sketch', 'room-openings', 'חלונות ודלתות בחדר', tid('settings-room-openings'), 'פתחים', roomWall),
   item('sketch', 'room-window', 'הוספת חלון', tid('settings-room-opening-window'), 'קיר', roomWall, {
     aliases: ['חלון', 'חלונות'],
@@ -855,6 +1122,60 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   item('sketch', 'room-door', 'הוספת דלת לחדר', tid('settings-room-opening-door'), 'קיר', roomWall, {
     aliases: ['דלת חדר'],
     importance: 'primary',
+  }),
+  item(
+    'settings',
+    'light-presets',
+    'תבניות תאורה',
+    '.wp-r-light-presets',
+    'מצבי יום ערב חזק טבעי רגיל',
+    lighting
+  ),
+  item(
+    'sketch',
+    'room-left-offset',
+    'מרחק הארון משמאל לקיר',
+    '#wp-room-wardrobe-left-offset',
+    'מיקום ארון',
+    roomWall
+  ),
+  item(
+    'sketch',
+    'room-right-offset',
+    'מרחק הארון מימין לקיר',
+    '#wp-room-wardrobe-right-offset',
+    'מיקום ארון',
+    roomWall
+  ),
+  item(
+    'sketch',
+    'room-opening-size',
+    'מידות חלונות ודלתות בחדר',
+    '.wp-r-room-opening-size-grid',
+    'גובה רוחב פתחים',
+    roomWall
+  ),
+  ...(['left', 'right'] as const).flatMap(side => {
+    const direction = side === 'left' ? 'שמאל' : 'ימין';
+    const reveal = [...roomWall, check(tid(`settings-room-${side}-wall-toggle`))];
+    return [
+      item(
+        'sketch',
+        `room-${side}-wall-depth`,
+        `אורך קיר צד ${direction}`,
+        `#wp-room-${side}-wall-depth`,
+        'מידות קירות עומק חדר',
+        reveal
+      ),
+      item(
+        'sketch',
+        `room-${side}-wall-height`,
+        `גובה קיר צד ${direction}`,
+        `#wp-room-${side}-wall-height`,
+        'מידות קירות חדר',
+        reveal
+      ),
+    ];
   }),
   item('settings', 'cloud', 'סנכרון לענן', tid('cloud-sync-panel'), 'ענן פרויקטים', [], {
     aliases: ['ענן', 'סנכרון'],
@@ -896,7 +1217,7 @@ export function findViewerSearchDestination(id: string): ViewerSearchDestination
 export function searchViewerDestinations(
   query: string,
   enabledTabs?: ReadonlySet<TabId>,
-  limit = 12,
+  limit = Number.POSITIVE_INFINITY,
   context?: ReadonlySet<ViewerSearchContextKey>
 ) {
   const normalized = normalizeViewerSearchText(query);

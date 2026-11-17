@@ -72,8 +72,10 @@ test('broad subjects lead to their main controls before dependent or contextual 
   }))
     assert.equal(searchViewerDestinations(query)[0]?.id, id, query);
   assert.deepEqual(
-    searchViewerDestinations('רגליים', undefined, 100).map(entry => entry.id),
-    ['base', 'leg-style', 'leg-color', 'leg-height', 'leg-width', 'leg-platform', 'leg-platform-side']
+    searchViewerDestinations('רגליים')
+      .slice(0, 5)
+      .map(entry => entry.id),
+    ['base', 'leg-style', 'leg-color', 'leg-height', 'leg-width']
   );
   assert.equal(searchViewerDestinations('גובה רגליים')[0]?.id, 'leg-height');
   assert.equal(searchViewerDestinations('בליטת במה')[0]?.id, 'leg-platform-side');
@@ -175,7 +177,12 @@ test('availability follows wardrobe state and the canonical single-door derivati
   assert.equal(searchViewerDestinations('תבנית מדפים', undefined, 100, chestContext).length, 0);
   assert.ok(searchViewerDestinations('מסילות למגירות', undefined, 100, chestContext).length);
   const noMain = searchContext({ raw: { doors: 0 } });
-  assert.equal(searchViewerDestinations('רגליים', undefined, 100, noMain).length, 0);
+  assert.ok(
+    searchViewerDestinations('רגליים', undefined, 100, noMain).every(route => route.tab === 'sketch')
+  );
+  assert.ok(
+    searchViewerDestinations('רגליים', undefined, 100, noMain).some(route => route.id === 'box-base')
+  );
   assert.equal(searchViewerDestinations('קירות', undefined, 100, noMain)[0]?.id, 'room-architecture');
   const cornerOnly = searchContext({ raw: { doors: 0 }, cornerMode: true });
   assert.ok(cornerOnly.has('wardrobe-dimensions'));
@@ -469,4 +476,30 @@ test('app-scoped one-shot navigation delivers once and unsubscribes cleanly', ()
   unsub();
   navigateToViewerSearchDestination(app, destination('glass-curtain'));
   assert.deepEqual(events, ['mirror']);
+});
+test('missing authoring features are searchable and matching results are not silently capped', () => {
+  for (const [query, id] of Object.entries({
+    'הוספת קופסא': 'box-add',
+    'הוספת קופסה': 'box-add',
+    'מחיצה שוכבת': 'box-horizontal-divider',
+    'מחיצה עומדת': 'box-divider',
+    מחיצה: 'box-divider',
+    'הוספת מחיצה שוכבת': 'box-horizontal-divider',
+    'פסי עיטור לדלת': 'door-trim',
+    'פס עיטור שוכב': 'door-trim-horizontal',
+    'בסיס לקופסא': 'box-base',
+    'קרניז לקופסא': 'box-cornice',
+    'מגירות נעליים': 'sketch-drawers-shoe',
+    'מיקום ידיות ידני': 'handle-manual-position',
+    'צבע קירות': 'wall-color',
+    פרקט: 'floor-type',
+    עמוד: 'room-column',
+  }))
+    assert.equal(searchViewerDestinations(query)[0]?.id, id, query);
+  const all = searchViewerDestinations('קופסא');
+  assert.ok(all.length > 12, 'a broad query must expose every match through the scrollable results');
+  assert.ok(all.some(route => route.id === 'box-cornice-type'));
+  assert.equal(searchViewerDestinations('קופסא', undefined, 3).length, 3);
+  const sketchOnly = searchViewerDestinations('קופסא', new Set(['sketch']));
+  assert.ok(sketchOnly.every(route => route.tab === 'sketch'));
 });

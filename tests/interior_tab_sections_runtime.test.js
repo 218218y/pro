@@ -14,6 +14,11 @@ import {
 } from '../esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.js';
 import { InteriorLayoutSketchToolsPanel } from '../esm/native/ui/react/tabs/interior_layout_sketch_controls.js';
 import {
+  SKETCH_BOX_CONTROLS,
+  sketchBoxControlTestId,
+} from '../esm/native/ui/react/tabs/sketch_box_control_catalog.js';
+import { VIEWER_SEARCH_DESTINATIONS } from '../esm/native/ui/react/viewer_search_catalog.js';
+import {
   InteriorDrawerRunnerSection,
   InteriorExternalDrawersSection,
   InteriorInternalDrawersSection,
@@ -23,6 +28,46 @@ import { InteriorHandlesSection } from '../esm/native/ui/react/tabs/interior_tab
 import fs from 'node:fs';
 import path from 'node:path';
 const noop = () => {};
+
+test('all rendered box controls and primary Sketch buttons have search destinations', () => {
+  const html = ['plinth', 'legs']
+    .map(baseType =>
+      renderToStaticMarkup(
+        React.createElement(
+          InteriorLayoutSketchToolsPanel,
+          createLayoutProps({
+            sketchBoxPanelOpen: true,
+            sketchBoxBasePanelOpen: true,
+            sketchBoxCornicePanelOpen: true,
+            sketchBoxBaseType: baseType,
+            sketchBoxLegPlatformMode: 'stage',
+            sketchBoxLegPlatformSideMode: 'overhang',
+          })
+        )
+      )
+    )
+    .join('');
+  for (const id of Object.keys(SKETCH_BOX_CONTROLS)) {
+    const testId = sketchBoxControlTestId(id);
+    assert.ok(html.includes(`data-testid="${testId}"`), `control inventory has no rendered owner: ${id}`);
+    assert.ok(
+      VIEWER_SEARCH_DESTINATIONS.some(
+        route => route.tab === 'sketch' && route.selector === `[data-testid="${testId}"]`
+      ),
+      `control has no search destination: ${id}`
+    );
+  }
+  for (const tag of html.matchAll(/<button\b[^>]*class="[^"]*\bwp-sketch-box-btn\b[^"]*"[^>]*>/g)) {
+    const testId = tag[0].match(/data-testid="([^"]+)"/)?.[1];
+    assert.ok(testId, `primary Sketch tool has no navigation identity: ${tag[0]}`);
+    assert.ok(
+      VIEWER_SEARCH_DESTINATIONS.some(
+        route => route.tab === 'sketch' && route.selector === `[data-testid="${testId}"]`
+      ),
+      `primary Sketch tool is missing from search: ${testId}`
+    );
+  }
+});
 const setStateNoop = () => undefined;
 
 test('winter shelf compound control keeps the main action and lock independently accessible', () => {

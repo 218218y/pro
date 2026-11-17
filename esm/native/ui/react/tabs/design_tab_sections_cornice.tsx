@@ -33,7 +33,7 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
 
       {model.hasCornice ? (
         <div className="wp-r-mt-2">
-          <div className="type-selector wp-r-type-selector">
+          <div className="type-selector wp-r-type-selector" data-testid="design-cornice-type">
             <DesignTabTypeOption
               selected={model.corniceType === 'classic'}
               onClick={() => model.setCorniceType('classic')}
@@ -53,7 +53,10 @@ export function CorniceSection(props: CorniceSectionProps): ReactElement | null 
               ישר
             </DesignTabTypeOption>
           </div>
-          <div className="wp-r-door-thickness-fields wp-r-cornice-dimensions wp-r-mt-2">
+          <div
+            className="wp-r-door-thickness-fields wp-r-cornice-dimensions wp-r-mt-2"
+            data-testid="design-cornice-dimensions"
+          >
             {fields.map(({ key, label, defaultValue }) => (
               <StructurePlatformOverhangField
                 key={key}

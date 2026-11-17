@@ -4,6 +4,7 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { InlineNotice } from '../components/InlineNotice.js';
 import { Button, ModeToggleButton, OptionButtonGroup } from '../components/index.js';
 import { OptionBtn, cx } from './interior_tab_helpers.js';
+import { sketchBoxControlTestId, type SketchBoxControlId } from './sketch_box_control_catalog.js';
 import {
   PLATFORM_OVERHANG_MAX_CM,
   PLATFORM_OVERHANG_MIN_CM,
@@ -12,6 +13,7 @@ import {
 } from '../../../features/platform_overhang_support.js';
 
 type NumericFieldProps = {
+  control: SketchBoxControlId;
   label: string;
   value: string;
   min: number;
@@ -43,6 +45,7 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
       </label>
       <div className={props.onReset ? 'wp-r-input-row wp-r-input-row--with-addon' : 'wp-r-input-row'}>
         <input
+          data-testid={sketchBoxControlTestId(props.control)}
           id={inputId}
           name={inputId}
           type="number"
@@ -92,6 +95,7 @@ function formatPlatformOverhangInputValue(value: number): string {
 }
 
 export function SketchBoxPlatformOverhangField(props: {
+  control: SketchBoxControlId;
   label: string;
   value: number;
   defaultValue: number;
@@ -107,6 +111,7 @@ export function SketchBoxPlatformOverhangField(props: {
       </label>
       <div className="wp-r-door-thickness-input-row wp-r-platform-overhang-input-row">
         <input
+          data-testid={sketchBoxControlTestId(props.control)}
           id={inputId}
           name={inputId}
           type="number"
@@ -177,6 +182,8 @@ function formatSketchBoxNumericBound(value: number): string {
 }
 
 type ToolButtonProps = {
+  control: SketchBoxControlId;
+  expanded?: boolean;
   label: string;
   active: boolean;
   iconClass: string;
@@ -197,6 +204,8 @@ export function SketchBoxToolButton(props: ToolButtonProps): ReactElement {
       <div className="wp-r-label wp-r-label--center">{props.label}</div>
       <div className="wp-r-type-selector type-selector" style={{ direction: 'rtl' }}>
         <ModeToggleButton
+          data-testid={sketchBoxControlTestId(props.control)}
+          {...(props.expanded !== undefined ? { 'aria-expanded': props.expanded } : {})}
           active={props.active}
           className={cx('wp-sketch-box-btn', props.buttonClassName)}
           icon={
@@ -232,6 +241,7 @@ type ChoiceOption<T extends string> = {
 };
 
 type ChoicePanelProps<T extends string> = {
+  control: SketchBoxControlId;
   title: string;
   open: boolean;
   notice?: ReactNode;
@@ -245,6 +255,7 @@ export function SketchBoxChoicePanel<T extends string>(props: ChoicePanelProps<T
 
   return (
     <div
+      data-testid={sketchBoxControlTestId(props.control)}
       className={cx('wp-sketch-box-cell', 'wp-sketch-choice-panel', props.open ? '' : 'hidden')}
       style={{ gridColumn: '1 / -1' }}
     >
@@ -253,6 +264,7 @@ export function SketchBoxChoicePanel<T extends string>(props: ChoicePanelProps<T
         <OptionButtonGroup columns={columns} density="micro" className="wp-sketch-choice-grid">
           {props.options.map(option => (
             <OptionBtn
+              testId={sketchBoxControlTestId(`${props.control}-${option.id}`)}
               key={option.id}
               selected={props.value === option.id}
               onClick={() => {
