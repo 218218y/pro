@@ -8,7 +8,7 @@ import {
   commitSketchFreePlacementHoverRecord,
   createSketchFreePlacementBoxHoverRecord,
 } from './canvas_picking_sketch_free_commit.js';
-import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_box_geometry.js';
+import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_boxes.js';
 import { asRecord } from '../runtime/record.js';
 import { cmToM } from '../../shared/dimensions/units.js';
 import { findRoomWallSurfaceHit } from './room_wall_picking.js';

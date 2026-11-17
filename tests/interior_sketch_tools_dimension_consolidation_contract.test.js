@@ -88,6 +88,6 @@ test('Interior Sketch Tools keeps default dimension formulas, parsing, and forma
   assert.match(source, /export function parseSketchBoxTool\(tool: string\): SketchBoxToolSpec \| null/u);
   assert.match(
     source,
-    /export function mkSketchBoxTool\(heightCm: number, widthCm: number \| null, depthCm: number \| null\): string/u
+    /export function mkSketchBoxTool\(\s*heightCm: number \| null,\s*widthCm: number \| null,\s*depthCm: number \| null\s*\): string/u
   );
 });

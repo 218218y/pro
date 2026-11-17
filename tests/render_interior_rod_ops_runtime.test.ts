@@ -114,6 +114,65 @@ function createRodOpsHarness(rootState?: any) {
   return { ops, App, cache, added, group, roomArchitecturePlan };
 }
 
+test('boxes reaching a rod suppress its hanger and limit hanging contents to the real free height', () => {
+  for (const boxTop of [0.95, 1, 1.05]) {
+    const { ops, added, group } = createRodOpsHarness();
+    const hangers: unknown[][] = [];
+    const clothes: unknown[][] = [];
+    ops.createRodWithContents({
+      THREE: makeFakeThree(),
+      yPos: 1,
+      innerW: 0.8,
+      internalCenterX: 0,
+      internalZ: 0,
+      effectiveBottomY: 0,
+      effectiveTopY: 2,
+      localGridStep: 1 / 3,
+      woodThick: 0.018,
+      config: { sketchExtras: { boxes: [{ yNorm: boxTop / 4, heightM: boxTop }] } },
+      wardrobeGroup: group,
+      showHangerEnabled: true,
+      showContentsEnabled: true,
+      doorStyle: 'flat',
+      addRealisticHanger: (...args: unknown[]) => hangers.push(args),
+      addHangingClothes: (...args: unknown[]) => clothes.push(args),
+    });
+    assert.equal(added.length, 1, 'the rod remains present');
+    assert.equal(hangers.length, 0, 'the hanger must not penetrate the box');
+    assert.equal(clothes.length, 1);
+    assertClose(Number(clothes[0][5]), Math.max(0, 1 - boxTop));
+  }
+});
+
+test('box clearance preserves hanging space below higher boxes and ignores standalone boxes', () => {
+  for (const box of [
+    { yNorm: 0.8, heightM: 0.4 },
+    { freePlacement: true, absY: 0.5, heightM: 1 },
+    { yNorm: '0.25', heightM: '1' },
+  ]) {
+    assertClose(
+      resolveInteriorRodAvailableHeight({
+        config: { sketchExtras: { boxes: [box] } },
+        yPos: 1,
+        effectiveBottomY: 0,
+        effectiveTopY: 2,
+        localGridStep: 1 / 3,
+      }),
+      1
+    );
+  }
+  assertClose(
+    resolveInteriorRodAvailableHeight({
+      config: { sketchExtras: { boxes: [{ yNorm: 0.15, heightM: 0.4 }] } },
+      yPos: 1,
+      effectiveBottomY: 0,
+      effectiveTopY: 2,
+      localGridStep: 1 / 3,
+    }),
+    0.5
+  );
+});
+
 test('render interior rod keeps rod material independent from base leg material', () => {
   const THREE = makeFakeThree();
   const { ops, cache, added, group } = createRodOpsHarness();

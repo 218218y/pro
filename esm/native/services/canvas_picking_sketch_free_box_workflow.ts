@@ -11,6 +11,7 @@ export {
   isWithinSketchFreeBoxRemoveZone,
   isWithinSketchFreePlacementBounds,
   resolveSketchFreeBoxGeometry,
+  resolveSketchFreeBoxToolHeightM,
   resolveSketchFreeBoxOutsideWardrobeSnapX,
 } from './canvas_picking_sketch_free_box_shared.js';
 export type { SketchFreeBoxAttachPlacement } from './canvas_picking_sketch_free_box_placement.js';

@@ -1,4 +1,4 @@
-import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_box_geometry.js';
+import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_boxes.js';
 import type { AppContainer, UnknownRecord } from '../../../types';
 import type {
   ResolveSketchFreeBoxHoverPlacementArgs,

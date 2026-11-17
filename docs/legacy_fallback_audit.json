@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T18:18:32.162Z",
+  "generatedAt": "2026-11-17T11:25:02.113Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 618,
@@ -2361,21 +2361,21 @@
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 158,
+      "line": 160,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "fallbackGridIndex?: number;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 160,
+      "line": 162,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const { rod, effectiveBottomY, localGridStep, fallbackGridIndex } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 164,
+      "line": 166,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const factor = rawYFactor ?? rawGridIndex ?? fallbackGridIndex ?? null;"
@@ -4293,35 +4293,35 @@
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
-      "line": 33,
+      "line": 40,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "const fallbackW = Math.max("
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
-      "line": 40,
+      "line": 47,
       "term": "fallbackD",
       "category": "domain-default",
       "text": "const fallbackD = Math.max("
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
-      "line": 49,
+      "line": 56,
       "term": "fallbackW",
       "category": "domain-default",
       "text": "const outerW = widthValue != null && widthValue > 0 ? Math.max(minW, widthValue) : fallbackW;"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts",
-      "line": 50,
+      "line": 57,
       "term": "fallbackD",
       "category": "domain-default",
       "text": "const outerD = depthValue != null && depthValue > 0 ? Math.max(minD, depthValue) : fallbackD;"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_free_boxes.ts",
-      "line": 95,
+      "line": 96,
       "term": "fallback",
       "category": "domain-default",
       "text": "// no-main-host-probe: unreadable optional configuration disables the zero-door hinged host fallback"
