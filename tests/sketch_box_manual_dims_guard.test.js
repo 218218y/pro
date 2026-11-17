@@ -147,7 +147,7 @@ test('[sketch-box] UI bundle preserves optional width/depth overrides and tool s
     [
       /export type SketchBoxToolSpec = \{/,
       /export function parseSketchBoxTool\(tool: string\): SketchBoxToolSpec \| null/,
-      /export function mkSketchBoxTool\(heightCm: number, widthCm: number \| null, depthCm: number \| null\): string/,
+      /export function mkSketchBoxTool\(heightCm: number \| null, widthCm: number \| null, depthCm: number \| null\): string/,
       /export const SKETCH_BOX_HEIGHT_MAX_CM = 300;/,
       /export function createInteriorTabLocalStateDefaults\(\)/,
       /sketchBoxWidthDraft: ''/,

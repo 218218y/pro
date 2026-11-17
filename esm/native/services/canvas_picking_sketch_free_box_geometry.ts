@@ -1,4 +1,7 @@
-export { resolveSketchFreeBoxGeometry } from './canvas_picking_sketch_free_box_geometry_box.js';
+export {
+  resolveSketchFreeBoxGeometry,
+  resolveSketchFreeBoxToolHeightM,
+} from './canvas_picking_sketch_free_box_geometry_box.js';
 export {
   clampSketchFreeBoxCenterY,
   getSketchFreePlacementVerticalSlack,

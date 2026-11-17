@@ -8,7 +8,7 @@ import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sket
 export function resolveSketchModuleBoxPlacementAction(args: {
   boxes: unknown[];
   cursorY: number;
-  boxH: number;
+  boxH: number | null;
   widthM?: number | null | undefined;
   depthM?: number | null | undefined;
   bottomY: number;
@@ -30,7 +30,7 @@ export function resolveSketchModuleBoxPlacementAction(args: {
     desiredCenterX: args.boxGeo.centerX,
     desiredCenterY: Number(args.cursorY),
     boxW: args.boxGeo.outerW,
-    boxH: Number(args.boxH),
+    boxH: args.boxH,
     bottomY: Number(args.bottomY),
     spanH: Number(args.spanH),
     pad: Number(args.pad),
@@ -51,7 +51,7 @@ export function resolveSketchModuleBoxPlacementAction(args: {
       centerZ: args.boxGeo.centerZ,
       outerW: args.boxGeo.outerW,
       outerD: args.boxGeo.outerD,
-      boxH: Number(args.boxH),
+      boxH: resolvedPlacement.boxH,
       xNorm: args.boxGeo.xNorm,
       centered: !!args.boxGeo.centered,
       removeId: '',
@@ -68,7 +68,7 @@ export function resolveSketchModuleBoxPlacementAction(args: {
     centerZ: args.boxGeo.centerZ,
     outerW: args.boxGeo.outerW,
     outerD: args.boxGeo.outerD,
-    boxH: Number(args.boxH),
+    boxH: resolvedPlacement.boxH,
     xNorm: args.boxGeo.xNorm,
     centered: !!args.boxGeo.centered,
     removeId: '',

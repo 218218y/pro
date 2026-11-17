@@ -11,8 +11,8 @@ export function parseSketchBoxToolSpec(tool: string): SketchBoxToolSpec | null {
 
   const [heightRaw, widthRaw = '', depthRaw = ''] = raw.split(SKETCH_BOX_DIM_SEP);
   if (heightRaw == null) return null;
-  const heightCm = Number(heightRaw.trim());
-  if (!Number.isFinite(heightCm)) return null;
+  const heightCm = heightRaw.trim() === 'auto' ? null : Number(heightRaw.trim());
+  if (heightCm !== null && !Number.isFinite(heightCm)) return null;
 
   const parseOptional = (value: string): number | null => {
     const trimmed = String(value || '').trim();

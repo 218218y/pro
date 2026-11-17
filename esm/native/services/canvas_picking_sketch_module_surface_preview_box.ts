@@ -13,7 +13,7 @@ import {
 export type SketchModuleBoxPreviewState = {
   hitLocalX: number | null;
   yClamped: number;
-  boxHPreview: number;
+  boxHPreview: number | null;
   boxWidthPreviewM: number | null;
   boxDepthPreviewM: number | null;
   boxPreviewResult?: SketchModuleSurfacePreviewResult;
@@ -24,7 +24,7 @@ export function resolveSketchModuleBoxPreviewState(args: {
   source: ResolveSketchModuleSurfacePreviewArgs;
   hitLocalX: number | null;
   yClamped: number;
-  boxHPreview: number;
+  boxHPreview: number | null;
   boxWidthPreviewM: number | null;
   boxDepthPreviewM: number | null;
 }): SketchModuleBoxPreviewState {

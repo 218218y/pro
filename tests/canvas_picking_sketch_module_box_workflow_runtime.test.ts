@@ -136,3 +136,53 @@ test('createSketchModuleBoxConfigItem persists normalized y/width/depth/x positi
   assert.ok(typeof item.xNorm === 'number');
   assert.ok(typeof item.yNorm === 'number');
 });
+
+test('automatic box height fills the pointed slot and follows floor, roof and content boundaries', () => {
+  const placementBlockers = [
+    { minY: -0.6, maxY: -0.4 },
+    { minY: 0.2, maxY: 0.22 },
+  ];
+  for (const [cursorY, bottom, top] of [
+    [-0.9, -0.98, -0.6],
+    [-0.1, -0.4, 0.2],
+    [0.9, 0.22, 0.98],
+  ]) {
+    const action = resolveSketchModuleBoxAction(makeArgs({ boxH: null, cursorY, placementBlockers }));
+    assert.equal(action.op, 'add');
+    assert.ok(Math.abs(action.boxH - (top - bottom)) < 1e-9);
+    assert.ok(Math.abs(action.centerY - (top + bottom) / 2) < 1e-9);
+  }
+});
+
+test('automatic box height blocks occupied or unusably short slots instead of jumping to a neighbor', () => {
+  for (const cursorY of [0, 0.225]) {
+    const action = resolveSketchModuleBoxAction(
+      makeArgs({
+        boxH: null,
+        cursorY,
+        placementBlockers: [
+          { minY: -0.2, maxY: 0.2 },
+          { minY: 0.25, maxY: 0.4 },
+        ],
+      })
+    );
+    assert.equal(action.op, 'blocked');
+  }
+});
+
+test('automatic height considers existing boxes only when their horizontal span overlaps', () => {
+  const boxes = [{ id: 'left', xNorm: 0.15, yNorm: 0.5, widthM: 0.3, heightM: 0.4 }];
+  const beside = resolveSketchModuleBoxAction(makeArgs({ boxH: null, boxes, cursorXHint: 0.4 }));
+  assert.equal(beside.op, 'add');
+  assert.equal(beside.boxH, 1.96);
+  const above = resolveSketchModuleBoxAction(
+    makeArgs({
+      boxH: null,
+      boxes,
+      cursorXHint: -0.4,
+      cursorY: 0.7,
+    })
+  );
+  assert.equal(above.op, 'add');
+  assert.ok(Math.abs(above.boxH - 0.78) < 1e-9);
+});

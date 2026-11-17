@@ -11,7 +11,7 @@ export const SKETCH_BOX_TOOL_PREFIX = 'sketch_box:';
 export const SKETCH_BOX_DIM_SEP = '@';
 
 export type SketchBoxToolSpec = {
-  heightCm: number;
+  heightCm: number | null;
   widthCm: number | null;
   depthCm: number | null;
 };

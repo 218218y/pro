@@ -17,6 +17,12 @@ import { getCallFacts, getFunctionVariableFacts } from './_semantic_source_contr
 
 type RecordMap = Record<string, unknown>;
 
+test('Interior box tools roundtrip explicit automatic height with manual width and depth', () => {
+  const tool = mkSketchBoxTool(null, 45, 35);
+  assert.equal(tool, 'sketch_box:auto@45@35');
+  assert.deepEqual(parseSketchBoxTool(tool), { heightCm: null, widthCm: 45, depthCm: 35 });
+});
+
 function createFreeBoxClickHarness(overrides: RecordMap = {}) {
   const cfg: RecordMap = {};
   const calls: {
@@ -93,6 +99,15 @@ test('free-box click uses canonical units and Shell Geometry minimums without ch
   assert.equal(calls.placementArgs.boxH, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM);
   assert.equal(calls.placementArgs.widthOverrideM, cmToM(45));
   assert.equal(calls.placementArgs.depthOverrideM, cmToM(30));
+});
+
+test('automatic height outside a wardrobe uses the standalone shell height', () => {
+  const { args, calls } = createFreeBoxClickHarness({
+    tool: 'sketch_box:auto',
+    __wp_parseSketchBoxToolSpec: () => ({ heightCm: null, widthCm: null, depthCm: null }),
+  });
+  assert.equal(tryHandleCanvasManualSketchFreeBoxClick(args), true);
+  assert.equal(calls.placementArgs?.boxH, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM);
 });
 
 test('free-box click preserves missing and invalid optional-dimension handling', () => {

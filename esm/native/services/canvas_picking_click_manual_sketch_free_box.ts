@@ -8,8 +8,8 @@ import {
   commitSketchFreePlacementHoverRecord,
   createSketchFreePlacementBoxHoverRecord,
 } from './canvas_picking_sketch_free_commit.js';
+import { resolveSketchFreeBoxToolHeightM } from './canvas_picking_sketch_free_box_geometry.js';
 import { asRecord } from '../runtime/record.js';
-import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import { cmToM } from '../../shared/dimensions/units.js';
 import { findRoomWallSurfaceHit } from './room_wall_picking.js';
 
@@ -135,10 +135,9 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
     const wardrobeDepth = readFinitePositiveNumber(wardrobeBox, 'depth');
     const wardrobeBackZ =
       wardrobeCenterZ != null && wardrobeDepth != null ? wardrobeCenterZ - wardrobeDepth / 2 : NaN;
-    const heightCm = readFinitePositiveNumber(freeBoxSpec, 'heightCm');
     const widthCm = readFinitePositiveNumber(freeBoxSpec, 'widthCm');
     const depthCm = readFinitePositiveNumber(freeBoxSpec, 'depthCm');
-    const boxH = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, cmToM(heightCm ?? 0));
+    const boxH = resolveSketchFreeBoxToolHeightM(asRecord(freeBoxSpec)?.heightCm);
     const widthOverrideM = widthCm != null ? cmToM(widthCm) : null;
     const depthOverrideM = depthCm != null ? cmToM(depthCm) : null;
 

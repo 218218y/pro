@@ -109,6 +109,18 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toHaveCount(0);
   await expect(items.getByTestId('winter-brace-shelf-button')).toBeVisible();
 
+  await layout.getByRole('button', { name: 'הוסף קופסא', exact: true }).click();
+  const boxHeight = layout.getByLabel('גובה קופסא (ס"מ)', { exact: true });
+  await expect(boxHeight).toHaveValue('');
+  await expect(boxHeight).toHaveAttribute('placeholder', 'אוטומטי');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:auto' } });
+  await boxHeight.fill('65');
+  await boxHeight.press('Tab');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:65' } });
+  await layout.getByRole('button', { name: 'איפוס גובה הקופסא לאוטומטי', exact: true }).click();
+  await expect(boxHeight).toHaveValue('');
+  await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_box:auto' } });
+
   const boring = layout.getByTestId('interior-layout-full_boring');
   await expect(boring).toBeVisible();
   await expect(layout.getByTestId('interior-layout-brace_shelves')).toHaveCount(0);

@@ -66,7 +66,7 @@ export type InteriorTabViewState = {
   handleToolEdgeVariant: EdgeHandleVariant;
   manualUiTool: ManualToolId;
   sketchShelvesOpen: boolean;
-  sketchBoxHeightCm: number;
+  sketchBoxHeightCm: number | '';
   sketchBoxHeightDraft: string;
   sketchBoxWidthCm: number | '';
   sketchBoxWidthDraft: string;
@@ -118,7 +118,7 @@ export type InteriorTabViewState = {
   extCounts: number[];
   setManualUiTool: Dispatch<SetStateAction<ManualToolId>>;
   setSketchShelvesOpen: Dispatch<SetStateAction<boolean>>;
-  setSketchBoxHeightCm: Dispatch<SetStateAction<number>>;
+  setSketchBoxHeightCm: Dispatch<SetStateAction<number | ''>>;
   setSketchBoxHeightDraft: Dispatch<SetStateAction<string>>;
   setSketchBoxWidthCm: Dispatch<SetStateAction<number | ''>>;
   setSketchBoxWidthDraft: Dispatch<SetStateAction<string>>;

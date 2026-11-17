@@ -97,6 +97,16 @@ test('surface-commit box parser preserves defaults, minimum, ceiling, and positi
   }
 });
 
+test('surface-commit box parser preserves explicit automatic height until the pointed slot is resolved', () => {
+  assert.deepEqual(
+    parseSketchModuleBoxTool({
+      tool: 'sketch_box:auto@45',
+      parseSketchBoxToolSpec: () => ({ heightCm: null, widthCm: 45, depthCm: null }),
+    }),
+    { boxH: null, boxWM: cmToM(45), boxDM: null }
+  );
+});
+
 test('surface-commit box parser rejects non-number or non-positive optional dimensions', () => {
   const invalidSpecs = [
     { heightCm: '80', widthCm: '45', depthCm: '35' },

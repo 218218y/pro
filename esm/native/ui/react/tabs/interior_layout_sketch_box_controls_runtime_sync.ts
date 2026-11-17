@@ -10,7 +10,7 @@ import type { SketchBoxOptionalDimensionValue } from './interior_layout_sketch_b
 
 export function syncSketchBoxTool(
   props: InteriorSketchBoxControlsSectionProps,
-  heightCm: number,
+  heightCm: number | '',
   widthCm: SketchBoxOptionalDimensionValue,
   depthCm: SketchBoxOptionalDimensionValue
 ): void {

@@ -53,7 +53,7 @@ export { DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM };
 
 export type InteriorTabLocalStateDefaults = {
   sketchShelvesOpen: boolean;
-  sketchBoxHeightCm: number;
+  sketchBoxHeightCm: number | '';
   sketchBoxWidthCm: number | '';
   sketchBoxDepthCm: number | '';
   sketchStorageHeightCm: number;
@@ -105,7 +105,7 @@ export type InteriorTabLocalStateDefaults = {
 export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefaults {
   return {
     sketchShelvesOpen: false,
-    sketchBoxHeightCm: 40,
+    sketchBoxHeightCm: '',
     sketchBoxWidthCm: '',
     sketchBoxDepthCm: '',
     sketchStorageHeightCm: DEFAULT_SKETCH_STORAGE_HEIGHT_CM,
@@ -116,7 +116,7 @@ export function createInteriorTabLocalStateDefaults(): InteriorTabLocalStateDefa
       brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
       winter_brace: DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
     },
-    sketchBoxHeightDraft: '40',
+    sketchBoxHeightDraft: '',
     sketchBoxWidthDraft: '',
     sketchBoxDepthDraft: '',
     sketchStorageHeightDraft: String(DEFAULT_SKETCH_STORAGE_HEIGHT_CM),

@@ -29,7 +29,7 @@ function sketchBoxFrontsBundle() {
   );
 }
 
-test('manual sketch box UI exposes 40cm default and box-door controls', () => {
+test('manual sketch box UI exposes automatic height by default and box-door controls', () => {
   const view = bundle(
     'esm/native/ui/react/tabs/InteriorTab.view.tsx',
     'esm/native/ui/react/tabs/use_interior_tab_view_state.ts',
@@ -61,8 +61,8 @@ test('manual sketch box UI exposes 40cm default and box-door controls', () => {
     'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts'
   );
 
-  assert.match(view, /sketchBoxHeightCm: 40,/);
-  assert.match(view, /sketchBoxHeightDraft: '40',/);
+  assert.match(view, /sketchBoxHeightCm: '',/);
+  assert.match(view, /sketchBoxHeightDraft: '',/);
   assert.match(helpers, /SKETCH_TOOL_BOX_DOOR = 'sketch_box_door'/);
   assert.match(helpers, /SKETCH_TOOL_BOX_DOOR_HINGE = 'sketch_box_door_hinge'/);
   assert.match(sections, /label="דלת 1"/);

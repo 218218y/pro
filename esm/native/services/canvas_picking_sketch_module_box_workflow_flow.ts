@@ -12,7 +12,7 @@ export function resolveSketchModuleBoxAction(args: {
   boxes: unknown[];
   cursorXHint?: number | null | undefined;
   cursorY: number;
-  boxH: number;
+  boxH: number | null;
   widthM?: number | null | undefined;
   depthM?: number | null | undefined;
   bottomY: number;
@@ -29,13 +29,16 @@ export function resolveSketchModuleBoxAction(args: {
   removeIdHint?: string | null | undefined;
   placementBlockers?: VerticalOccupancyRange[] | null | undefined;
 }): SketchModuleBoxActionState {
-  const cursorY = clampSketchModuleBoxCenterY({
-    centerY: Number(args.cursorY),
-    boxH: Number(args.boxH),
-    bottomY: Number(args.bottomY),
-    topY: Number(args.topY),
-    pad: Number(args.pad),
-  });
+  const cursorY =
+    args.boxH === null
+      ? args.cursorY
+      : clampSketchModuleBoxCenterY({
+          centerY: Number(args.cursorY),
+          boxH: args.boxH,
+          bottomY: Number(args.bottomY),
+          topY: Number(args.topY),
+          pad: Number(args.pad),
+        });
   const widthM = readNumber(args.widthM);
   const depthM = readNumber(args.depthM);
   const boxGeo = args.resolveSketchBoxGeometry({
@@ -69,7 +72,7 @@ export function resolveSketchModuleBoxAction(args: {
   return resolveSketchModuleBoxPlacementAction({
     boxes: args.boxes,
     cursorY,
-    boxH: Number(args.boxH),
+    boxH: args.boxH,
     widthM,
     depthM,
     bottomY: Number(args.bottomY),
