@@ -19,6 +19,7 @@ export type SketchDrawerHeightDraftController = {
 };
 
 export type SketchDrawerHeightFieldProps = {
+  testId?: string;
   label: string;
   value: string;
   onChange: (raw: string) => void;
@@ -73,6 +74,7 @@ export function SketchDrawerHeightField(props: SketchDrawerHeightFieldProps): Re
             {props.label}
           </label>
           <input
+            data-testid={props.testId}
             id={inputId}
             name={inputId}
             type="number"

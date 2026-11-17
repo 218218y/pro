@@ -16,6 +16,8 @@ export function InteriorDoorTrimSection(props: InteriorDoorTrimSectionProps): Re
         style={{ direction: 'rtl', marginBottom: isDoorTrimControlsOpen ? 10 : 0 }}
       >
         <ModeToggleButton
+          data-testid="sketch-door-trim-toggle"
+          aria-expanded={isDoorTrimControlsOpen}
           active={isDoorTrimControlsOpen}
           className="wp-sketch-box-btn"
           icon={
@@ -40,6 +42,7 @@ export function InteriorDoorTrimSection(props: InteriorDoorTrimSectionProps): Re
       </div>
 
       <div
+        data-testid="sketch-door-trim-panel"
         className={cx('wp-door-trim-panel', isDoorTrimControlsOpen ? '' : 'hidden')}
         style={{
           border: '1px solid rgba(0,0,0,0.08)',
@@ -51,7 +54,7 @@ export function InteriorDoorTrimSection(props: InteriorDoorTrimSectionProps): Re
         <div className="wp-r-label wp-r-label--center" style={{ marginBottom: 8 }}>
           גימור פס
         </div>
-        <div className="wp-layout-grid" style={{ marginBottom: 10 }}>
+        <div className="wp-layout-grid" data-testid="sketch-door-trim-colors" style={{ marginBottom: 10 }}>
           {DOOR_TRIM_COLORS.map(color => (
             <OptionBtn
               key={color.id}

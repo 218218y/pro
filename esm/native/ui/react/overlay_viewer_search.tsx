@@ -12,8 +12,6 @@ import {
 } from './viewer_search_catalog.js';
 import { navigateToViewerSearchDestination } from './viewer_search_navigation.js';
 
-const MAX_RESULTS = 12;
-
 export function ViewerSearchControl(): ReactElement {
   const app = useApp();
   const [open, setOpen] = useState(false);
@@ -27,7 +25,7 @@ export function ViewerSearchControl(): ReactElement {
   const contextState = useStoreSelectorShallow(selectViewerSearchContext, ['ui', 'config'], 'structure');
   const context = useMemo(() => viewerSearchContextKeys(contextState), [contextState]);
   const results = useMemo(
-    () => searchViewerDestinations(query, enabledTabs, MAX_RESULTS, context),
+    () => searchViewerDestinations(query, enabledTabs, undefined, context),
     [query, enabledTabs, context]
   );
   const active = Math.min(selected, Math.max(results.length - 1, 0));
@@ -175,7 +173,9 @@ export function ViewerSearchControl(): ReactElement {
               <div className="wp-viewer-search-empty">לא נמצאה אפשרות מתאימה</div>
             )}
           </div>
-          <div className="wp-viewer-search-hint">↑ ↓ לבחירה · Enter לפתיחה · Esc לסגירה</div>
+          <div className="wp-viewer-search-hint">
+            {results.length} תוצאות · ↑ ↓ לבחירה · Enter לפתיחה · Esc לסגירה
+          </div>
         </div>
       ) : null}
     </div>

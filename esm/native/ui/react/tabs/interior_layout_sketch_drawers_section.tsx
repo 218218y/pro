@@ -85,6 +85,8 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           <div className="wp-r-label wp-r-label--center">מגירות חיצוניות לפי סקיצה</div>
           <div className="wp-r-type-selector type-selector" style={{ direction: 'rtl' }}>
             <ModeToggleButton
+              data-testid="sketch-external-drawers-toggle"
+              aria-expanded={isSketchExtDrawersControlsOpen}
               active={isSketchExternalDrawersToolActive}
               icon={
                 <i
@@ -142,6 +144,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           </div>
 
           <div
+            data-testid="sketch-external-drawer-count"
             className={cx(
               'wp-row',
               'wp-gap-5',
@@ -168,6 +171,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
 
           <div className={cx(isSketchExtDrawersControlsOpen ? '' : 'hidden')}>
             <SketchDrawerHeightField
+              testId="sketch-external-drawer-height"
               label={'גובה מגירה חיצונית (ס"מ)'}
               value={props.sketchExtDrawerHeightDraft}
               onChange={raw => {
@@ -188,6 +192,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
         <div className="wp-r-label wp-r-label--center">מגירות פנימיות לפי סקיצה</div>
         <div className="wp-r-type-selector type-selector" style={{ direction: 'rtl' }}>
           <ModeToggleButton
+            data-testid="sketch-internal-drawers-toggle"
             active={isSketchInternalDrawersToolActive}
             icon={
               <i
@@ -210,6 +215,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
         </div>
 
         <SketchDrawerHeightField
+          testId="sketch-internal-drawer-height"
           label={'גובה מגירה פנימית (ס"מ)'}
           value={props.sketchIntDrawerHeightDraft}
           onChange={raw => {

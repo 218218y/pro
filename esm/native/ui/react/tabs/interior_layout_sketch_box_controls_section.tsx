@@ -1,3 +1,4 @@
+import { sketchBoxControlTestId } from './sketch_box_control_catalog.js';
 import type { ReactElement } from 'react';
 
 import { buildScopedFormFieldId } from '../components/form_field_id.js';
@@ -95,6 +96,8 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
     <div className="wp-field">
       <div className="wp-sketch-box-grid wp-sketch-box-grid--stacked">
         <SketchBoxToolButton
+          control="box-add"
+          expanded={isSketchBoxControlsOpen}
           label="קופסא חופשית"
           active={isSketchBoxControlsOpen}
           iconClass="fas fa-vector-square"
@@ -117,6 +120,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
         />
 
         <SketchBoxNumericField
+          control="box-height"
           label={'גובה קופסא (ס"מ)'}
           value={props.sketchBoxHeightDraft}
           min={SKETCH_BOX_HEIGHT_MIN_CM}
@@ -141,6 +145,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
         {isSketchBoxControlsOpen && (
           <>
             <SketchBoxNumericField
+              control="box-width"
               label={'רוחב קופסא (ס"מ)'}
               value={props.sketchBoxWidthDraft}
               min={SKETCH_BOX_OPTIONAL_DIM_MIN_CM}
@@ -163,6 +168,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
             />
 
             <SketchBoxNumericField
+              control="box-depth"
               label={'עומק קופסא (ס"מ)'}
               value={props.sketchBoxDepthDraft}
               min={SKETCH_BOX_OPTIONAL_DIM_MIN_CM}
@@ -186,6 +192,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
             <SketchBoxToolRow>
               <SketchBoxToolButton
+                control="box-hinge"
                 label="כיוון פתיחת דלת"
                 active={isDoorHingeToolActive}
                 iconClass="fas fa-redo"
@@ -200,6 +207,8 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
             <SketchBoxToolRow>
               <SketchBoxToolButton
+                control="box-base"
+                expanded={props.sketchBoxBasePanelOpen || isBaseToolActive}
                 label="בסיס לקופסא"
                 active={isBaseToolActive}
                 iconClass="fas fa-shoe-prints"
@@ -210,6 +219,8 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
               />
 
               <SketchBoxToolButton
+                control="box-cornice"
+                expanded={props.sketchBoxCornicePanelOpen || isCorniceToolActive}
                 label="קרניז לקופסא"
                 active={isCorniceToolActive}
                 iconClass="fas fa-bezier-curve"
@@ -221,6 +232,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
             </SketchBoxToolRow>
 
             <SketchBoxChoicePanel
+              control="box-base-type"
               title="סוג בסיס לקופסא"
               open={props.sketchBoxBasePanelOpen || isBaseToolActive}
               notice="לחץ על קופסא חופשית כדי להוסיף או לעדכן את הבסיס שלה."
@@ -257,6 +269,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                     </label>
                     <input
                       id={plinthHeightInputId}
+                      data-testid={sketchBoxControlTestId('box-plinth-height')}
                       name={plinthHeightInputId}
                       type="number"
                       className="wp-r-input wp-r-sketch-drawer-height-input"
@@ -282,6 +295,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
             {props.sketchBoxBaseType === 'legs' && (props.sketchBoxBasePanelOpen || isBaseToolActive) ? (
               <>
                 <SketchBoxChoicePanel
+                  control="box-platform"
                   title="במת רגליים"
                   open
                   value={props.sketchBoxLegPlatformMode}
@@ -294,6 +308,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 {props.sketchBoxLegPlatformMode === 'stage' ? (
                   <>
                     <SketchBoxChoicePanel
+                      control="box-platform-side"
                       title="בליטת במה צדדית"
                       open
                       value={props.sketchBoxLegPlatformSideMode}
@@ -307,6 +322,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                       <div className="wp-r-leg-size-fields wp-r-platform-overhang-fields wp-r-sketch-box-platform-overhang-fields">
                         {props.sketchBoxLegPlatformSideMode === 'overhang' ? (
                           <SketchBoxPlatformOverhangField
+                            control="box-platform-side-size"
                             label="בליטה מהצדדים (ס״מ)"
                             value={props.sketchBoxLegPlatformSideOverhangCm}
                             defaultValue={DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM}
@@ -317,6 +333,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                           />
                         ) : null}
                         <SketchBoxPlatformOverhangField
+                          control="box-platform-front-size"
                           label="בליטה מהחזית (ס״מ)"
                           value={props.sketchBoxLegPlatformFrontOverhangCm}
                           defaultValue={DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM}
@@ -331,6 +348,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 ) : null}
 
                 <SketchBoxChoicePanel
+                  control="box-leg-style"
                   title="סוג רגליים"
                   open
                   value={props.sketchBoxLegStyle}
@@ -341,6 +359,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 />
 
                 <SketchBoxChoicePanel
+                  control="box-leg-color"
                   title="צבע רגליים"
                   open
                   value={props.sketchBoxLegColor}
@@ -352,6 +371,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
                 <div className="wp-r-leg-size-fields wp-r-sketch-box-leg-size-fields">
                   <SketchBoxNumericField
+                    control="box-leg-height"
                     label={'גובה רגליים (ס"מ)'}
                     value={props.sketchBoxLegHeightDraft}
                     min={BASE_LEG_HEIGHT_MIN_CM}
@@ -366,6 +386,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                   />
 
                   <SketchBoxNumericField
+                    control="box-leg-width"
                     label={'רוחב רגליים (ס"מ)'}
                     value={props.sketchBoxLegWidthDraft}
                     min={BASE_LEG_WIDTH_MIN_CM}
@@ -383,6 +404,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
             ) : null}
 
             <SketchBoxChoicePanel
+              control="box-cornice-type"
               title="סוג קרניז לקופסא"
               open={props.sketchBoxCornicePanelOpen || isCorniceToolActive}
               notice="לחץ על קופסא חופשית כדי להוסיף קרניז. לחיצה חוזרת על אותו סוג תסיר אותו."
@@ -396,6 +418,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
         )}
         <SketchBoxToolRow>
           <SketchBoxToolButton
+            control="box-divider"
             label="מחיצה עומדת"
             active={isDividerToolActive}
             iconClass="fas fa-grip-lines-vertical"
@@ -406,6 +429,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
           />
 
           <SketchBoxToolButton
+            control="box-horizontal-divider"
             label="מחיצה שוכבת"
             active={isHorizontalDividerToolActive}
             iconClass="fas fa-grip-lines"
@@ -423,6 +447,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
 
         <SketchBoxToolRow>
           <SketchBoxToolButton
+            control="box-door"
             label="דלת 1"
             active={isDoorToolActive}
             iconClass="fas fa-door-closed"
@@ -434,6 +459,7 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
           />
 
           <SketchBoxToolButton
+            control="box-double-door"
             label="2 דלתות"
             active={isDoubleDoorToolActive}
             iconClass="fas fa-columns"
