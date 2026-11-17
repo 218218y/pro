@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-15T14:54:20.831Z",
+  "generatedAt": "2026-11-17T21:06:19.830Z",
   "totals": {
-    "tests": 1295,
-    "unitRunnerTests": 1280,
+    "tests": 1296,
+    "unitRunnerTests": 1281,
     "e2eTests": 15,
     "nonTestRuntimeFiles": 39,
     "packageTestReferences": 16,
@@ -22,7 +22,7 @@
   "categories": {
     "contract": 400,
     "runtime-unit": 358,
-    "integration": 489,
+    "integration": 490,
     "persistence-ingress": 23,
     "e2e-smoke": 16,
     "perf-smoke": 9
@@ -3708,6 +3708,10 @@
     },
     {
       "file": "tests/canvas_picking_sketch_module_vertical_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_removal_parity_runtime.test.ts",
       "category": "integration"
     },
     {
