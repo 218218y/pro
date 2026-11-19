@@ -52,7 +52,7 @@ const MODULE_CONTRACTS = [
     imports: {
       './canvas_picking_click_route_actions.js': ['tryHandleCanvasPickingActionRoute'],
       './canvas_picking_click_route_cell_dims.js': ['tryHandleCanvasPickingCellDimsRoute'],
-      './canvas_picking_click_manual_sketch_free_reset.js': ['resetCanvasPickingEmptyClick'],
+      './canvas_picking_click_empty.js': ['resetCanvasPickingEmptyClick'],
       './canvas_picking_interior_extension_registry.js': [
         'isCanvasPickingInteriorClickMode',
         'requireCanvasPickingInteriorExtension',
@@ -94,7 +94,8 @@ const MODULE_CONTRACTS = [
     file: 'esm/native/services/canvas_picking_interior_extension.ts',
     exports: ['installCanvasPickingInteriorExtension'],
     imports: {
-      './canvas_picking_click_route_manual.js': ['tryHandleCanvasPickingManualOrEmptyRoute'],
+      './canvas_picking_click_empty.js': ['resetCanvasPickingEmptyClick'],
+      './canvas_picking_click_route_manual.js': ['tryHandleCanvasPickingManualRoute'],
       './canvas_picking_click_route_layout.js': ['tryHandleCanvasPickingLayoutRoute'],
       './canvas_picking_hover_flow_nonsplit_sketch.js': ['tryHandleCanvasNonSplitSketchHover'],
       './canvas_picking_hover_flow_nonsplit_preview_interior.js': [
@@ -105,13 +106,11 @@ const MODULE_CONTRACTS = [
   },
   {
     file: 'esm/native/services/canvas_picking_click_route_manual.ts',
-    exports: ['tryHandleCanvasPickingManualOrEmptyRoute'],
+    exports: ['tryHandleCanvasPickingManualRoute'],
     imports: {
-      './canvas_picking_click_manual_sketch_free_flow.js': [
-        'resetCanvasPickingEmptyClick',
-        'tryHandleCanvasManualSketchFreeClick',
-      ],
+      './canvas_picking_click_manual_sketch_free_flow.js': ['tryHandleCanvasManualSketchFreeClick'],
     },
+    forbiddenImports: ['./canvas_picking_click_empty.js'],
   },
   {
     file: 'esm/native/services/canvas_picking_click_route_layout.ts',

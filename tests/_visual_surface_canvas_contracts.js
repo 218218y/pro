@@ -110,10 +110,6 @@ const manualFreeClickRecent = readSource(
   '../esm/native/services/canvas_picking_click_manual_sketch_free_recent.ts',
   import.meta.url
 );
-const manualFreeClickReset = readSource(
-  '../esm/native/services/canvas_picking_click_manual_sketch_free_reset.ts',
-  import.meta.url
-);
 
 const paintSeam = readSource('../esm/native/services/canvas_picking_paint_flow.ts', import.meta.url);
 const paintTargets = readSource('../esm/native/services/canvas_picking_paint_targets.ts', import.meta.url);
@@ -449,7 +445,6 @@ test('[canvas-family] layout-edit + manual/free sketch flows stay decomposed by 
       /from '\.\/canvas_picking_click_manual_sketch_free_content\.js';/,
       /from '\.\/canvas_picking_click_manual_sketch_free_box\.js';/,
       /from '\.\/canvas_picking_click_manual_sketch_free_recent\.js';/,
-      /from '\.\/canvas_picking_click_manual_sketch_free_reset\.js';/,
     ],
     'manual/free click seam'
   );
@@ -481,12 +476,6 @@ test('[canvas-family] layout-edit + manual/free sketch flows stay decomposed by 
     manualFreeClickRecent,
     [/export function isRecentModuleScopedSketchHover\(/],
     'manual/free click recent'
-  );
-  assertMatchesAll(
-    assert,
-    manualFreeClickReset,
-    [/export function resetCanvasPickingEmptyClick\(/],
-    'manual/free click reset'
   );
 });
 

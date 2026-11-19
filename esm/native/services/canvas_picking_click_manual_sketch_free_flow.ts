@@ -90,5 +90,3 @@ export function tryHandleCanvasManualSketchFreeClick(args: CanvasPickingManualSk
 
   return false;
 }
-
-export { resetCanvasPickingEmptyClick } from './canvas_picking_click_manual_sketch_free_reset.js';

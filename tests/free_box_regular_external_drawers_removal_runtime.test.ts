@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_external.ts';
 import { tryApplyManualLayoutSketchDirectHitActions } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts';
-import { tryHandleCanvasPickingManualOrEmptyRoute } from '../esm/native/services/canvas_picking_click_route_manual.ts';
+import { tryHandleCanvasPickingManualRoute } from '../esm/native/services/canvas_picking_click_route_manual.ts';
 import { firstRenderableHitIsSketchFreeBox } from '../esm/native/services/canvas_picking_sketch_free_box_hit_policy.ts';
 import { EXT_DRAWER_MODE_HOVER_TOOL } from '../esm/native/services/canvas_picking_ext_drawer_mode_hover.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
@@ -392,7 +392,7 @@ test('manual free-box route removes regular external drawers before stale hover 
   } as never;
   let patchMeta: Record<string, unknown> | null = null;
 
-  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+  const handled = tryHandleCanvasPickingManualRoute({
     App,
     ndcX: 0,
     ndcY: 0,
@@ -546,7 +546,7 @@ test('manual sketch external drawer route respects an add hover above an existin
   } as never;
   let patched = false;
 
-  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+  const handled = tryHandleCanvasPickingManualRoute({
     App,
     ndcX: 0,
     ndcY: 0,
@@ -605,7 +605,7 @@ test('manual sketch external drawer route still removes the exact drawer selecte
   } as never;
   let patchMeta: Record<string, unknown> | null = null;
 
-  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+  const handled = tryHandleCanvasPickingManualRoute({
     App,
     ndcX: 0,
     ndcY: 0,
@@ -663,7 +663,7 @@ test('manual sketch external drawer route removes an internal sketch drawer when
   } as never;
   let patchMeta: Record<string, unknown> | null = null;
 
-  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+  const handled = tryHandleCanvasPickingManualRoute({
     App,
     ndcX: 0,
     ndcY: 0,
@@ -719,7 +719,7 @@ test('manual sketch external drawer route does not remove an internal drawer whe
   } as never;
   let patched = false;
 
-  const handled = tryHandleCanvasPickingManualOrEmptyRoute({
+  const handled = tryHandleCanvasPickingManualRoute({
     App,
     ndcX: 0,
     ndcY: 0,

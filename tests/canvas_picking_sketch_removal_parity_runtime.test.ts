@@ -19,7 +19,7 @@ function createScene(
     sketchExtras: extra,
   };
   const state = {
-    mode: { primary: 'manual_layout', opts: { manualTool: tool } },
+    mode: { primary: 'manual_layout', opts: { manualTool: tool } as Record<string, unknown> },
     ui: {},
     config: { modulesConfiguration: [cfg, { ...structuredClone(cfg), sketchExtras: {} }] },
   };
@@ -45,6 +45,11 @@ function createScene(
     },
     render: { camera, wardrobeGroup, renderer: {}, scene: new THREE.Scene() },
     actions: {
+      mode: {
+        set(primary: string, opts: Record<string, unknown>) {
+          state.mode = { primary, opts };
+        },
+      },
       modules: {
         ensureForStack: (_stack: string, key: number) => state.config.modulesConfiguration[key],
         patchForStack: (_stack: string, _key: unknown, mutate: (cfg: ModuleConfigLike) => void) => {
@@ -55,6 +60,7 @@ function createScene(
       },
     },
     services: {
+      doors: { setOpen() {} },
       runtimeCache: {
         internalGridMap: {
           '0': {
@@ -191,10 +197,11 @@ test('a stale free-box rod removal cannot fall through to adding a module shelf'
   assert.deepEqual(cfg.sketchExtras?.shelves ?? [], []);
 });
 
-test('a missing current hover target cannot consume the previous removal or build behind it', () => {
-  const { App, cfg, hover, writes } = createScene('sketch_shelf:regular');
+test('an empty click exits sketch editing without applying a stale removal', () => {
+  const { App, cfg, state, hover, writes } = createScene('sketch_shelf:regular');
   hover(0);
   __coreHandleCanvasClickNDC(App, 0.95, 0.95);
+  assert.deepEqual(state.mode, { primary: 'none', opts: {} });
   assert.equal(writes.length, 0);
   assert.equal(cfg.sketchExtras?.rods?.length, 1);
   assert.deepEqual(cfg.sketchExtras?.shelves ?? [], []);

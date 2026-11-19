@@ -5,7 +5,8 @@ import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { __wp_clearSketchHover, __wp_readSketchHover } from './canvas_picking_local_helpers.js';
 import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
-import { tryHandleCanvasPickingManualOrEmptyRoute } from './canvas_picking_click_route_manual.js';
+import { resetCanvasPickingEmptyClick } from './canvas_picking_click_empty.js';
+import { tryHandleCanvasPickingManualRoute } from './canvas_picking_click_route_manual.js';
 import { tryHandleCanvasPickingLayoutRoute } from './canvas_picking_click_route_layout.js';
 import { tryHandleCanvasNonSplitSketchHover } from './canvas_picking_hover_flow_nonsplit_sketch.js';
 import { tryHandleCanvasNonSplitInteriorPreviewRoutes } from './canvas_picking_hover_flow_nonsplit_preview_interior.js';
@@ -53,8 +54,10 @@ function resolveSketchClickRoute(args: CanvasPickingClickRouteArgs): CanvasPicki
 const INTERIOR_EXTENSION: CanvasPickingInteriorExtension = Object.freeze({
   tryHandleClickRoute(args) {
     const resolved = resolveSketchClickRoute(args);
+    // Free placements can have a valid sketch command even when the ray misses the wardrobe.
+    if (resolved && tryHandleCanvasPickingManualRoute(resolved)) return true;
+    if (resetCanvasPickingEmptyClick(args)) return true;
     if (!resolved) return true;
-    if (tryHandleCanvasPickingManualOrEmptyRoute(resolved)) return true;
     return tryHandleCanvasPickingLayoutRoute(resolved);
   },
   tryHandleInteriorPreview: tryHandleCanvasNonSplitInteriorPreviewRoutes,

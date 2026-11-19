@@ -18,10 +18,53 @@ import {
   setCellDimsMode,
   setDoorAuthoringMode,
   setDoorFeatureToggle,
+  setInternalDrawersEnabled,
   waitForProjectActionEvent,
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  for (const { name, buttonId, tool } of [
+    {
+      name: 'sketch external drawers',
+      buttonId: 'interior-external-drawers-sketch-button',
+      tool: /^sketch_ext_drawers:/u,
+    },
+    {
+      name: 'internal drawers',
+      buttonId: 'interior-internal-drawers-mode-button',
+      tool: /^sketch_int_drawers/u,
+    },
+  ]) {
+    test(`an empty canvas click exits ${name} editing @critical`, async ({ page }) => {
+      const issues = collectRuntimeIssues(page);
+      await gotoSmokeApp(page);
+      const editButton = page.getByTestId(buttonId);
+      if (buttonId === 'interior-internal-drawers-mode-button') {
+        await setInternalDrawersEnabled(page, true);
+      } else {
+        await openMainTab(page, 'interior');
+        await editButton.click();
+      }
+      await expect
+        .poll(async () => (await readDebugStoreState(page)).mode)
+        .toMatchObject({ primary: 'manual_layout', opts: { manualTool: expect.stringMatching(tool) } });
+      await expect(editButton).toHaveAttribute('aria-pressed', 'true');
+
+      const point = { x: -0.9, y: -0.7 };
+      expect(await inspectCanvasViaDebugNdc(page, point)).toMatchObject({ partId: null, moduleIndex: null });
+      const canvas = page.locator('#viewer-container canvas').first();
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('Expected a visible viewer canvas');
+      await canvas.click({
+        position: { x: ((1 + point.x) / 2) * box.width, y: ((1 - point.y) / 2) * box.height },
+      });
+
+      await expect(editButton).toHaveAttribute('aria-pressed', 'false');
+      expect((await readDebugStoreState(page)).mode).toMatchObject({ primary: 'none' });
+      expectNoRuntimeIssues(issues);
+    });
+  }
+
   test('a stationary shelf-tool pointer removes a hanging rod instead of building a shelf @critical', async ({
     page,
   }) => {

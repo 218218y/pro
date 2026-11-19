@@ -38,7 +38,7 @@ const variants = [
     boundaries: [
       {
         file: 'esm/native/services/canvas_picking_click_route_manual.js',
-        exports: [['tryHandleCanvasPickingManualOrEmptyRoute', 'false']],
+        exports: [['tryHandleCanvasPickingManualRoute', 'false']],
       },
       {
         file: 'esm/native/services/canvas_picking_click_route_layout.js',
@@ -61,7 +61,7 @@ const variants = [
     boundaries: [
       {
         file: 'esm/native/services/canvas_picking_click_route_manual.js',
-        exports: [['tryHandleCanvasPickingManualOrEmptyRoute', 'false']],
+        exports: [['tryHandleCanvasPickingManualRoute', 'false']],
       },
       {
         file: 'esm/native/services/canvas_picking_hover_flow_nonsplit_sketch.js',
