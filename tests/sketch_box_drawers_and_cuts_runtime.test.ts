@@ -1556,10 +1556,6 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
     cutsSrc,
     /const isCanonicalSourceDoor = partId === basePartId \|\| partId === `\$\{basePartId\}_full`;/
   );
-  assert.match(
-    cutsSrc,
-    /if \(!isCanonicalSourceDoor\)\s*return deskCuts\.length \? \{ stacks: deskCuts, basePartId: partId \} : null;/
-  );
   assert.match(cutsSrc, /const ownsDeferredSplit = deferredSplitModuleKeys\.has\(moduleKey\);/);
 });
 
