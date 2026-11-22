@@ -101,6 +101,27 @@ test('rod sketch preview guide lines can be anchored to the intended handle cent
   assert.equal(ctx.boxLeft.scale.y, 3);
 });
 
+test('desk removal uses the red overlay on every preview board', () => {
+  const ctx = {
+    ...createRodContext(),
+    kind: 'built_in_desk',
+    isRemove: true,
+    input: {
+      deskPreviewBoards: [
+        { x: 0.1, y: 0.8, z: 0.4, width: 0.6, height: 0.018, depth: 1.2 },
+        { x: 0.1, y: 0.66, z: 0.4, width: 0.6, height: 0.018, depth: 1.2 },
+      ],
+    },
+    ud: { __matRemoveOverlay: 'remove', __matBoxOverlay: 'add' },
+    externalDrawerMeshes: [],
+  };
+  assert.equal(applyLinearSketchPlacementPreview(ctx as never), true);
+  assert.equal(ctx.shelfA.material, 'remove');
+  assert.equal(ctx.boxTop.material, 'remove');
+  assert.equal(ctx.shelfA.scale.x, 0.6);
+  assert.equal(ctx.shelfA.scale.z, 1.2);
+});
+
 test('winter shelf placement preview uses four frame bars with an open center for add and remove', () => {
   for (const isRemove of [false, true]) {
     const ctx = {

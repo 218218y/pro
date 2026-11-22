@@ -9,9 +9,8 @@ export type BuiltInDeskOptions = {
 
 export type BuiltInDeskPlacement = BuiltInDeskOptions & {
   topNorm: number;
+  drawerSide: BuiltInDeskSide;
 };
-
-export type BuiltInDesks = Partial<Record<BuiltInDeskSide, BuiltInDeskPlacement>>;
 
 export type BuiltInDeskHostGeometry = {
   leftX: number;
@@ -21,16 +20,14 @@ export type BuiltInDeskHostGeometry = {
   backZ: number;
   frontZ: number;
   thickness: number;
-  leftSide: boolean;
-  rightSide: boolean;
-  leftWallThickness: number;
-  rightWallThickness: number;
+  preferredDrawerSide?: BuiltInDeskSide;
 };
 
 export type BuiltInDeskHost = {
   moduleKey: number | string;
   stack: 'top' | 'bottom';
   boxId?: string;
+  boxIsStandalone?: boolean;
   geometry: BuiltInDeskHostGeometry;
 };
 

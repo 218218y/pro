@@ -55,7 +55,7 @@ export function BuiltInDeskOptionsPanel(props: {
     <div className="wp-sketch-shelf-variant-settings" id={id} role="group" aria-label="הגדרות שולחן מובנה">
       <div className="wp-field">
         <label className="wp-r-label" htmlFor={`${id}-length`}>
-          אורך מחוץ לתא (ס״מ)
+          אורך קדימה מהחזית (ס״מ)
         </label>
         <input
           className="wp-r-input"
@@ -116,10 +116,7 @@ export function BuiltInDeskOptionsPanel(props: {
           תלוי על הקיר
         </OptionButton>
       </div>
-      <p>
-        לחצו בתא קצה או בקופסה בגובה הפלטה. בקופסה או בארון עם תא אחד, בחרו את הצד לפי מיקום הסמן. לשינוי
-        ההגדרות, לחצו על השולחן הקיים.
-      </p>
+      <p>לחצו בתא או בקופסה בגובה הפלטה. לחצו על שולחן קיים להחלת הגדרות חדשות או להסרה כשהתצוגה אדומה.</p>
     </div>
   );
 }

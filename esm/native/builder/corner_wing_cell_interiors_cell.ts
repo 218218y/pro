@@ -90,10 +90,7 @@ export function resolveCornerWingDeskHost(
         CORNER_WING_INTERIOR_POLICY.fullDepthCenterBackInsetM,
       frontZ: cellDepth - runtime.wingD,
       thickness: runtime.woodThick,
-      leftSide: false,
-      rightSide: cell.idx === runtime.cornerCells.length - 1,
-      leftWallThickness: runtime.woodThick,
-      rightWallThickness: runtime.woodThick,
+      ...(cell.idx === runtime.cornerCells.length - 1 ? { preferredDrawerSide: 'left' } : {}),
     },
   };
 }

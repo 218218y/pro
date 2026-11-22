@@ -4,7 +4,10 @@ import assert from 'node:assert/strict';
 import { tryHandleManualLayoutSketchHoverPreviewImpl } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts';
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
-import { resolveBuiltInDeskEdit } from '../esm/native/services/canvas_picking_built_in_desk.ts';
+import {
+  commitBuiltInDeskEdit,
+  resolveBuiltInDeskEdit,
+} from '../esm/native/services/canvas_picking_built_in_desk.ts';
 import type { BuiltInDeskHost } from '../types/built_in_desk.ts';
 
 test('built-in desk resolves a standalone box in front of a wardrobe and updates its saved height', () => {
@@ -21,10 +24,6 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
       backZ: -0.24,
       frontZ: 0.32,
       thickness: 0.018,
-      leftSide: true,
-      rightSide: true,
-      leftWallThickness: 0.018,
-      rightWallThickness: 0.018,
     },
   };
   const box = { id: 'outside-box', freePlacement: true };
@@ -42,32 +41,54 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
   };
   const edit = resolveBuiltInDeskEdit(args);
   assert.ok(edit);
-  assert.equal(edit.side, 'right');
+  assert.equal(edit.placement.drawerSide, 'right');
   assert.equal(edit.host.boxId, box.id);
   assert.ok(Math.abs(edit.plan.surfaceY - clickPoint.y) < 1e-12);
   assert.ok(Math.abs(edit.plan.top.x - edit.plan.top.width / 2 - host.geometry.leftX) < 1e-12);
-  assert.ok(Math.abs(edit.plan.top.x + edit.plan.top.width / 2 - 2.618) < 1e-12);
+  assert.ok(Math.abs(edit.plan.top.x + edit.plan.top.width / 2 - host.geometry.rightX) < 1e-12);
+  assert.ok(Math.abs(edit.plan.top.z - edit.plan.top.depth / 2 - host.geometry.backZ) < 1e-12);
+  assert.ok(Math.abs(edit.plan.top.z + edit.plan.top.depth / 2 - 1.32) < 1e-12);
+  assert.ok(edit.plan.drawers.every(drawer => drawer.x === edit.plan.drawers[0]?.x));
+  assert.ok((edit.plan.drawers[0]?.z ?? 0) > host.geometry.frontZ);
   assert.equal(edit.plan.drawers.length, 3);
   assert.equal(edit.plan.drawerPartitions.length, 4);
   assert.equal(edit.plan.support?.y, (edit.plan.support?.height ?? 0) / 2);
 
-  const update = resolveBuiltInDeskEdit({
+  const config = { sketchExtras: { boxes: [{ ...box, builtInDesk: edit.placement }] } };
+  const builtHit = {
     ...args,
-    options: { lengthCm: 120, drawerCount: 4, support: 'wall' },
     intersects: [
       {
-        object: { ...object, userData: { ...object.userData, __wpBuiltInDeskSide: 'right' } },
+        object: { ...object, userData: { ...object.userData, __wpBuiltInDeskPart: true } },
         point: clickPoint,
       },
     ],
     projectPoint: () => ({ ...clickPoint, y: 0.62 }),
-    readConfig: () => ({ sketchExtras: { boxes: [{ ...box, builtInDesks: { right: edit.placement } }] } }),
+    readConfig: () => config,
+  };
+  const update = resolveBuiltInDeskEdit({
+    ...builtHit,
+    options: { lengthCm: 120, drawerCount: 4, support: 'wall' },
   });
   assert.ok(update);
   assert.equal(update.placement.topNorm, edit.placement.topNorm);
   assert.equal(update.plan.surfaceY, edit.plan.surfaceY);
   assert.equal(update.plan.drawers.length, 4);
   assert.equal(update.plan.support?.height, 0.06);
+  assert.equal(update.remove, false);
+
+  const removal = resolveBuiltInDeskEdit(builtHit);
+  assert.ok(removal?.remove);
+  const App = createApp();
+  App.actions = {
+    modules: {
+      patchForStack(_stack: string, _key: number, mutate: (draft: typeof config) => void) {
+        mutate(config);
+      },
+    },
+  };
+  commitBuiltInDeskEdit(App, removal);
+  assert.deepEqual(config.sketchExtras.boxes, [box]);
 });
 
 function requireSketchBoxCommandHover(value: unknown) {

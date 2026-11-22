@@ -3,7 +3,6 @@ import type {
   BuiltInDeskHost,
   BuiltInDeskOptions,
   BuiltInDeskPlacement,
-  BuiltInDeskSide,
 } from '../../../types/built_in_desk.js';
 import {
   BUILT_IN_DESK_TOOL_PREFIX,
@@ -47,11 +46,19 @@ function readDeskHit(hit: RaycastHitLike) {
   for (let node: HitObjectLike | null | undefined = hit.object; node; node = node.parent) {
     const host = asRecord<BuiltInDeskHost>(node.userData?.__wpBuiltInDeskHost);
     if (!host || !node.parent) continue;
-    const side = node.userData?.__wpBuiltInDeskSide;
-    const deskSide: BuiltInDeskSide | null = side === 'left' || side === 'right' ? side : null;
-    return { hit, host, anchorParent: node.parent, side: deskSide };
+    return { hit, host, anchorParent: node.parent, hitDesk: node.userData?.__wpBuiltInDeskPart === true };
   }
   return null;
+}
+
+function sameDesk(a: BuiltInDeskPlacement | null, b: BuiltInDeskPlacement | null): boolean {
+  return (
+    a?.lengthCm === b?.lengthCm &&
+    a?.drawerCount === b?.drawerCount &&
+    a?.support === b?.support &&
+    a?.topNorm === b?.topNorm &&
+    a?.drawerSide === b?.drawerSide
+  );
 }
 
 function findDeskHit(intersects: readonly RaycastHitLike[]) {
@@ -87,34 +94,27 @@ export function resolveBuiltInDeskEdit(args: {
   const pivotX = transform?.pivotX ?? 0;
   const pivotZ = transform?.pivotZ ?? 0;
   const centerX = (geometry.leftX + geometry.rightX) / 2;
-  const side: BuiltInDeskSide =
-    target.side ??
-    (geometry.leftSide && (!geometry.rightSide || point.x + pivotX < centerX) ? 'left' : 'right');
-  const current = readBuiltInDeskPlacement(asRecord(owner?.builtInDesks)?.[side]);
-  if (target.side && !current) return null;
+  const current = readBuiltInDeskPlacement(owner?.builtInDesk);
+  if (target.hitDesk && !current) return null;
+  const drawerSide =
+    current?.drawerSide ?? geometry.preferredDrawerSide ?? (point.x + pivotX < centerX ? 'left' : 'right');
   const topNorm =
-    target.side && current
+    target.hitDesk && current
       ? current.topNorm
       : Math.min(1, Math.max(0, (point.y - geometry.bottomY) / (geometry.topY - geometry.bottomY)));
-  const placement = { ...options, topNorm };
-  const plan = planBuiltInDesk(geometry, side, placement);
+  const placement = { ...options, topNorm, drawerSide };
+  const plan = planBuiltInDesk(geometry, placement);
   if (!plan) return null;
-  return { anchorParent, host, moduleKey, current, side, placement, plan, pivotX, pivotZ };
+  const remove = target.hitDesk && sameDesk(current, placement);
+  return { anchorParent, host, moduleKey, current, placement, plan, pivotX, pivotZ, remove };
 }
 
 type DeskEdit = NonNullable<ReturnType<typeof resolveBuiltInDeskEdit>>;
 
 export function commitBuiltInDeskEdit(App: AppContainer, edit: DeskEdit): void {
-  const { host, moduleKey, side, placement, current } = edit;
-  const op = 'builtInDesk.place';
-  if (
-    current &&
-    current.topNorm === placement.topNorm &&
-    current.lengthCm === placement.lengthCm &&
-    current.drawerCount === placement.drawerCount &&
-    current.support === placement.support
-  )
-    return;
+  const { host, moduleKey, placement, current, remove } = edit;
+  const op = remove ? 'builtInDesk.remove' : 'builtInDesk.place';
+  if (!remove && sameDesk(current, placement)) return;
   commitCanvasModuleStructuralPatch({
     App,
     moduleKey,
@@ -125,16 +125,9 @@ export function commitBuiltInDeskEdit(App: AppContainer, edit: DeskEdit): void {
       if (host.boxId === undefined) config.sketchExtras ??= {};
       const owner = readDeskOwner(config, host.boxId);
       if (!owner) return false;
-      const placements = asRecord(owner.builtInDesks);
-      const saved: BuiltInDeskPlacement | null = readBuiltInDeskPlacement(placements?.[side]);
-      if (
-        saved?.topNorm !== current?.topNorm ||
-        saved?.lengthCm !== current?.lengthCm ||
-        saved?.drawerCount !== current?.drawerCount ||
-        saved?.support !== current?.support
-      )
-        return false;
-      owner.builtInDesks = { ...placements, [side]: placement };
+      if (!sameDesk(readBuiltInDeskPlacement(owner.builtInDesk), current)) return false;
+      if (remove) delete owner.builtInDesk;
+      else owner.builtInDesk = placement;
       return true;
     },
   });
@@ -143,7 +136,7 @@ export function commitBuiltInDeskEdit(App: AppContainer, edit: DeskEdit): void {
 function makeDeskPreview(App: AppContainer, edit: DeskEdit): SketchPlacementPreviewArgsLike {
   const { plan, anchorParent, host, pivotX, pivotZ } = edit;
   const { top } = plan;
-  const frontZ = host.geometry.frontZ - pivotZ + 0.015;
+  const frontZ = top.z + top.depth / 2 - pivotZ + 0.015;
   const centerX = (host.geometry.leftX + host.geometry.rightX) / 2 - pivotX;
   const previewBoards = [plan.top, plan.bottom, ...plan.drawers, ...(plan.support ? [plan.support] : [])].map(
     board => ({ ...board, x: board.x - pivotX, z: board.z - pivotZ })
@@ -151,6 +144,7 @@ function makeDeskPreview(App: AppContainer, edit: DeskEdit): SketchPlacementPrev
   return {
     ...makePreviewArgs(App),
     kind: 'built_in_desk',
+    op: edit.remove ? 'remove' : 'add',
     anchorParent,
     x: top.x - pivotX,
     y: top.y,

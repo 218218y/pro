@@ -15,6 +15,7 @@ import {
   readGeometryUserDataPositiveNumberKey,
 } from './geometry_user_data_contracts.js';
 import { getSketchBoxDoorPendingStateKey, readStringOrNull } from './post_build_visual_overlay_keys.js';
+import { readBuiltInDeskDoorOpening } from './render_built_in_desk.js';
 import {
   applySketchDrawerDoorCuts,
   createSketchDoorCutsRuntime,
@@ -93,8 +94,19 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
   const boxStacks = groupSketchDrawerStackBounds(
     stackBounds.map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }))
   );
+  const deskBounds = getDrawersArray(App).flatMap(drawer => {
+    const opening = readBuiltInDeskDoorOpening(drawer);
+    if (!opening?.host.boxId) return [];
+    const { moduleKey, stack, boxId } = opening.host;
+    const key = getSketchBoxDoorPendingStateKey(
+      stack === 'bottom' && /^\d+$/.test(String(moduleKey)) ? `lower_${moduleKey}` : String(moduleKey),
+      boxId
+    );
+    return [{ key, xMin: -Infinity, xMax: Infinity, yMin: opening.yMin, yMax: opening.yMax }];
+  });
+  const desksByBox = groupSketchDrawerStackBounds(deskBounds);
   const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));
-  if (!boxStacks.size && !splitMap) return;
+  if (!boxStacks.size && !desksByBox.size && !splitMap) return;
   const runtime = createSketchDoorCutsRuntime({
     App,
     THREE,
@@ -121,12 +133,13 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       const moduleKey = readStringOrNull(ud.__wpSketchModuleKey);
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
       const stacks = boxStacks.get(boxKey) || [];
+      const deskCuts = desksByBox.get(boxKey) ?? [];
       const { basePartId, splitPosList } = readSketchDoorSplitSelection(
         cfg,
         typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
       );
-      if (!stacks.length && !splitPosList.length) return null;
-      return { stacks, basePartId, splitPosList };
+      if (!stacks.length && !deskCuts.length && !splitPosList.length) return null;
+      return { stacks: [...stacks, ...deskCuts], basePartId, splitPosList };
     },
   });
 }

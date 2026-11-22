@@ -4,7 +4,7 @@ import { applyInteriorLayout } from './interior_pipeline.js';
 import { appendHingedDoorOpsForModule } from './hinged_doors_pipeline.js';
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
-import { renderBuiltInDesks } from './render_built_in_desk.js';
+import { renderBuiltInDesk } from './render_built_in_desk.js';
 import { asValueRecord } from './render_interior_sketch_shared.js';
 import {
   advanceDoorCounterPastFrontClosure,
@@ -30,7 +30,7 @@ export function applyModuleContents(
   metrics: ModuleVerticalMetrics,
   startDoorOfModule: number,
   frontClosurePlan: RemovedFrameSideFrontClosurePlan | null,
-  deskHost: BuiltInDeskHost
+  deskHost: BuiltInDeskHost | null
 ): void {
   const wardrobeGroup = getWardrobeGroup(runtime.App);
 
@@ -174,11 +174,11 @@ export function applyModuleContents(
     isInternalDrawersEnabled: runtime.isInternalDrawersEnabled,
   });
 
-  const builtInDesks = asValueRecord(frame.config.sketchExtras)?.builtInDesks;
-  if (builtInDesks && wardrobeGroup) {
-    renderBuiltInDesks({
+  const builtInDesk = asValueRecord(frame.config.sketchExtras)?.builtInDesk;
+  if (builtInDesk && deskHost && wardrobeGroup) {
+    renderBuiltInDesk({
       host: deskHost,
-      placements: builtInDesks,
+      placement: builtInDesk,
       createBoard: runtime.createBoard,
       material: currentBraceShelfMat,
       getPartMaterial: runtime.getPartMaterial,

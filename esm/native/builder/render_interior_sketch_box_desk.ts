@@ -3,7 +3,7 @@ import type {
   RenderInteriorSketchBoxesArgs,
   ResolvedSketchBoxState,
 } from './render_interior_sketch_boxes_shared.js';
-import { markBuiltInDeskHost, renderBuiltInDesks } from './render_built_in_desk.js';
+import { markBuiltInDeskHost, renderBuiltInDesk } from './render_built_in_desk.js';
 
 export function applySketchBoxBuiltInDesks(
   args: RenderInteriorSketchBoxesArgs,
@@ -19,6 +19,7 @@ export function applySketchBoxBuiltInDesks(
     moduleKey,
     stack,
     boxId: shell.boxId,
+    boxIsStandalone: shell.isFreePlacement,
     geometry: {
       leftX: geometry.centerX - geometry.innerW / 2,
       rightX: geometry.centerX + geometry.innerW / 2,
@@ -27,10 +28,6 @@ export function applySketchBoxBuiltInDesks(
       backZ: geometry.innerBackZ,
       frontZ: shell.frontZ,
       thickness: args.shelfThick,
-      leftSide: true,
-      rightSide: true,
-      leftWallThickness: (geometry.outerW - geometry.innerW) / 2,
-      rightWallThickness: (geometry.outerW - geometry.innerW) / 2,
     },
   };
 
@@ -39,10 +36,10 @@ export function applySketchBoxBuiltInDesks(
   }
 
   const Group = args.THREE?.Group;
-  if (!shell.box.builtInDesks || !Group || !args.drawersArray) return;
-  renderBuiltInDesks({
+  if (!shell.box.builtInDesk || !Group || !args.drawersArray) return;
+  renderBuiltInDesk({
     host,
-    placements: shell.box.builtInDesks,
+    placement: shell.box.builtInDesk,
     createBoard: args.createBoard,
     material: shell.boxMat,
     ...(args.getPartMaterial ? { getPartMaterial: args.getPartMaterial } : {}),

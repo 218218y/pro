@@ -59,17 +59,27 @@ test.describe('Canvas pointer parity smoke', () => {
     await expect.poll(config).toMatchObject({
       modulesConfiguration: expect.arrayContaining([
         expect.objectContaining({
-          sketchExtras: { builtInDesks: { left: expect.objectContaining(bottomPlacement) } },
+          sketchExtras: { builtInDesk: expect.objectContaining(bottomPlacement) },
         }),
       ]),
     });
 
     await page.getByTestId('interior-built-in-desk').click();
+    const viewer = page.locator('#viewer-container canvas').first();
+    const viewerBounds = await viewer.boundingBox();
+    if (!viewerBounds) throw new Error('Expected a visible viewer canvas');
+    const orbitX = viewerBounds.x + viewerBounds.width / 2;
+    const orbitY = viewerBounds.y + viewerBounds.height / 2;
+    await page.mouse.move(orbitX, orbitY);
+    await page.mouse.down();
+    await page.mouse.move(orbitX - viewerBounds.height * 0.12, orbitY, { steps: 8 });
+    await page.mouse.up();
+
     const findDeskPart = async (suffix: string) =>
       page.evaluate(partSuffix => {
         const canvas = window.__WP_DEBUG__!.canvas;
-        for (let x = -0.92; x <= 0.3; x += 0.025) {
-          for (let y = -0.75; y <= 0.4; y += 0.018) {
+        for (let x = -0.92; x <= 0.65; x += 0.025) {
+          for (let y = -0.94; y <= 0.4; y += 0.018) {
             const partId = canvas.inspectNdc(x, y)?.partId;
             if (partId?.startsWith('built_in_desk_') && partId.endsWith(partSuffix)) {
               return { x, y, partId };
@@ -92,7 +102,7 @@ test.describe('Canvas pointer parity smoke', () => {
     for (const suffix of ['_front_1', '_leg']) {
       const part = await findDeskPart(suffix);
       if (!part) throw new Error(`Expected a visible desk part for ${suffix}`);
-      const canvas = await page.locator('#viewer-container canvas').first().boundingBox();
+      const canvas = await viewer.boundingBox();
       if (!canvas) throw new Error('Expected a visible viewer canvas');
       const x = canvas.x + ((part.x + 1) * canvas.width) / 2;
       const y = canvas.y + ((1 - part.y) * canvas.height) / 2;
@@ -110,16 +120,14 @@ test.describe('Canvas pointer parity smoke', () => {
     await sketch.getByTestId('sketch-built-in-desk-drawers').selectOption('3');
     await sketch.getByTestId('sketch-built-in-desk-wall').click();
 
-    const deskPoint = await findDeskPart('_front_1');
+    const deskPoint = await findDeskPart('_top');
     if (!deskPoint) throw new Error('Expected a reachable built-in desk part');
     await clickCanvasViaDebugNdc(page, deskPoint);
     const updatedDesk = {
       modulesConfiguration: expect.arrayContaining([
         expect.objectContaining({
           sketchExtras: {
-            builtInDesks: {
-              left: expect.objectContaining({ lengthCm: 75, drawerCount: 3, support: 'wall' }),
-            },
+            builtInDesk: expect.objectContaining({ lengthCm: 75, drawerCount: 3, support: 'wall' }),
           },
         }),
       ]),
@@ -134,6 +142,24 @@ test.describe('Canvas pointer parity smoke', () => {
     expect((await loadProjectViaHeader(page, path)).ok).toBe(true);
     await expect.poll(config).toMatchObject(updatedDesk);
     await expect.poll(colors).toMatchObject(savedColors ?? {});
+
+    await openMainTab(page, 'sketch');
+    await deskButton.click();
+    await sketch.getByTestId('sketch-built-in-desk-length').fill('75');
+    await sketch.getByTestId('sketch-built-in-desk-wall').click();
+    const removalPoint = await findDeskPart('_top');
+    if (!removalPoint) throw new Error('Expected a visible desktop for removal');
+    await clickCanvasViaDebugNdc(page, removalPoint);
+    await expect.poll(config).not.toMatchObject(updatedDesk);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.__WP_DEBUG__?.scene
+            .getGeometrySnapshot()
+            ?.partIds.some(id => id.startsWith('built_in_desk_'))
+        )
+      )
+      .toBe(false);
     expectNoRuntimeIssues(issues);
   });
 

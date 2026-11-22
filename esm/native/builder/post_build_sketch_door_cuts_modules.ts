@@ -35,6 +35,7 @@ import {
   readGeometryUserDataPositiveNumberKey,
 } from './geometry_user_data_contracts.js';
 import { readStringOrNull } from './post_build_visual_overlay_keys.js';
+import { readBuiltInDeskDoorOpening } from './render_built_in_desk.js';
 import {
   applySketchDrawerDoorCuts,
   createSketchDoorCutsRuntime,
@@ -189,6 +190,23 @@ export function applySketchExternalDrawerDoorCuts(args: {
   const allowConfigDerivedCuts = args.allowConfigDerivedCuts !== false;
   const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutSurroundingGapM;
   const runtimeStackCollection = collectSketchModuleExternalDrawerStackBounds(App);
+  const deskBounds = getDrawersArray(App).flatMap(drawer => {
+    const opening = readBuiltInDeskDoorOpening(drawer);
+    if (!opening || opening.host.boxIsStandalone || opening.host.stack !== stackKey) return [];
+    const key = normalizeSketchModuleCutKey(String(opening.host.moduleKey), stackKey);
+    if (!key) return [];
+    const { boxId, geometry } = opening.host;
+    return [
+      {
+        key,
+        xMin: boxId ? geometry.leftX : -Infinity,
+        xMax: boxId ? geometry.rightX : Infinity,
+        yMin: opening.yMin,
+        yMax: opening.yMax,
+      },
+    ];
+  });
+  const desksByModule = groupSketchDrawerStackBounds(deskBounds);
   const runtimeBounds = runtimeStackCollection.bounds
     .filter(item => item.stackKey === stackKey)
     .map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }));
@@ -228,7 +246,7 @@ export function applySketchExternalDrawerDoorCuts(args: {
   // own that door. A split map by itself is not ownership: normal split leaves are
   // already emitted by the hinged-door builder and replaying the same positions on
   // those leaves recursively subdivides them (1 cut -> 3 -> 7 ...).
-  if (!stacksByModule.size && (!splitMap || !deferredSplitModuleKeys.size)) return;
+  if (!stacksByModule.size && !desksByModule.size && (!splitMap || !deferredSplitModuleKeys.size)) return;
 
   const runtime = createSketchDoorCutsRuntime({
     App,
@@ -262,20 +280,32 @@ export function applySketchExternalDrawerDoorCuts(args: {
       if (!moduleKey) return null;
       const partId = typeof ud.partId === 'string' ? String(ud.partId) : `${moduleKey}_full`;
       const stacks = stacksByModule.get(moduleKey) || [];
+      const deskCuts = desksByModule.get(moduleKey) ?? [];
       const { basePartId, splitPosList } = readSketchDoorSplitSelection(cfg, partId);
       // Only the canonical source door may be rebuilt by this post-build pass.
       // Authored leaves such as d0_top/d0_bot/d0_mid1 normalize back to d0;
       // replaying split positions on them is the recursive 1 -> 3 -> 7 failure.
       const isCanonicalSourceDoor = partId === basePartId || partId === `${basePartId}_full`;
-      if (!isCanonicalSourceDoor) return null;
+      if (!isCanonicalSourceDoor) return deskCuts.length ? { stacks: deskCuts, basePartId: partId } : null;
       const ownsDeferredSplit = deferredSplitModuleKeys.has(moduleKey);
       const winterPlan = asRecord(ud.__wpWinterBraceDoorPlan);
       const lineCutsY = Array.isArray(winterPlan?.cuts)
         ? winterPlan.cuts.filter((y): y is number => typeof y === 'number' && Number.isFinite(y))
         : [];
       const fixedBelowY = typeof winterPlan?.fixedBelowY === 'number' ? winterPlan.fixedBelowY : null;
-      if (!stacks.length && !(ownsDeferredSplit && (splitPosList.length || lineCutsY.length))) return null;
-      return { stacks, basePartId, splitPosList, lineCutsY, fixedBelowY };
+      if (
+        !stacks.length &&
+        !deskCuts.length &&
+        !(ownsDeferredSplit && (splitPosList.length || lineCutsY.length))
+      )
+        return null;
+      return {
+        stacks: [...stacks, ...deskCuts],
+        basePartId,
+        splitPosList: stacks.length || ownsDeferredSplit ? splitPosList : [],
+        lineCutsY,
+        fixedBelowY,
+      };
     },
   });
 }

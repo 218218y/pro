@@ -218,8 +218,12 @@ export function applyLinearSketchPlacementPreview(ctx: SketchPlacementPreviewCon
         px: board.x,
         py: board.y,
         pz: board.z,
-        material: ctx.ud.__matBoxOverlay || ctx.ud.__matBox,
-        lineMaterial: ctx.ud.__lineBoxOverlay || ctx.ud.__lineBox,
+        material: ctx.isRemove
+          ? ctx.ud.__matRemoveOverlay || ctx.ud.__matRemove
+          : ctx.ud.__matBoxOverlay || ctx.ud.__matBox,
+        lineMaterial: ctx.isRemove
+          ? ctx.ud.__lineRemoveOverlay || ctx.ud.__lineRemove
+          : ctx.ud.__lineBoxOverlay || ctx.ud.__lineBox,
         renderOrder: 10020,
         outlineRenderOrder: 10021,
       });

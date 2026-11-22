@@ -192,6 +192,51 @@ function createCtx() {
   };
 }
 
+test('a desk opens the selected door above the plate while preserving an existing cut', () => {
+  const App: Record<string, unknown> = {};
+  const full = createDoorGroup();
+  const existingUpper = createAuthoredSplitDoorLeaf({
+    partId: 'd1_top',
+    moduleKey: '0',
+    centerY: 1.5,
+    height: 1,
+  });
+  const existingLower = createAuthoredSplitDoorLeaf({
+    partId: 'd1_bot',
+    moduleKey: '0',
+    centerY: 0.5,
+    height: 1,
+  });
+  const adjacent = createAuthoredSplitDoorLeaf({ partId: 'd2_full', moduleKey: '1', centerY: 1, height: 2 });
+  getDoorsArray(App).push(
+    ...[full, existingUpper.door, existingLower.door, adjacent.door].map(
+      group => ({ type: 'hinged', group }) as any
+    )
+  );
+  getDrawersArray(App).push({
+    builtInDeskDoorOpening: { host: { moduleKey: 0, stack: 'top' }, yMin: 0.64, yMax: 0.803 },
+  } as any);
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: { ...createCtx(), layout: { moduleCfgList: [{}, {}] } } as any,
+    cfg: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] } },
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+    stackKey: 'top',
+  });
+
+  assert.deepEqual(existingUpper.door.children, [existingUpper.sentinel]);
+  assert.deepEqual(adjacent.door.children, [adjacent.sentinel]);
+  for (const door of [full, existingLower.door]) {
+    const segments = door.children.filter(child => child.userData.__wpSketchDoorSegment === true);
+    assert.equal(segments.length, 2);
+    const upper = segments[1]!;
+    const visualHeight = Number(upper.userData.__doorHeight);
+    assert.ok(getWorldY(upper) - visualHeight / 2 >= 0.803 - 1e-12);
+  }
+});
+
 test('module sketch door-cut pass does not recursively re-split regular hinged leaves from the split map alone', () => {
   const App: Record<string, unknown> = {};
   const bottom = createAuthoredSplitDoorLeaf({

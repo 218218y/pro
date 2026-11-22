@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T20:45:41.810Z",
+  "generatedAt": "2026-11-22T20:58:03.558Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -2227,14 +2227,14 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 198,
+      "line": 216,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "const runtimeDrawerOwnerBlocksConfigFallback ="
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 201,
+      "line": 219,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "if (!stacksByModule.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback) {"
@@ -2276,7 +2276,7 @@
     },
     {
       "file": "esm/native/builder/render_built_in_desk.ts",
-      "line": 38,
+      "line": 48,
       "term": "fallback",
       "category": "domain-default",
       "text": "getPartMaterial?: (partId: string, fallback: unknown) => unknown;"

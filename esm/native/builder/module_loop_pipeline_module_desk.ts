@@ -7,7 +7,8 @@ export function resolveModuleBuiltInDeskHost(
   index: number,
   frame: ResolvedModuleFrame,
   metrics: ModuleVerticalMetrics
-): BuiltInDeskHost {
+): BuiltInDeskHost | null {
+  if (runtime.cfg.wardrobeType === 'sliding') return null;
   const cornerSide =
     runtime.ui.cornerMode === true ? (runtime.ui.cornerSide === 'left' ? 'left' : 'right') : null;
   const leftSide = index === 0 && cornerSide !== 'left';
@@ -21,12 +22,9 @@ export function resolveModuleBuiltInDeskHost(
       bottomY: metrics.effectiveBottomY,
       topY: metrics.effectiveTopY,
       backZ: frame.moduleInternalZ - frame.moduleInternalDepth / 2,
-      frontZ: frame.braceFrontZ,
+      frontZ: frame.moduleDoorFrontZ,
       thickness: runtime.shelfThick,
-      leftSide,
-      rightSide,
-      leftWallThickness: runtime.woodThick,
-      rightWallThickness: runtime.woodThick,
+      ...(leftSide !== rightSide ? { preferredDrawerSide: leftSide ? 'right' : 'left' } : {}),
     },
   };
 }

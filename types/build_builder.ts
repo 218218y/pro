@@ -318,7 +318,7 @@ export interface BuilderSketchBoxDoorLike extends UnknownRecord {
 }
 
 export interface BuilderSketchBoxLike extends UnknownRecord {
-  builtInDesks?: import('./built_in_desk.js').BuiltInDesks;
+  builtInDesk?: import('./built_in_desk.js').BuiltInDeskPlacement;
   id?: BuilderSketchIdLike;
   freePlacement?: boolean | null;
   /** Full-height shelf-pin boring on the inner sides of this sketch box, independent of its host module. */
@@ -356,7 +356,7 @@ export interface BuilderSketchBoxLike extends UnknownRecord {
 }
 
 export interface BuilderSketchExtrasLike extends UnknownRecord {
-  builtInDesks?: import('./built_in_desk.js').BuiltInDesks;
+  builtInDesk?: import('./built_in_desk.js').BuiltInDeskPlacement;
   baseShelfSuppressions?: BuilderSketchBaseShelfSuppressionLike[] | null;
   cellDoors?: BuilderSketchCellDoorLike[] | null;
   dividers?: BuilderSketchDividerLike[] | null;

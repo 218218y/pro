@@ -12,7 +12,7 @@ export function registerModuleHitBox(
   _state: ModuleLoopMutableState,
   index: number,
   frame: ResolvedModuleFrame,
-  deskHost: BuiltInDeskHost
+  deskHost: BuiltInDeskHost | null
 ): void {
   const builderRenderOps = getBuilderRenderOps(runtime.App);
   const hitBox =
@@ -30,7 +30,7 @@ export function registerModuleHitBox(
         })
       : null;
 
-  markBuiltInDeskHost(hitBox, deskHost);
+  if (deskHost) markBuiltInDeskHost(hitBox, deskHost);
   try {
     const reg = getBuilderRegistry(runtime.App);
     if (reg && typeof reg.registerModuleHitBox === 'function' && hitBox) {
