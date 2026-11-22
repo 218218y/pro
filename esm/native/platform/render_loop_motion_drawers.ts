@@ -177,6 +177,10 @@ export function updateRenderLoopDrawerMotions(
   for (let i = 0; i < drawers.length; i++) {
     const d = asDrawerMotion(drawers[i]);
     if (!d) continue;
+    if (d.builtInDeskId) {
+      if (moveDrawerGroupPosition(d.group, d.isOpen ? d.open : d.closed)) hasActiveDrawerMotion = true;
+      continue;
+    }
     const sketchFreeBoxScope = getSketchFreeBoxMotionScopeFromEntry(d);
     const isSketchFreeBoxLocalDrawer = !!sketchFreeBoxScope;
     const isSketchFreeBoxInternalDrawer = isSketchFreeBoxInternalDrawerEntry(d);

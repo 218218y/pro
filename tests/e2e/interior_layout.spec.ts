@@ -94,7 +94,8 @@ test('interior layout keeps the three placement methods distinct on desktop and 
   await expect(layout.getByTestId('interior-sketch-shelf-depth-input')).toBeVisible();
   await expect(layout.getByTestId('winter-brace-shelf-button')).toHaveCount(1);
   const items = layout.getByRole('group', { name: 'פריט להצבה' });
-  await expect(items.getByRole('button')).toHaveCount(5);
+  await expect(items.getByRole('button')).toHaveCount(6);
+  await expect(items.getByRole('button').last()).toHaveAttribute('data-testid', 'interior-built-in-desk');
   await items.getByTestId('winter-brace-shelf-button').click();
   await expect.poll(mode).toMatchObject({ opts: { manualTool: 'sketch_shelf:winter_brace' } });
   await expect(item('shelf')).toHaveAttribute('aria-pressed', 'false');

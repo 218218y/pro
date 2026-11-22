@@ -105,7 +105,7 @@ export function BuiltInDeskOptionsPanel(props: {
           onClick={() => apply({ support: 'leg' })}
           testId="sketch-built-in-desk-leg"
         >
-          רגל לרצפה
+          דופן עד הרצפה
         </OptionButton>
         <OptionButton
           density="micro"

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import { applyHandles } from '../esm/native/builder/handles_apply.ts';
 import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.ts';
 import { purgeHandlesForRemovedDoors } from '../esm/native/builder/handles_purge.ts';
+import { renderBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
+import type { DrawerVisualEntryLike } from '../types/index.js';
 
 const addOutlines = () => undefined;
 
@@ -114,6 +116,7 @@ class FakeGroup3D {
   children: Array<FakeGroup3D | FakeMesh3D> = [];
   parent: FakeGroup3D | null = null;
   position = new FakePosition();
+  rotation = new FakePosition();
   matrixWorld = {};
   add(child: FakeGroup3D | FakeMesh3D) {
     child.parent = this;
@@ -178,6 +181,73 @@ class FakeMatrix4D {
     return this;
   }
 }
+
+test('desk handles mount on the sideways front faces and ride with the drawer group', () => {
+  const { App } = createApp();
+  App.deps = {
+    THREE: {
+      Group: FakeGroup3D,
+      Mesh: FakeMesh3D,
+      BoxGeometry: FakeGeometry3D,
+      MeshStandardMaterial: class FakeMeshStandardMaterial {},
+      Box3: FakeBox3D,
+      Matrix4: FakeMatrix4D,
+    },
+  };
+  const wardrobe = new FakeGroup3D();
+  const entries: DrawerVisualEntryLike[] = [];
+  App.render.wardrobeGroup = wardrobe;
+  App.render.drawersArray = entries;
+  renderBuiltInDesk({
+    host: {
+      moduleKey: 0,
+      stack: 'top',
+      geometry: {
+        leftX: -0.4,
+        rightX: 0.4,
+        bottomY: 0.1,
+        topY: 2.1,
+        backZ: -0.3,
+        frontZ: 0.3,
+        thickness: 0.018,
+      },
+    },
+    placement: { lengthCm: 120, drawerCount: 3, support: 'leg', topNorm: 0.35, drawerSide: 'right' },
+    createBoard(w, h, d, x, y, z, material, partId) {
+      const mesh = new FakeMesh3D(new FakeGeometry3D(w, h, d), material);
+      mesh.position.set(x, y, z);
+      mesh.userData.partId = partId;
+      wardrobe.add(mesh);
+      return mesh;
+    },
+    material: {},
+    addDrawerGroup(group) {
+      wardrobe.add(group as unknown as FakeGroup3D);
+    },
+    motion: { createGroup: () => new FakeGroup3D() as never, entries },
+  });
+
+  for (let rebuild = 0; rebuild < 2; rebuild++) {
+    applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, removeDoorsEnabled: false });
+    assert.equal(entries.length, 3);
+    for (const entry of entries) {
+      const mount = entry.handleMount as unknown as FakeGroup3D;
+      const group = entry.group as unknown as FakeGroup3D;
+      const front = group.children.find(child => child.userData.partId === entry.partId);
+      assert.ok(front);
+      assert.equal(mount.parent, group);
+      assert.deepEqual(mount.position, front.position);
+      assert.equal(mount.rotation.y, Math.PI / 2);
+      const handles = mount.children.filter(child => child.userData.__kind === 'handle');
+      assert.equal(handles.length, 1);
+      const handle = handles[0]!;
+      const mesh = handle.children[0] as FakeMesh3D;
+      const mountedMinZ = handle.position.z + mesh.position.z - mesh.geometry.depth / 2;
+      assert.ok(mountedMinZ >= 0.009 && mountedMinZ < 0.01);
+      assert.ok(!group.children.some(child => child.userData.__kind === 'handle'));
+    }
+  }
+});
 
 test('handles finalization warns about unusually small cut doors without blocking the build', () => {
   const { App } = createApp();

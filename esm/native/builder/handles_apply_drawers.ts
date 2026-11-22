@@ -174,7 +174,7 @@ function collectSafeDrawers(runtime: HandlesApplyRuntime): NodeLike[] {
   const drawersArray = getDrawersArray(runtime.App);
   if (Array.isArray(drawersArray)) {
     drawersArray.forEach((d: DrawerVisualEntryLike) => {
-      pushSafeDrawer(asNode(d && d.group), { allowDrawerBoxHost: d?.isInternal === true });
+      pushSafeDrawer(asNode(d?.handleMount ?? d?.group), { allowDrawerBoxHost: d?.isInternal === true });
     });
   }
 

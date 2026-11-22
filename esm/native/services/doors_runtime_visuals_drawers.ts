@@ -136,6 +136,10 @@ export function snapDrawersToTargets(App: AppLike, preserveDrawerId: DrawerId | 
 
   for (const drawer of getDrawersArray(App)) {
     if (!drawer || !drawer.group || !drawer.open || !drawer.closed) continue;
+    if (drawer.builtInDeskId) {
+      vecCopy(drawer.group.position, drawer.isOpen ? drawer.open : drawer.closed);
+      continue;
+    }
     if (preserveDrawerId != null && drawerVisualMatchesId(drawer, preserveDrawerId)) continue;
 
     const isExtDrawer = isExplicitExternalDrawerVisual(drawer);

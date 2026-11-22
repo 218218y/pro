@@ -51,15 +51,22 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
   assert.ok(edit.plan.drawers.every(drawer => drawer.x === edit.plan.drawers[0]?.x));
   assert.ok((edit.plan.drawers[0]?.z ?? 0) > host.geometry.frontZ);
   assert.equal(edit.plan.drawers.length, 3);
-  assert.equal(edit.plan.drawerPartitions.length, 4);
-  assert.equal(edit.plan.support?.y, (edit.plan.support?.height ?? 0) / 2);
+  assert.equal(edit.plan.drawerPartitions.length, 3);
+  assert.equal(edit.plan.support.width, edit.plan.top.width);
+  assert.equal(edit.plan.support.depth, host.geometry.thickness);
+  assert.equal(edit.plan.support.y, edit.plan.support.height / 2);
+  assert.ok(
+    Math.abs(
+      edit.plan.support.y + edit.plan.support.height / 2 - (edit.plan.surfaceY - host.geometry.thickness)
+    ) < 1e-12
+  );
 
   const config = { sketchExtras: { boxes: [{ ...box, builtInDesk: edit.placement }] } };
   const builtHit = {
     ...args,
     intersects: [
       {
-        object: { ...object, userData: { ...object.userData, __wpBuiltInDeskPart: true } },
+        object: { ...object, userData: { ...object.userData, __wpBuiltInDeskId: 'built_in_desk_probe' } },
         point: clickPoint,
       },
     ],

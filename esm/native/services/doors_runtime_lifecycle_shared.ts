@@ -111,7 +111,7 @@ export function applyAllDrawers(App: AppLike, open: boolean): void {
   const arr = getDrawersArray(App);
   for (let i = 0; i < arr.length; i++) {
     const d = arr[i];
-    if (!d) continue;
+    if (!d || d.builtInDeskId) continue;
     d.isOpen = !!open;
   }
 }

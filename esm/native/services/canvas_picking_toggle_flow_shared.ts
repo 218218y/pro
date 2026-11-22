@@ -322,3 +322,16 @@ export function tryHandleDirectDoorOrDrawerToggle(args: CanvasDirectDoorToggleAr
 
   return false;
 }
+
+export function tryToggleBuiltInDeskDrawers(App: AppContainer, hit: HitObjectLike | null): boolean {
+  for (let node = hit; node; node = node.parent ?? null) {
+    const deskId = node.userData?.__wpBuiltInDeskId;
+    if (typeof deskId !== 'string' || !deskId) continue;
+    const drawers = getDrawersArray(App).filter(drawer => drawer.builtInDeskId === deskId);
+    const nextOpen = !drawers.some(drawer => drawer.isOpen === true);
+    for (const drawer of drawers) drawer.isOpen = nextOpen;
+    if (drawers.length) markLocalDoorMotion(App);
+    return true;
+  }
+  return false;
+}

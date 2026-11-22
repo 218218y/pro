@@ -13,6 +13,7 @@ import {
   tryHandleSlidingCabinetDefaultToggle,
   tryHandleGlobalCornerPentToggle,
   tryHandleSlidingTrackDoorToggle,
+  tryToggleBuiltInDeskDrawers,
 } from './canvas_picking_toggle_flow_shared.js';
 import {
   resolveSketchBoxToggleTarget,
@@ -47,6 +48,7 @@ export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): vo
   const __NONE = getModeId('NONE') || 'none';
   const __notesMode = getModeId('SCREEN_NOTE') || 'screen_note';
   if (__pm !== __NONE && __pm !== __notesMode) return;
+  if (tryToggleBuiltInDeskDrawers(App, primaryHitObject)) return;
 
   const sup = getSuppressGlobalToggleUntil(App);
   if (typeof sup === 'number' && Date.now() < sup) return;

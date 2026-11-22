@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createRenderLoopMotionController } from '../esm/native/platform/render_loop_motion.js';
+import { tryToggleBuiltInDeskDrawers } from '../esm/native/services/canvas_picking_toggle_flow_shared.js';
+import { snapDrawersToTargets } from '../esm/native/services/doors_runtime_visuals_drawers.js';
 
 function makeStore(state: Record<string, unknown>) {
   return {
@@ -19,6 +21,55 @@ function withRuntimeNow<T>(runtimeNow: number, run: () => T): T {
     Date.now = originalDateNow;
   }
 }
+
+test('desk drawers move as one desk independently of the cabinet doors and other desks', () => {
+  withRuntimeNow(1000, () => {
+    const drawer = (builtInDeskId?: string) => ({
+      ...(builtInDeskId ? { builtInDeskId } : {}),
+      group: { position: { x: 0, y: 0, z: 0 }, userData: {} },
+      closed: { x: 0, y: 0, z: 0 },
+      open: { x: 0.35, y: 0, z: 0 },
+      isOpen: false,
+      isInternal: false,
+    });
+    const cabinet = drawer();
+    const desk = [drawer('desk-a'), drawer('desk-a')];
+    const otherDesk = drawer('desk-b');
+    let globalOpen = true;
+    const runtime = { globalClickMode: true, doorsOpen: true };
+    const App = {
+      store: makeStore({
+        mode: { primary: 'none', opts: {} },
+        ui: {},
+        config: {},
+        runtime,
+        meta: {},
+      }),
+      services: { doors: { getOpen: () => globalOpen, getLastToggleTime: () => 0 } },
+      render: { doorsArray: [], drawersArray: [cabinet, ...desk, otherDesk] },
+    };
+    const controller = createRenderLoopMotionController(App as never, {
+      report: () => undefined,
+      now: () => 1000,
+      debugLog: () => undefined,
+    });
+    const hit = { userData: { __wpBuiltInDeskId: 'desk-a' } };
+    const positions = () => [cabinet, ...desk, otherDesk].map(entry => entry.group.position.x);
+
+    controller.stepFrame(1000);
+    assert.deepEqual(positions(), [0.35, 0, 0, 0]);
+    assert.equal(tryToggleBuiltInDeskDrawers(App as never, hit), true);
+    snapDrawersToTargets(App as never);
+    assert.deepEqual(positions(), [0.35, 0.35, 0.35, 0]);
+    globalOpen = false;
+    runtime.doorsOpen = false;
+    controller.stepFrame(1000);
+    assert.deepEqual(positions(), [0, 0.35, 0.35, 0]);
+    assert.equal(tryToggleBuiltInDeskDrawers(App as never, hit), true);
+    controller.stepFrame(1000);
+    assert.deepEqual(positions(), [0, 0, 0, 0]);
+  });
+});
 
 test('render loop motion skips invalid door vectors and still updates valid doors', () => {
   withRuntimeNow(100, () => {

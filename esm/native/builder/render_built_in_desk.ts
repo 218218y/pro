@@ -8,11 +8,11 @@ import {
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
 import { readObject } from './render_interior_sketch_shared.js';
 
-export function markBuiltInDeskHost(node: unknown, host: BuiltInDeskHost, built = false): void {
+export function markBuiltInDeskHost(node: unknown, host: BuiltInDeskHost, deskId?: string): void {
   const object = readObject<InteriorGroupLike>(node);
   if (object) {
     object.userData = { ...object.userData, __wpBuiltInDeskHost: host };
-    if (built) object.userData.__wpBuiltInDeskPart = true;
+    if (deskId) object.userData.__wpBuiltInDeskId = deskId;
   }
 }
 
@@ -72,10 +72,10 @@ export function renderBuiltInDesk(args: {
   const fixedBoards = [
     emit(plan.top, 'top'),
     emit(plan.bottom, 'bottom'),
+    emit(plan.support, placement.support),
     ...plan.drawerPartitions.map((board, index) => emit(board, `partition_${index + 1}`)),
   ];
-  if (plan.support) fixedBoards.push(emit(plan.support, placement.support));
-  for (const board of fixedBoards) markBuiltInDeskHost(board, host, true);
+  for (const board of fixedBoards) markBuiltInDeskHost(board, host, prefix);
 
   for (const [index, front] of plan.drawers.entries()) {
     const key = `front_${index + 1}`;
@@ -130,15 +130,29 @@ export function renderBuiltInDesk(args: {
       node.userData = { ...node.userData, drawerId: id };
       drawerGroup.add(node);
     }
-    markBuiltInDeskHost(drawerGroup, host, true);
+    const handleMount = motion.createGroup();
+    handleMount.position.set(front.x, front.y, front.z);
+    handleMount.rotation.y = (plan.drawerSign * Math.PI) / 2;
+    handleMount.userData = {
+      __wpDrawerOwnerPartId: id,
+      __doorWidth: front.depth,
+      __doorHeight: front.height,
+      __frontMaxZ: front.width / 2,
+      __wpFrontThickness: front.width,
+    };
+    drawerGroup.add(handleMount);
+    markBuiltInDeskHost(drawerGroup, host, prefix);
     args.addDrawerGroup(drawerGroup);
     const entry: DrawerVisualEntryLike = {
       id,
       partId: id,
+      builtInDeskId: prefix,
       group: drawerGroup,
+      handleMount,
       closed: { x: 0, y: 0, z: 0 },
       open: { x: plan.drawerSign * bodyDepth * 0.8, y: 0, z: 0 },
       isInternal: false,
+      isOpen: false,
     };
     if (index === 0) {
       const { doorClearanceM } = BUILT_IN_DESK_DIMENSIONS;

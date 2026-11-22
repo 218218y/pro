@@ -160,6 +160,11 @@ test.describe('Canvas pointer parity smoke', () => {
         )
       )
       .toBe(false);
+    const empty = { x: -0.9, y: -0.7 };
+    expect(await inspectCanvasViaDebugNdc(page, empty)).toMatchObject({ partId: null, moduleIndex: null });
+    await clickCanvasViaDebugNdc(page, empty);
+    await expect(deskButton).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(async () => (await readDebugStoreState(page)).mode).toMatchObject({ primary: 'none' });
     expectNoRuntimeIssues(issues);
   });
 

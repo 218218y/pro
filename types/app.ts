@@ -398,6 +398,8 @@ export interface DoorVisualEntryLike extends UnknownRecord {
 export interface DrawerVisualEntryLike extends UnknownRecord {
   id?: string | number;
   partId?: string;
+  builtInDeskId?: string;
+  handleMount?: Object3DLike;
   group: Object3DLike | null;
   closed: Vec3Like;
   open: Vec3Like;

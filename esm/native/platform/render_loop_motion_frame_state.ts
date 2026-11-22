@@ -51,7 +51,7 @@ export function readRenderLoopMotionFrameState(App: AppContainer, report: Report
       ? !!perf['hasInternalDrawers']
       : getDrawersArray(App).some(
           (d: DrawerVisualEntryLike | null | undefined) =>
-            d && (d.isInternal || (d.id && String(d.id).includes('int')))
+            d && !d.builtInDeskId && (d.isInternal || (d.id && String(d.id).includes('int')))
         );
 
   let doorsShouldBeOpen = false;

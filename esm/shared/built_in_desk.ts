@@ -14,7 +14,6 @@ export const BUILT_IN_DESK_DIMENSIONS = {
   maxDrawerCount: 8,
   drawerBayHeightM: 0.12,
   frontGapM: 0.003,
-  legWidthM: 0.055,
   wallCleatHeightM: 0.06,
   doorClearanceM: 0.003,
   floorY: SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY,
@@ -78,7 +77,7 @@ export function readBuiltInDeskPlacement(value: unknown): BuiltInDeskPlacement |
 
 export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltInDeskPlacement) {
   const { thickness, leftX, rightX, topY, bottomY, backZ, frontZ } = host;
-  const { drawerBayHeightM, frontGapM, legWidthM, wallCleatHeightM, floorY } = BUILT_IN_DESK_DIMENSIONS;
+  const { drawerBayHeightM, frontGapM, wallCleatHeightM, floorY } = BUILT_IN_DESK_DIMENSIONS;
   const deskHeight = 2 * thickness + drawerBayHeightM;
   const width = rightX - leftX;
   const minTopY =
@@ -86,6 +85,7 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
   if (!(thickness > 0 && width > 4 * thickness && topY > minTopY && frontZ > backZ)) return null;
 
   const length = placement.lengthCm / 100;
+  const hasEndPanel = placement.support === 'leg';
   const drawerSign = placement.drawerSide === 'left' ? -1 : 1;
   const drawerEdgeX = drawerSign < 0 ? leftX : rightX;
   const wallEdgeX = drawerSign < 0 ? rightX : leftX;
@@ -101,9 +101,15 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
     depth: endZ - backZ,
   };
   const top = { ...plate, y: surfaceY - thickness / 2 };
-  const bottom = { ...plate, y: outsideBottomY + thickness / 2 };
+  const endPanelInset = hasEndPanel ? thickness : 0;
+  const bottom = {
+    ...plate,
+    y: outsideBottomY + thickness / 2,
+    z: plate.z - endPanelInset / 2,
+    depth: plate.depth - endPanelInset,
+  };
   const bayCenterY = outsideBottomY + thickness + drawerBayHeightM / 2;
-  const bayWidth = length / placement.drawerCount;
+  const bayWidth = (length - endPanelInset) / placement.drawerCount;
   const drawers = Array.from({ length: placement.drawerCount }, (_, index): BuiltInDeskBoard => ({
     x: drawerEdgeX - (drawerSign * thickness) / 2,
     y: bayCenterY,
@@ -112,28 +118,27 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
     height: drawerBayHeightM - 2 * frontGapM,
     depth: bayWidth - 2 * frontGapM,
   }));
-  const support: BuiltInDeskBoard | null =
-    placement.support === 'leg'
-      ? outsideBottomY > floorY
-        ? {
-            x: centerX,
-            y: (outsideBottomY + floorY) / 2,
-            z: endZ - legWidthM / 2 - thickness,
-            width: legWidthM,
-            height: outsideBottomY - floorY,
-            depth: legWidthM,
-          }
-        : null
-      : {
-          x: wallEdgeX + (drawerSign * thickness) / 2,
-          y: outsideBottomY - wallCleatHeightM / 2,
-          z: (frontZ + endZ) / 2,
-          width: thickness,
-          height: wallCleatHeightM,
-          depth: length,
-        };
+  const topUndersideY = surfaceY - thickness;
+  const support: BuiltInDeskBoard = hasEndPanel
+    ? {
+        x: centerX,
+        y: (topUndersideY + floorY) / 2,
+        z: endZ - thickness / 2,
+        width,
+        height: topUndersideY - floorY,
+        depth: thickness,
+      }
+    : {
+        x: wallEdgeX + (drawerSign * thickness) / 2,
+        y: outsideBottomY - wallCleatHeightM / 2,
+        z: (frontZ + endZ) / 2,
+        width: thickness,
+        height: wallCleatHeightM,
+        depth: length,
+      };
 
-  const drawerPartitions = Array.from({ length: placement.drawerCount + 1 }, (_, index): BuiltInDeskBoard => {
+  const partitionCount = placement.drawerCount + (hasEndPanel ? 0 : 1);
+  const drawerPartitions = Array.from({ length: partitionCount }, (_, index): BuiltInDeskBoard => {
     const edgeOffset = index === 0 ? thickness / 2 : index === placement.drawerCount ? -thickness / 2 : 0;
     return {
       x: centerX - (drawerSign * thickness) / 2,

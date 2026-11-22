@@ -28,6 +28,7 @@ import {
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
 import { readSketchFreePlacementTransform } from './canvas_picking_sketch_free_box_hit.js';
 import { commitCanvasModuleStructuralPatch } from './canvas_picking_structural_commit.js';
+import { resetCanvasPickingEmptyClick } from './canvas_picking_click_empty.js';
 import type { CanvasPickingClickRouteArgs } from './canvas_picking_click_route_shared.js';
 import type { HitObjectLike, RaycastHitLike } from './canvas_picking_engine.js';
 
@@ -46,7 +47,12 @@ function readDeskHit(hit: RaycastHitLike) {
   for (let node: HitObjectLike | null | undefined = hit.object; node; node = node.parent) {
     const host = asRecord<BuiltInDeskHost>(node.userData?.__wpBuiltInDeskHost);
     if (!host || !node.parent) continue;
-    return { hit, host, anchorParent: node.parent, hitDesk: node.userData?.__wpBuiltInDeskPart === true };
+    return {
+      hit,
+      host,
+      anchorParent: node.parent,
+      hitDesk: typeof node.userData?.__wpBuiltInDeskId === 'string',
+    };
   }
   return null;
 }
@@ -138,9 +144,11 @@ function makeDeskPreview(App: AppContainer, edit: DeskEdit): SketchPlacementPrev
   const { top } = plan;
   const frontZ = top.z + top.depth / 2 - pivotZ + 0.015;
   const centerX = (host.geometry.leftX + host.geometry.rightX) / 2 - pivotX;
-  const previewBoards = [plan.top, plan.bottom, ...plan.drawers, ...(plan.support ? [plan.support] : [])].map(
-    board => ({ ...board, x: board.x - pivotX, z: board.z - pivotZ })
-  );
+  const previewBoards = [plan.top, plan.bottom, ...plan.drawers, plan.support].map(board => ({
+    ...board,
+    x: board.x - pivotX,
+    z: board.z - pivotZ,
+  }));
   return {
     ...makePreviewArgs(App),
     kind: 'built_in_desk',
@@ -219,6 +227,8 @@ export function tryHandleBuiltInDeskClick(args: CanvasPickingClickRouteArgs): bo
     commitBuiltInDeskEdit(App, edit);
     __wp_clearSketchHover(App);
     readManualLayoutSketchPreviewFns(App).hidePreview?.(makePreviewArgs(App));
+  } else {
+    resetCanvasPickingEmptyClick(args);
   }
   return true;
 }

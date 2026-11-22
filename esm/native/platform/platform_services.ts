@@ -138,7 +138,10 @@ export function installPlatformServiceSurface(
         for (let i = 0; i < arr.length; i++) {
           const drawer = arr[i];
           if (!drawer) continue;
-          if (drawer.isInternal || (drawer.id && String(drawer.id).includes('int'))) {
+          if (
+            !drawer.builtInDeskId &&
+            (drawer.isInternal || (drawer.id && String(drawer.id).includes('int')))
+          ) {
             hasInternal = true;
             break;
           }
