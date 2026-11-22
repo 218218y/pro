@@ -725,6 +725,17 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
   ),
   item(
     'interior',
+    'built-in-desk',
+    'שולחן מובנה',
+    tid('interior-built-in-desk'),
+    'שולחן עם מגירות',
+    interiorSketch,
+    {
+      requires: ['not-chest'],
+    }
+  ),
+  item(
+    'interior',
     'shelf-conversion',
     'מדף קושרת והמרת מדפים',
     tid('interior-manual-shelf-variant-brace-button'),
@@ -855,6 +866,9 @@ export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
     )
   ),
   item('sketch', 'sketch-boring', 'חירור מלא לפי סקיצה', tid('sketch-layout-full_boring'), 'מדפים', [], {
+    requires: ['not-chest'],
+  }),
+  item('sketch', 'built-in-desk', 'שולחן מובנה', tid('sketch-built-in-desk'), 'שולחן עם מגירות', [], {
     requires: ['not-chest'],
   }),
   item(

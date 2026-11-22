@@ -7,6 +7,7 @@ import {
   collectRuntimeIssues,
   expectNoRuntimeIssues,
   gotoSmokeApp,
+  loadProjectViaHeader,
   openMainTab,
   inspectCanvasViaDebugNdc,
   readBuildDebugStats,
@@ -14,6 +15,7 @@ import {
   readLinearModuleSpecialDims,
   resetAllCellDimsOverrides,
   resetBuildDebugStats,
+  saveProjectViaHeader,
   setCellDimsDraft,
   setCellDimsMode,
   setDoorAuthoringMode,
@@ -23,6 +25,118 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('places, paints and updates a built-in desk from both sketch tool panels @critical', async ({
+    page,
+  }, testInfo) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await openMainTab(page, 'interior');
+    await page.getByTestId('interior-layout-method-sketch').click();
+    await page.getByTestId('interior-built-in-desk').click();
+    await page.getByTestId('sketch-built-in-desk-length').fill('75');
+    await page.getByTestId('sketch-built-in-desk-drawers').selectOption('2');
+    await expect
+      .poll(async () => (await readDebugStoreState(page)).mode)
+      .toMatchObject({
+        primary: 'manual_layout',
+        opts: { manualTool: 'sketch_built_in_desk:75:2:leg' },
+      });
+
+    const host = await page.evaluate(() => {
+      const canvas = window.__WP_DEBUG__!.canvas;
+      for (let x = 0.5; x >= -0.5; x -= 0.02) {
+        const p = { x, y: -0.16 };
+        const hit = canvas.inspectNdc(p.x, p.y);
+        if (hit?.moduleIndex === 0) return p;
+      }
+      return null;
+    });
+    if (!host) throw new Error('Expected a reachable end cell');
+    await clickCanvasViaDebugNdc(page, host);
+
+    const config = async () => (await readDebugStoreState(page)).config;
+    const bottomPlacement = { lengthCm: 75, drawerCount: 2, support: 'leg' };
+    await expect.poll(config).toMatchObject({
+      modulesConfiguration: expect.arrayContaining([
+        expect.objectContaining({
+          sketchExtras: { builtInDesks: { left: expect.objectContaining(bottomPlacement) } },
+        }),
+      ]),
+    });
+
+    await page.getByTestId('interior-built-in-desk').click();
+    const findDeskPart = async (suffix: string) =>
+      page.evaluate(partSuffix => {
+        const canvas = window.__WP_DEBUG__!.canvas;
+        for (let x = -0.92; x <= 0.3; x += 0.025) {
+          for (let y = -0.75; y <= 0.4; y += 0.018) {
+            const partId = canvas.inspectNdc(x, y)?.partId;
+            if (partId?.startsWith('built_in_desk_') && partId.endsWith(partSuffix)) {
+              return { x, y, partId };
+            }
+          }
+        }
+        return null;
+      }, suffix);
+
+    await openMainTab(page, 'design');
+    const paintToggle = page.getByTestId('design-multicolor-enabled-toggle');
+    await paintToggle.locator('..').click();
+    await expect(paintToggle).toBeChecked();
+    await page
+      .locator('.wp-tool-card--paint')
+      .getByRole('button', { name: 'אגוז טבעי', exact: true })
+      .click();
+    const colors = async () =>
+      ((await config()) as { individualColors?: Record<string, string> }).individualColors;
+    for (const suffix of ['_front_1', '_leg']) {
+      const part = await findDeskPart(suffix);
+      if (!part) throw new Error(`Expected a visible desk part for ${suffix}`);
+      const canvas = await page.locator('#viewer-container canvas').first().boundingBox();
+      if (!canvas) throw new Error('Expected a visible viewer canvas');
+      const x = canvas.x + ((part.x + 1) * canvas.width) / 2;
+      const y = canvas.y + ((1 - part.y) * canvas.height) / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.click(x, y);
+      await expect.poll(async () => (await colors())?.[part.partId]).toEqual(expect.any(String));
+    }
+    await page.locator('.wp-tool-card--paint').getByRole('button', { name: 'סיום עריכה' }).click();
+
+    await openMainTab(page, 'sketch');
+    const sketch = page.locator('#reactSidebarRoot .tab-content[data-tab="sketch"]');
+    const deskButton = sketch.getByTestId('sketch-built-in-desk');
+    if ((await deskButton.getAttribute('aria-expanded')) !== 'true') await deskButton.click();
+    await sketch.getByTestId('sketch-built-in-desk-length').fill('75');
+    await sketch.getByTestId('sketch-built-in-desk-drawers').selectOption('3');
+    await sketch.getByTestId('sketch-built-in-desk-wall').click();
+
+    const deskPoint = await findDeskPart('_front_1');
+    if (!deskPoint) throw new Error('Expected a reachable built-in desk part');
+    await clickCanvasViaDebugNdc(page, deskPoint);
+    const updatedDesk = {
+      modulesConfiguration: expect.arrayContaining([
+        expect.objectContaining({
+          sketchExtras: {
+            builtInDesks: {
+              left: expect.objectContaining({ lengthCm: 75, drawerCount: 3, support: 'wall' }),
+            },
+          },
+        }),
+      ]),
+    };
+    await expect.poll(config).toMatchObject(updatedDesk);
+    await deskButton.click();
+    await expect(sketch.getByTestId('sketch-built-in-desk-length')).toHaveCount(0);
+    const savedColors = await colors();
+    const saved = await saveProjectViaHeader(page, 'built-in-desk');
+    const path = testInfo.outputPath(saved.download.suggestedFilename());
+    await saved.download.saveAs(path);
+    expect((await loadProjectViaHeader(page, path)).ok).toBe(true);
+    await expect.poll(config).toMatchObject(updatedDesk);
+    await expect.poll(colors).toMatchObject(savedColors ?? {});
+    expectNoRuntimeIssues(issues);
+  });
+
   for (const { name, buttonId, tool } of [
     {
       name: 'sketch external drawers',

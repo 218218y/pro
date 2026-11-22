@@ -8,6 +8,7 @@ import { createInterDivider } from './module_loop_pipeline_module_dividers.js';
 import { applyEdgeHandleDefaults, registerModuleHitBox } from './module_loop_pipeline_module_registry.js';
 import { applyHexCellGeometryForModule } from './module_loop_pipeline_hex_cell.js';
 import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_side_construction_plan.js';
+import { resolveModuleBuiltInDeskHost } from './module_loop_pipeline_module_desk.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 
@@ -34,15 +35,15 @@ export function runModuleLoopItem(
   const frontClosurePlan = removedSideConstruction.frontClosure;
   const frame = resolveModuleFrame(runtime, state, index, mod?.doors, frontClosurePlan !== null);
 
-  registerModuleHitBox(runtime, state, index, frame);
+  const metrics = resolveModuleVerticalMetrics(runtime, frame, index);
+  const deskHost = resolveModuleBuiltInDeskHost(runtime, index, frame, metrics);
+  registerModuleHitBox(runtime, state, index, frame, deskHost);
   createInterDivider(runtime, state, index, frame);
   applyHexCellGeometryForModule(runtime, state, index, frame);
-
-  const metrics = resolveModuleVerticalMetrics(runtime, frame, index);
   writeInternalGridMap(runtime, index, frame, metrics);
 
   if (!frontClosurePlan) applyEdgeHandleDefaults(runtime, frame.modDoors, startDoorOfModule);
-  applyModuleContents(runtime, state, index, frame, metrics, startDoorOfModule, frontClosurePlan);
+  applyModuleContents(runtime, state, index, frame, metrics, startDoorOfModule, frontClosurePlan, deskHost);
 
   state.currentX += frame.modWidth + (index < runtime.modules.length - 1 ? runtime.woodThick : 0);
 }

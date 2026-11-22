@@ -20,6 +20,11 @@ import {
 } from './interior_tab_helpers.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
 import { SHELF_VARIANT_OPTIONS } from './interior_layout_shelf_variant_options.js';
+import {
+  BuiltInDeskOptionsPanel,
+  BuiltInDeskToolButton,
+  readActiveBuiltInDeskOptions,
+} from './interior_built_in_desk_controls.js';
 
 export { SHELF_VARIANT_OPTIONS } from './interior_layout_shelf_variant_options.js';
 
@@ -69,6 +74,8 @@ function resetSketchStorageHeight(props: InteriorLayoutSectionProps): void {
 }
 
 export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps): ReactElement {
+  const deskOptions = readActiveBuiltInDeskOptions(props);
+  const deskPanelId = buildScopedFormFieldId('wp-r-built-in-desk', props.formFieldIdScope);
   const activeShelfVariant = props.isSketchToolActive ? parseSketchShelfVariant(props.manualToolRaw) : null;
   const isShelfSelected = SHELF_VARIANT_OPTIONS.some(option => option.variant === activeShelfVariant);
   const preferredShelfVariant =
@@ -139,7 +146,21 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         >
           חירור מלא
         </OptionButton>
+        <BuiltInDeskToolButton
+          selected={deskOptions !== null}
+          testId="sketch-built-in-desk"
+          panelId={deskPanelId}
+          activateManualToolId={props.activateManualToolId}
+          exitManual={props.exitManual}
+        />
       </div>
+      {deskOptions ? (
+        <BuiltInDeskOptionsPanel
+          id={deskPanelId}
+          options={deskOptions}
+          activateManualToolId={props.activateManualToolId}
+        />
+      ) : null}
       {isShelfSelected ? (
         <div className="wp-sketch-shelf-variant-settings">
           <span className="wp-interior-layout-label">סוג מדף</span>

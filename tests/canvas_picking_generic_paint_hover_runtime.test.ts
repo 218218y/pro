@@ -107,6 +107,42 @@ function createApp(args: { wardrobeGroup: any; maps?: Record<string, Record<stri
   } as any;
 }
 
+test('desk plates, drawer faces and legs highlight only the part under the pointer', () => {
+  const wardrobeGroup = { children: [] as unknown[] };
+  const targets = ['top', 'front_1', 'front_2', 'leg'].map((suffix, index) =>
+    createBoxObject(`built_in_desk_top_0_cell_left_${suffix}`, {
+      width: suffix === 'leg' ? 0.055 : 0.34,
+      height: suffix === 'top' ? 0.018 : 0.114,
+      depth: 0.018,
+      x: index * 0.4,
+    })
+  );
+  for (const part of targets) {
+    part.parent = wardrobeGroup;
+    wardrobeGroup.children.push(part);
+  }
+  const App = createApp({ wardrobeGroup });
+  for (const part of targets) {
+    const previews: Record<string, unknown>[] = [];
+    assert.equal(
+      tryHandleGenericPartPaintHover({
+        App,
+        ndcX: 0,
+        ndcY: 0,
+        paintSelection: 'oak',
+        raycaster: createRaycaster([{ object: part, point: { x: part.position.x, y: 0, z: 0.009 } }]),
+        mouse: { x: 0, y: 0 },
+        previewRo: {
+          setSketchPlacementPreview: (preview: Record<string, unknown>) => previews.push(preview),
+        },
+      }),
+      true
+    );
+    assert.equal(previews[0]?.kind, 'object_boxes');
+    assert.deepEqual(previews[0]?.previewObjects, [part]);
+  }
+});
+
 test('generic paint hover builds a canonical grouped preview and clears other hover overlays first', () => {
   const wardrobeGroup = { children: [] as unknown[], userData: { partId: 'root' } };
   const bodyLeft = createBoxObject('body_left', { x: -0.45 });

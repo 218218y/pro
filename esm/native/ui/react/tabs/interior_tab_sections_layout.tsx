@@ -3,6 +3,7 @@ import { useRef, useState, type ReactElement } from 'react';
 import { OptionButton } from '../components/index.js';
 import { cx } from './interior_tab_helpers.js';
 import { InteriorLayoutManualControls } from './interior_layout_manual_controls.js';
+import { readActiveBuiltInDeskOptions } from './interior_built_in_desk_controls.js';
 import { InteriorLayoutPresetPreview } from './interior_layout_preset_preview.js';
 import { InteriorToolCardHeader } from './interior_tab_sections_controls.js';
 import type { InteriorLayoutSectionProps } from './interior_tab_sections_shared.js';
@@ -23,7 +24,8 @@ const METHOD_HINTS: Record<LayoutMethod, string> = {
 
 function readActiveMethod(props: InteriorLayoutSectionProps): LayoutMethod | null {
   if (props.isLayoutMode) return props.layoutType === 'full_boring' ? 'sketch' : 'presets';
-  if (props.isBraceShelvesMode || props.isSketchDivisionToolActive) return 'sketch';
+  if (props.isBraceShelvesMode || props.isSketchDivisionToolActive || readActiveBuiltInDeskOptions(props))
+    return 'sketch';
   if (props.isManualLayoutMode && !props.isSketchToolActive) return 'grid';
   return null;
 }
@@ -36,7 +38,7 @@ export function InteriorLayoutSection(props: InteriorLayoutSectionProps): ReactE
   const isBoring = props.isLayoutMode && props.layoutType === 'full_boring';
   let hint = METHOD_HINTS[method];
   if (isBoring) hint = 'לחצו על תא להוספה או להסרה של חורי מדף במרווח 3 ס״מ.';
-  if (method === 'sketch' && props.isSketchToolActive)
+  if (method === 'sketch' && props.isSketchToolActive && !readActiveBuiltInDeskOptions(props))
     hint = 'לחצו על מדף מסוג אחר להמרה, על מדף מאותו סוג להסרה, או על מקום פנוי להוספה.';
   if (activeMethod === 'grid' && props.manualTool === 'storage') {
     hint = 'לחצו על תא להוספה או להסרה של אוגר מצעים.';

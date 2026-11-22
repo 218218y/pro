@@ -17,6 +17,7 @@ import { renderSketchBoxShell } from './render_interior_sketch_boxes_shell.js';
 import { renderSketchBoxContents } from './render_interior_sketch_boxes_contents.js';
 import { renderSketchBoxFronts } from './render_interior_sketch_boxes_fronts.js';
 import { renderSketchBoxBoring } from './render_interior_sketch_boxes_boring.js';
+import { applySketchBoxBuiltInDesks } from './render_interior_sketch_box_desk.js';
 import {
   readSketchBoxDividers,
   readSketchBoxHorizontalDividers,
@@ -268,6 +269,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
     });
 
     renderSketchBoxBoring({ renderArgs: args, shell: shellResult.state, startChildCount });
+    applySketchBoxBuiltInDesks(args, shellResult.state, startChildCount);
     wrapNewFreePlacementObjects({
       renderArgs: args,
       startIndex: startChildCount,

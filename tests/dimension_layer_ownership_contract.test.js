@@ -23,7 +23,7 @@ test('dimension layer ownership stores current statements without migration hist
   assert.equal(Object.hasOwn(baseline, 'migrationConsolidations'), false);
   assert.equal(baseline.compatibilityBudgets.length, 4);
   const dimensionBudgets = baseline.reviewedOwnershipBudgets.filter(
-    entry => entry.owner !== 'handle-catalog'
+    entry => entry.owner !== 'handle-catalog' && entry.owner !== 'built-in-desk'
   );
   assert.equal(dimensionBudgets.length, 143);
   assert.equal(

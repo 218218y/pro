@@ -2,6 +2,7 @@ import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import type {
   BuilderCreateDoorVisualFn,
   BuilderCreateInternalDrawerBoxFn,
+  Object3DLike,
   UnknownCallable,
 } from '../../../types';
 import type {
@@ -12,6 +13,8 @@ import type {
 } from './corner_wing_cell_shared.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import { requireInteriorSketchDoorStyle } from './render_interior_sketch_input_contract.js';
+import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
+import { renderBuiltInDesks } from './render_built_in_desk.js';
 
 type CreateRodLike = (yPos: number, limitHeight?: number | null) => void;
 
@@ -21,6 +24,8 @@ type CornerWingCellSketchExtrasParams = {
   wingGroup: GroupLike;
   cfg: unknown;
   cfgCell: CornerCellCfg;
+  deskHost?: BuiltInDeskHost;
+  getDrawerEntries?: () => unknown[];
   cellIdx: number;
   cellKey: string;
   stackKey: string;
@@ -128,6 +133,22 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       wingGroup.add(m);
       return m;
     };
+
+    const builtInDesks = asRecord(extra).builtInDesks;
+    if (builtInDesks && params.deskHost && params.getDrawerEntries) {
+      renderBuiltInDesks({
+        host: params.deskHost,
+        placements: builtInDesks,
+        createBoard,
+        material: shelfMat,
+        getPartMaterial: getCornerMat,
+        addDrawerGroup: group => wingGroup.add(group),
+        motion: {
+          createGroup: () => new THREE.Group() as unknown as Object3DLike,
+          entries: params.getDrawerEntries(),
+        },
+      });
+    }
 
     const extrasArgs: ValueRecord = {
       App,

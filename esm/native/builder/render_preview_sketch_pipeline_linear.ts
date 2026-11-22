@@ -199,6 +199,33 @@ function applyDefaultShelfPreview(ctx: SketchPlacementPreviewContext): void {
 
 export function applyLinearSketchPlacementPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (applyRodPreview(ctx)) return true;
+  if (ctx.kind === 'built_in_desk') {
+    const slots = [
+      ctx.shelfA,
+      ctx.boxTop,
+      ctx.boxBottom,
+      ctx.boxLeft,
+      ctx.boxRight,
+      ctx.boxBack,
+      ...ctx.externalDrawerMeshes,
+    ];
+    for (const [index, board] of (ctx.input.deskPreviewBoards ?? []).entries()) {
+      ctx.placePreviewBoxMesh({
+        mesh: slots[index] ?? null,
+        sx: board.width,
+        sy: board.height,
+        sz: board.depth,
+        px: board.x,
+        py: board.y,
+        pz: board.z,
+        material: ctx.ud.__matBoxOverlay || ctx.ud.__matBox,
+        lineMaterial: ctx.ud.__lineBoxOverlay || ctx.ud.__lineBox,
+        renderOrder: 10020,
+        outlineRenderOrder: 10021,
+      });
+    }
+    return true;
+  }
   applyDefaultShelfPreview(ctx);
   return true;
 }

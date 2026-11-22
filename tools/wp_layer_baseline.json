@@ -223,11 +223,11 @@
       "from": "builder",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 197,
+      "maxImporterCount": 198,
       "maxImportCount": 209,
       "maxTypeImporterCount": 5,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 196,
+      "maxValueImporterCount": 197,
       "maxValueImportCount": 209,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -671,11 +671,11 @@
       "from": "services",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 249,
+      "maxImporterCount": 250,
       "maxImportCount": 538,
       "maxTypeImporterCount": 19,
       "maxTypeImportCount": 25,
-      "maxValueImporterCount": 249,
+      "maxValueImporterCount": 250,
       "maxValueImportCount": 532,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -685,11 +685,11 @@
       "from": "services",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 138,
+      "maxImporterCount": 139,
       "maxImportCount": 158,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 0,
-      "maxValueImporterCount": 138,
+      "maxValueImporterCount": 139,
       "maxValueImportCount": 158,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -727,11 +727,11 @@
       "from": "ui",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 30,
+      "maxImporterCount": 31,
       "maxImportCount": 25,
       "maxTypeImporterCount": 2,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 30,
+      "maxValueImporterCount": 31,
       "maxValueImportCount": 25,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -3684,6 +3684,74 @@
       "owner": "dimension-reviewed-ownership",
       "reason": "The canonical hinged-door builder seam is the single builder writer for motion metadata consumed across builder, runtime, and services.",
       "id": "dimension-owner-builder-hinged-door-motion-metadata-seam-20260811"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_built_in_desk.ts",
+      "statement": {
+        "toFile": "esm/shared/built_in_desk.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["BUILT_IN_DESK_DIMENSIONS", "planBuiltInDesk", "readBuiltInDeskPlacement"]
+      },
+      "owner": "built-in-desk",
+      "reason": "Desk assembly consumes the same placement geometry as pointer preview and commit.",
+      "id": "built-in-desk-builder-geometry"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_built_in_desk.ts",
+      "statement": {
+        "toFile": "esm/shared/built_in_desk.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BUILT_IN_DESK_DIMENSIONS",
+          "BUILT_IN_DESK_TOOL_PREFIX",
+          "planBuiltInDesk",
+          "readBuiltInDeskPlacement",
+          "readBuiltInDeskTool"
+        ]
+      },
+      "owner": "built-in-desk",
+      "reason": "The desk pointer tool decodes active options and derives edits from the canonical placement plan.",
+      "id": "built-in-desk-picking-geometry"
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_built_in_desk.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/record.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["asRecord"]
+      },
+      "owner": "built-in-desk",
+      "reason": "The desk tool reads structural records at its picking and state boundaries.",
+      "id": "built-in-desk-picking-record"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_built_in_desk_controls.tsx",
+      "statement": {
+        "toFile": "esm/shared/built_in_desk.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BUILT_IN_DESK_DIMENSIONS",
+          "DEFAULT_BUILT_IN_DESK_OPTIONS",
+          "encodeBuiltInDeskTool",
+          "maxBuiltInDeskDrawers",
+          "readBuiltInDeskTool"
+        ]
+      },
+      "owner": "built-in-desk",
+      "reason": "Both sketch tool panels use one desk options control backed by the same limits as pointer picking.",
+      "id": "built-in-desk-options"
     }
   ]
 }

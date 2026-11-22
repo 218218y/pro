@@ -1,6 +1,6 @@
 # Modernization current state
 
-Generated at: 2026-11-17T21:06:16.600Z
+Generated at: 2026-11-22T20:45:54.061Z
 
 > Generated source of truth for mutable modernization metrics. Living architecture documents should describe policy and ownership, not copy these counts.
 
@@ -21,8 +21,8 @@ Generated at: 2026-11-17T21:06:16.600Z
 
 ## Compatibility debt
 
-- Categorized occurrences: **618**
-- Files with categorized occurrences: **229**
+- Categorized occurrences: **619**
+- Files with categorized occurrences: **230**
 - Growth-ratcheted compatibility occurrences: **21** across **12** files
 - Project migration: **1**
 - External API compatibility: **4**

@@ -7,6 +7,7 @@ import { readActiveManualTool } from './canvas_picking_manual_tool_access.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import { resetCanvasPickingEmptyClick } from './canvas_picking_click_empty.js';
 import { tryHandleCanvasPickingManualRoute } from './canvas_picking_click_route_manual.js';
+import { tryHandleBuiltInDeskClick } from './canvas_picking_built_in_desk.js';
 import { tryHandleCanvasPickingLayoutRoute } from './canvas_picking_click_route_layout.js';
 import { tryHandleCanvasNonSplitSketchHover } from './canvas_picking_hover_flow_nonsplit_sketch.js';
 import { tryHandleCanvasNonSplitInteriorPreviewRoutes } from './canvas_picking_hover_flow_nonsplit_preview_interior.js';
@@ -53,6 +54,7 @@ function resolveSketchClickRoute(args: CanvasPickingClickRouteArgs): CanvasPicki
 
 const INTERIOR_EXTENSION: CanvasPickingInteriorExtension = Object.freeze({
   tryHandleClickRoute(args) {
+    if (tryHandleBuiltInDeskClick(args)) return true;
     const resolved = resolveSketchClickRoute(args);
     // Free placements can have a valid sketch command even when the ray misses the wardrobe.
     if (resolved && tryHandleCanvasPickingManualRoute(resolved)) return true;

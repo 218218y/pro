@@ -2,6 +2,8 @@ import { CORNER_WING_SELECTOR_POLICY } from '../../shared/dimensions/corner_syst
 import { getCornerHexHitDepth } from './corner_wing_hex_cell_geometry.js';
 import { getModuleSelectorMaterial } from './module_selector_material.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
+import { resolveCornerWingDeskHost } from './corner_wing_cell_interiors_cell.js';
+import { markBuiltInDeskHost } from './render_built_in_desk.js';
 
 export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowParams): void {
   const { ctx, locals, helpers } = params;
@@ -41,6 +43,7 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
       hitBox.renderOrder = -1000;
       hitBox.position.set(cell.centerX, startY + __h / 2, -__hd / 2 + (__hd - wingD));
       hitBox.userData = { moduleIndex: cell.key, isModuleSelector: true, __wpStack: __stackKey };
+      markBuiltInDeskHost(hitBox, resolveCornerWingDeskHost({ ...ctx, cornerCells }, cell));
       wingGroup.add(hitBox);
     }
   } else {

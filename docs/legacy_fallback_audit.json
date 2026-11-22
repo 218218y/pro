@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-17T14:29:28.376Z",
+  "generatedAt": "2026-11-22T20:45:41.810Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 618,
-    "totalFiles": 229,
+    "totalOccurrences": 619,
+    "totalFiles": 230,
     "byCategory": {
       "runtime-default": 72,
-      "domain-default": 450,
+      "domain-default": 451,
       "error-message-default": 42,
       "framework-default": 5,
       "browser-adapter": 17,
@@ -252,6 +252,12 @@
         "total": 2,
         "categories": {
           "domain-default": 2
+        }
+      },
+      "esm/native/builder/render_built_in_desk.ts": {
+        "total": 1,
+        "categories": {
+          "domain-default": 1
         }
       },
       "esm/native/builder/render_carcass_ops_cornice_finalize.ts": {
@@ -1920,7 +1926,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_carcass_selectors.ts",
-      "line": 50,
+      "line": 53,
       "term": "fallbackMinWidthM",
       "category": "domain-default",
       "text": "Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, activeWidth),"
@@ -1990,7 +1996,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
-      "line": 174,
+      "line": 195,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
@@ -2267,6 +2273,13 @@
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-render-adapter-fallback: optional scene attachment/metadata must not block adapter availability"
+    },
+    {
+      "file": "esm/native/builder/render_built_in_desk.ts",
+      "line": 38,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "getPartMaterial?: (partId: string, fallback: unknown) => unknown;"
     },
     {
       "file": "esm/native/builder/render_carcass_ops_cornice_finalize.ts",

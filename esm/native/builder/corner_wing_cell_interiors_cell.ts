@@ -1,13 +1,19 @@
 import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
 import type { CornerCell } from './corner_wing_cell_shared.js';
+import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
 import type {
   CornerWingInteriorCellRuntime,
   CornerWingInteriorRuntime,
 } from './corner_wing_cell_interiors_contracts.js';
 
+type CornerWingFacesInput = Pick<
+  CornerWingInteriorRuntime,
+  'cornerCells' | 'woodThick' | 'blindWidth' | 'wingW'
+>;
+
 function needsIndependentWallsAtBoundary(
-  runtime: CornerWingInteriorRuntime,
+  runtime: CornerWingFacesInput,
   leftIdx: number,
   rightIdx: number
 ): boolean {
@@ -17,7 +23,7 @@ function needsIndependentWallsAtBoundary(
 }
 
 export function getCornerCellInnerFacesX(
-  runtime: CornerWingInteriorRuntime,
+  runtime: CornerWingFacesInput,
   cellIndex: number
 ): { leftX: number; rightX: number } {
   const len = runtime.cornerCells.length;
@@ -62,6 +68,34 @@ export function getCornerCellInnerFacesX(
   }
 
   return { leftX, rightX };
+}
+
+export function resolveCornerWingDeskHost(
+  runtime: CornerWingFacesInput & Pick<CornerWingInteriorRuntime, 'wingD' | '__stackKey'>,
+  cell: CornerCell
+): BuiltInDeskHost {
+  const { leftX, rightX } = getCornerCellInnerFacesX(runtime, cell.idx);
+  const cellDepth = Math.max(CORNER_WING_INTERIOR_POLICY.minCellDepthM, cell.depth);
+  return {
+    moduleKey: cell.key,
+    stack: runtime.__stackKey === 'bottom' ? 'bottom' : 'top',
+    geometry: {
+      leftX,
+      rightX,
+      bottomY: cell.effectiveBottomY,
+      topY: cell.effectiveTopY,
+      backZ:
+        -runtime.wingD +
+        CORNER_WING_INTERIOR_POLICY.internalDepthBackClearanceM / 2 -
+        CORNER_WING_INTERIOR_POLICY.fullDepthCenterBackInsetM,
+      frontZ: cellDepth - runtime.wingD,
+      thickness: runtime.woodThick,
+      leftSide: false,
+      rightSide: cell.idx === runtime.cornerCells.length - 1,
+      leftWallThickness: runtime.woodThick,
+      rightWallThickness: runtime.woodThick,
+    },
+  };
 }
 
 export function createCornerWingInteriorCellRuntime(

@@ -1,4 +1,6 @@
 import { getBuilderRegistry, getBuilderRenderOps } from '../runtime/builder_service_access.js';
+import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
+import { markBuiltInDeskHost } from './render_built_in_desk.js';
 
 import { markEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
@@ -9,7 +11,8 @@ export function registerModuleHitBox(
   runtime: ModuleLoopRuntime,
   _state: ModuleLoopMutableState,
   index: number,
-  frame: ResolvedModuleFrame
+  frame: ResolvedModuleFrame,
+  deskHost: BuiltInDeskHost
 ): void {
   const builderRenderOps = getBuilderRenderOps(runtime.App);
   const hitBox =
@@ -27,6 +30,7 @@ export function registerModuleHitBox(
         })
       : null;
 
+  markBuiltInDeskHost(hitBox, deskHost);
   try {
     const reg = getBuilderRegistry(runtime.App);
     if (reg && typeof reg.registerModuleHitBox === 'function' && hitBox) {

@@ -2,7 +2,10 @@ import { applyExternalDrawersForModule } from './external_drawers_pipeline.js';
 import { makeRodCreator } from './contents_pipeline.js';
 import { applyInteriorLayout } from './interior_pipeline.js';
 import { appendHingedDoorOpsForModule } from './hinged_doors_pipeline.js';
-import { getWardrobeGroup } from '../runtime/render_access.js';
+import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
+import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
+import { renderBuiltInDesks } from './render_built_in_desk.js';
+import { asValueRecord } from './render_interior_sketch_shared.js';
 import {
   advanceDoorCounterPastFrontClosure,
   renderRemovedFrameSideFrontClosure,
@@ -26,7 +29,8 @@ export function applyModuleContents(
   frame: ResolvedModuleFrame,
   metrics: ModuleVerticalMetrics,
   startDoorOfModule: number,
-  frontClosurePlan: RemovedFrameSideFrontClosurePlan | null = null
+  frontClosurePlan: RemovedFrameSideFrontClosurePlan | null,
+  deskHost: BuiltInDeskHost
 ): void {
   const wardrobeGroup = getWardrobeGroup(runtime.App);
 
@@ -169,6 +173,19 @@ export function applyModuleContents(
     isGroovesEnabled: runtime.isGroovesEnabled,
     isInternalDrawersEnabled: runtime.isInternalDrawersEnabled,
   });
+
+  const builtInDesks = asValueRecord(frame.config.sketchExtras)?.builtInDesks;
+  if (builtInDesks && wardrobeGroup) {
+    renderBuiltInDesks({
+      host: deskHost,
+      placements: builtInDesks,
+      createBoard: runtime.createBoard,
+      material: currentBraceShelfMat,
+      getPartMaterial: runtime.getPartMaterial,
+      addDrawerGroup: group => wardrobeGroup.add(group),
+      motion: { createGroup: () => new runtime.THREE.Group(), entries: getDrawersArray(runtime.App) },
+    });
+  }
 
   if (runtime.cfg.wardrobeType !== 'hinged') return;
 

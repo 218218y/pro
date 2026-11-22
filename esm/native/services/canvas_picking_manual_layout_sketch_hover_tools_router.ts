@@ -6,6 +6,7 @@ import type { ManualLayoutSketchHoverPreviewArgs } from './canvas_picking_manual
 import { resolvePreferredManualLayoutSketchSelectorHit } from './canvas_picking_manual_layout_sketch_hover_tools_selector.js';
 import { resolveSketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
+import { previewBuiltInDesk } from './canvas_picking_built_in_desk.js';
 
 export function tryHandleManualLayoutSketchHoverPreviewImpl(
   args: ManualLayoutSketchHoverPreviewArgs
@@ -58,6 +59,11 @@ export function tryHandleManualLayoutSketchHoverPreviewImpl(
       setPreview,
       hideSketchPreviewAndClearHover,
     } = runtime;
+
+    if (
+      previewBuiltInDesk({ App, tool, intersects, setPreview, clearPreview: hideSketchPreviewAndClearHover })
+    )
+      return true;
 
     if (
       tryHandleSketchHoverOverStandardDrawer({

@@ -6,7 +6,10 @@
 import type { CornerWingCellFlowParams } from './corner_wing_cell_shared.js';
 import type { InteriorGroupLike, InteriorTHREESurface } from './render_interior_ops_contracts.js';
 import { addFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
-import { createCornerWingInteriorCellRuntime } from './corner_wing_cell_interiors_cell.js';
+import {
+  createCornerWingInteriorCellRuntime,
+  resolveCornerWingDeskHost,
+} from './corner_wing_cell_interiors_cell.js';
 import { createCornerWingInteriorRuntime } from './corner_wing_cell_interiors_runtime.js';
 import { createCornerWingInteriorShelfRuntime } from './corner_wing_cell_interiors_shelves.js';
 import {
@@ -69,6 +72,9 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
       wingGroup: runtime.wingGroup,
       cfg: runtime.__cfg,
       cfgCell: cellRuntime.cfgCell,
+      deskHost: resolveCornerWingDeskHost(runtime, cell),
+      getDrawerEntries: () =>
+        runtime.render ? runtime.ensureRenderArray(runtime.render, 'drawersArray') : [],
       cellIdx: cell.idx,
       cellKey: cellRuntime.cellKey,
       stackKey: runtime.__stackKey,

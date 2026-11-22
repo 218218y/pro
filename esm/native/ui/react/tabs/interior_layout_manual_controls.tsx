@@ -2,6 +2,11 @@ import type { ReactElement } from 'react';
 
 import { OptionButton } from '../components/index.js';
 import {
+  BuiltInDeskOptionsPanel,
+  BuiltInDeskToolButton,
+  readActiveBuiltInDeskOptions,
+} from './interior_built_in_desk_controls.js';
+import {
   InteriorSketchShelfDepthField,
   InteriorSketchStorageHeightField,
   SHELF_VARIANT_OPTIONS,
@@ -15,6 +20,8 @@ type ShelfVariant = (typeof SHELF_VARIANT_OPTIONS)[number]['variant'];
 
 export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): ReactElement {
   const isSketch = props.method === 'sketch';
+  const deskOptions = isSketch ? readActiveBuiltInDeskOptions(props) : null;
+  const deskPanelId = 'wp-r-interior-built-in-desk';
   const hasActiveTool = isSketch
     ? props.isSketchDivisionToolActive
     : props.isManualLayoutMode && !props.isSketchToolActive;
@@ -26,7 +33,10 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
     SHELF_VARIANT_OPTIONS.find(option => option.variant === props.gridShelfVariant)?.variant ??
     'regular';
   const showShelfSettings =
-    tool === 'shelf' && !isWinterBrace && !(isSketch && (props.isBraceShelvesMode || props.isLayoutMode));
+    tool === 'shelf' &&
+    !deskOptions &&
+    !isWinterBrace &&
+    !(isSketch && (props.isBraceShelvesMode || props.isLayoutMode));
 
   function selectShelf(variant: ShelfVariant) {
     props.setGridShelfVariant(variant);
@@ -76,7 +86,23 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
             חירור מלא
           </OptionButton>
         ) : null}
+        {isSketch ? (
+          <BuiltInDeskToolButton
+            selected={deskOptions !== null}
+            testId="interior-built-in-desk"
+            panelId={deskPanelId}
+            activateManualToolId={props.activateManualToolId}
+            exitManual={props.exitManual}
+          />
+        ) : null}
       </div>
+      {deskOptions ? (
+        <BuiltInDeskOptionsPanel
+          id={deskPanelId}
+          options={deskOptions}
+          activateManualToolId={props.activateManualToolId}
+        />
+      ) : null}
 
       {!isSketch && tool !== 'storage' ? (
         <div className="wp-interior-layout-settings">

@@ -70,6 +70,7 @@ function shouldUseObjectBoxesPaintPreview(partKeys: string[]): boolean {
       key === 'plinth_color' ||
       key === 'lower_plinth_color' ||
       key === 'cornice_color' ||
+      key.startsWith('built_in_desk_') ||
       isBaseLegPlatformPaintKey(key) ||
       isDrawerBoxPartId(key) ||
       isSketchInternalDrawerCassettePartId(key) ||
