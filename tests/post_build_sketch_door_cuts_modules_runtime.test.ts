@@ -1,9 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applySketchExternalDrawerDoorCuts } from '../esm/native/builder/post_build_sketch_door_cuts.ts';
+import {
+  applySketchBoxExternalDrawerDoorCuts,
+  applySketchExternalDrawerDoorCuts,
+} from '../esm/native/builder/post_build_sketch_door_cuts.ts';
+import { renderBuiltInDesk, resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
 import { getDoorsArray, getDrawersArray } from '../esm/native/runtime/render_access.ts';
 import { getInternalGridMap } from '../esm/native/runtime/cache_access.ts';
+import type { BuiltInDeskHost } from '../types/built_in_desk.ts';
 
 class FakeVector3 {
   x: number;
@@ -192,20 +197,45 @@ function createCtx() {
   };
 }
 
-test('a desk opens the selected door above the plate while preserving an existing cut', () => {
+const moduleDeskHost: BuiltInDeskHost = {
+  moduleKey: 0,
+  stack: 'top',
+  geometry: { leftX: -0.45, rightX: 0.45, bottomY: 0, topY: 2, backZ: 0, frontZ: 0.6, thickness: 0.018 },
+};
+
+function renderDeskForDoorCut(App: Record<string, unknown>, host: BuiltInDeskHost) {
+  const desk = resolveBuiltInDesk(host, {
+    lengthCm: 100,
+    topNorm: 0.4,
+    drawerCount: 3,
+    drawerSide: 'right',
+    support: 'wall',
+  });
+  assert.ok(desk);
+  renderBuiltInDesk({
+    desk,
+    createBoard: () => new FakeGroup(),
+    material: {},
+    addDrawerGroup: () => {},
+    motion: { createGroup: () => new FakeGroup() as never, entries: getDrawersArray(App) },
+  });
+  return desk.plan.verticalRange;
+}
+
+test('a desk clears 30 cm above and below its body and preserves an existing cut', () => {
   const App: Record<string, unknown> = {};
   const full = createDoorGroup();
   const existingUpper = createAuthoredSplitDoorLeaf({
     partId: 'd1_top',
     moduleKey: '0',
-    centerY: 1.5,
-    height: 1,
+    centerY: 1.65,
+    height: 0.7,
   });
   const existingLower = createAuthoredSplitDoorLeaf({
     partId: 'd1_bot',
     moduleKey: '0',
-    centerY: 0.5,
-    height: 1,
+    centerY: 0.65,
+    height: 1.3,
   });
   const adjacent = createAuthoredSplitDoorLeaf({ partId: 'd2_full', moduleKey: '1', centerY: 1, height: 2 });
   getDoorsArray(App).push(
@@ -213,14 +243,12 @@ test('a desk opens the selected door above the plate while preserving an existin
       group => ({ type: 'hinged', group }) as any
     )
   );
-  getDrawersArray(App).push({
-    builtInDeskDoorOpening: { host: { moduleKey: 0, stack: 'top' }, yMin: 0.64, yMax: 0.803 },
-  } as any);
+  const { bottomY, surfaceY } = renderDeskForDoorCut(App, moduleDeskHost);
   applySketchExternalDrawerDoorCuts({
     App: App as any,
     THREE: FakeTHREE as any,
     ctx: { ...createCtx(), layout: { moduleCfgList: [{}, {}] } } as any,
-    cfg: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.5] } },
+    cfg: { splitDoorsMap: { split_d1: true, splitpos_d1: [0.65] } },
     bodyMat: { name: 'body' },
     globalFrontMat: { name: 'front' },
     stackKey: 'top',
@@ -231,10 +259,46 @@ test('a desk opens the selected door above the plate while preserving an existin
   for (const door of [full, existingLower.door]) {
     const segments = door.children.filter(child => child.userData.__wpSketchDoorSegment === true);
     assert.equal(segments.length, 2);
-    const upper = segments[1]!;
-    const visualHeight = Number(upper.userData.__doorHeight);
-    assert.ok(getWorldY(upper) - visualHeight / 2 >= 0.803 - 1e-12);
+    const [lower, upper] = segments;
+    assert.ok(lower && upper);
+    const lowerTop = getWorldY(lower) + Number(lower.userData.__wpDoorConstructionHeight) / 2;
+    const upperBottom = getWorldY(upper) - Number(upper.userData.__wpDoorConstructionHeight) / 2;
+    assert.ok(Math.abs(bottomY - lowerTop - 0.3) < 1e-12);
+    assert.ok(Math.abs(upperBottom - surfaceY - 0.3) < 1e-12);
   }
+});
+
+test('a standalone box desk opening clips to its own door when the underside is near the bottom', () => {
+  const App: Record<string, unknown> = {};
+  const cabinetDoor = createDoorGroup();
+  const boxDoor = createBoxDoorGroup();
+  const sentinel = new FakeGroup();
+  cabinetDoor.add(sentinel);
+  getDoorsArray(App).push(...[cabinetDoor, boxDoor].map(group => ({ type: 'hinged', group }) as any));
+  const { surfaceY } = renderDeskForDoorCut(App, {
+    ...moduleDeskHost,
+    boxId: 'box-1',
+    boxIsStandalone: true,
+    geometry: { ...moduleDeskHost.geometry, bottomY: 0.5, topY: 1.5 },
+  });
+  const cutArgs = {
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: createCtx() as any,
+    cfg: {},
+    bodyMat: { name: 'body' },
+    globalFrontMat: { name: 'front' },
+  };
+  applySketchExternalDrawerDoorCuts({ ...cutArgs, stackKey: 'top', allowConfigDerivedCuts: false });
+  applySketchBoxExternalDrawerDoorCuts(cutArgs);
+
+  assert.deepEqual(cabinetDoor.children, [sentinel]);
+  const segments = boxDoor.children.filter(child => child.userData.__wpSketchDoorSegment === true);
+  assert.equal(segments.length, 1);
+  const upper = segments[0]!;
+  const halfHeight = Number(upper.userData.__wpDoorConstructionHeight) / 2;
+  assert.ok(Math.abs(getWorldY(upper) - halfHeight - surfaceY - 0.3) < 1e-12);
+  assert.ok(Math.abs(getWorldY(upper) + halfHeight - 1.5) < 1e-12);
 });
 
 test('module sketch door-cut pass does not recursively re-split regular hinged leaves from the split map alone', () => {

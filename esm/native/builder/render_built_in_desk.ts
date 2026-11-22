@@ -168,11 +168,11 @@ export function renderBuiltInDesk(args: {
       isOpen: false,
     };
     if (index === 0) {
-      const { doorClearanceM } = BUILT_IN_DESK_DIMENSIONS;
+      const { doorOpeningClearanceM } = BUILT_IN_DESK_DIMENSIONS;
       const opening: BuiltInDeskDoorOpening = {
         host,
-        yMin: plan.verticalRange.bottomY - doorClearanceM,
-        yMax: plan.surfaceY + doorClearanceM,
+        yMin: plan.verticalRange.bottomY - doorOpeningClearanceM,
+        yMax: plan.surfaceY + doorOpeningClearanceM,
       };
       entry.builtInDeskDoorOpening = opening;
     }
