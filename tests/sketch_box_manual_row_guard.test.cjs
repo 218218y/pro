@@ -16,8 +16,8 @@ const layout = fs.readFileSync(layoutPath, 'utf8');
 
 assert.match(
   layout,
-  /if \(props\.isBraceShelvesMode \|\| props\.isSketchDivisionToolActive\) return 'sketch';/,
-  'Only canonical sketch division and shelf conversion tools select the interior sketch panel.'
+  /if \(props\.isBraceShelvesMode \|\| props\.isSketchDivisionToolActive \|\| readActiveBuiltInDeskOptions\(props\)\)\s*return 'sketch';/,
+  'The interior sketch panel owns shelf conversion, sketch division, and built-in desk editing.'
 );
 
 assert.match(

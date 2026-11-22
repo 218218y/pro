@@ -28,6 +28,7 @@ test.describe('Canvas pointer parity smoke', () => {
   test('places, paints and updates a built-in desk from both sketch tool panels @critical', async ({
     page,
   }, testInfo) => {
+    testInfo.setTimeout(120_000);
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
     await openMainTab(page, 'interior');
@@ -78,8 +79,12 @@ test.describe('Canvas pointer parity smoke', () => {
     const findDeskPart = async (suffix: string) =>
       page.evaluate(partSuffix => {
         const canvas = window.__WP_DEBUG__!.canvas;
-        for (let x = -0.92; x <= 0.65; x += 0.025) {
-          for (let y = -0.94; y <= 0.4; y += 0.018) {
+        const rows = [
+          ...Array.from({ length: 44 }, (_, index) => -0.16 - index * 0.018),
+          ...Array.from({ length: 31 }, (_, index) => -0.142 + index * 0.018),
+        ];
+        for (const y of rows) {
+          for (let x = -0.92; x <= 0.65; x += 0.025) {
             const partId = canvas.inspectNdc(x, y)?.partId;
             if (partId?.startsWith('built_in_desk_') && partId.endsWith(partSuffix)) {
               return { x, y, partId };

@@ -16,6 +16,13 @@ export type CanvasDirectDoorToggleArgs = {
   effectiveDoorId: string | null;
 };
 
+export type CanvasDoorToggleClickArgs = CanvasDirectDoorToggleArgs & {
+  primaryMode: string | null;
+  foundPartId: string | null;
+  foundModuleIndex?: string | number | null;
+  foundModuleStack?: string | null;
+};
+
 export function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? Object(value) : null;
 }

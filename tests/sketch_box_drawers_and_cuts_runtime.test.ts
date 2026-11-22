@@ -1556,7 +1556,10 @@ test('stack-split lower module sketch external drawer cuts run bottom pass and k
     cutsSrc,
     /const isCanonicalSourceDoor = partId === basePartId \|\| partId === `\$\{basePartId\}_full`;/
   );
-  assert.match(cutsSrc, /if \(!isCanonicalSourceDoor\) return null;/);
+  assert.match(
+    cutsSrc,
+    /if \(!isCanonicalSourceDoor\)\s*return deskCuts\.length \? \{ stacks: deskCuts, basePartId: partId \} : null;/
+  );
   assert.match(cutsSrc, /const ownsDeferredSplit = deferredSplitModuleKeys\.has\(moduleKey\);/);
 });
 
@@ -1722,6 +1725,12 @@ async function loadInstrumentedSketchBoxRenderer(): Promise<{
       ),
     ],
     [
+      './render_interior_sketch_box_desk.js',
+      dataModule(
+        "export function applySketchBoxBuiltInDesks() { globalThis.__wpDrawerSpanHarness.order.push('Desk'); }"
+      ),
+    ],
+    [
       './render_interior_sketch_layout.js',
       dataModule(
         'export function readSketchBoxDividers() { return []; } export function readSketchBoxHorizontalDividers() { return []; } export function resolveSketchBoxSegmentForContent() { return globalThis.__wpDrawerSpanHarness.segment; }'
@@ -1807,7 +1816,7 @@ test('renderInteriorSketchBoxes preserves drawer-span edge extensions, epsilon b
       App: {},
       measureWardrobeLocalBox: () => null,
     });
-    assert.deepEqual(harness.order, ['Shell', 'Contents', 'Fronts', 'Boring']);
+    assert.deepEqual(harness.order, ['Shell', 'Contents', 'Fronts', 'Boring', 'Desk']);
     assert.deepEqual(harness.frontsResult, harness.contentsResult);
     assert.ok(harness.contentsResult);
     return harness.contentsResult;

@@ -1,12 +1,10 @@
 // Canvas picking door/global toggle click handling.
 
-import type { AppContainer } from '../../../types';
-
-import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getSuppressGlobalToggleUntil } from '../runtime/doors_access.js';
 import { getModeId } from '../runtime/api.js';
 import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
 import {
+  type CanvasDoorToggleClickArgs,
   toggleDoorsState,
   tryCloseOpenSlidingTrackDoors,
   tryHandleDirectDoorOrDrawerToggle,
@@ -23,16 +21,6 @@ import {
   resolveSketchFreeBoxToggleScope,
   toggleSketchFreeBoxOpen,
 } from './canvas_picking_toggle_flow_sketch_free_box.js';
-
-export interface CanvasDoorToggleClickArgs {
-  App: AppContainer;
-  primaryMode: string | null;
-  primaryHitObject: HitObjectLike | null;
-  effectiveDoorId: string | null;
-  foundPartId: string | null;
-  foundModuleIndex?: string | number | null;
-  foundModuleStack?: string | null;
-}
 
 export function handleCanvasDoorToggleClick(args: CanvasDoorToggleClickArgs): void {
   const {
