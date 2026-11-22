@@ -18,6 +18,8 @@ import {
 } from './corner_wing_cell_interiors_storage.js';
 import { applyCornerWingCellLayout } from './corner_wing_cell_layouts.js';
 import { applyCornerWingCellSketchExtras } from './corner_wing_cell_sketch_extras.js';
+import { resolveBuiltInDesk } from './render_built_in_desk.js';
+import { fitFoldedContentsAroundDesk } from './built_in_desk_contents.js';
 
 export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): void {
   const runtime = createCornerWingInteriorRuntime(params);
@@ -26,8 +28,21 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
   const shelfRuntime = createCornerWingInteriorShelfRuntime(runtime);
 
   for (const cell of runtime.cornerCells) {
-    const cellRuntime = createCornerWingInteriorCellRuntime(runtime, cell);
-    const layoutOps = createCornerWingInteriorLayoutOps(runtime, cellRuntime, shelfRuntime);
+    const desk = resolveBuiltInDesk(
+      resolveCornerWingDeskHost(runtime, cell),
+      runtime.asRecord(cell.cfg.sketchExtras).builtInDesk
+    );
+    const addFoldedClothes = fitFoldedContentsAroundDesk(desk, runtime.addFoldedClothes);
+    const cellRuntime = createCornerWingInteriorCellRuntime(
+      desk ? { ...runtime, addFoldedClothes } : runtime,
+      cell
+    );
+    const layoutOps = createCornerWingInteriorLayoutOps(
+      runtime,
+      cellRuntime,
+      shelfRuntime,
+      desk?.plan.verticalRange
+    );
 
     addFullShelfPinBoring({
       enabled: cellRuntime.cfgCell.fullShelfPinBoring === true,
@@ -72,7 +87,7 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
       wingGroup: runtime.wingGroup,
       cfg: runtime.__cfg,
       cfgCell: cellRuntime.cfgCell,
-      deskHost: resolveCornerWingDeskHost(runtime, cell),
+      desk,
       getDrawerEntries: () =>
         runtime.render ? runtime.ensureRenderArray(runtime.render, 'drawersArray') : [],
       cellIdx: cell.idx,
@@ -101,7 +116,7 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
       addOutlines: runtime.addOutlines,
       __sketchMode: runtime.__sketchMode === true,
       showContentsEnabled: runtime.showContentsEnabled,
-      addFoldedClothes: runtime.addFoldedClothes,
+      addFoldedClothes,
       createRod: layoutOps.createRod,
       asRecord: runtime.asRecord,
     });

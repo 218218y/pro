@@ -21,6 +21,18 @@ type DeskDrawers = {
   entries: unknown[];
 };
 
+export type ResolvedBuiltInDesk = {
+  host: BuiltInDeskHost;
+  plan: NonNullable<ReturnType<typeof planBuiltInDesk>>;
+};
+
+export function resolveBuiltInDesk(host: BuiltInDeskHost | null, value: unknown): ResolvedBuiltInDesk | null {
+  const placement = readBuiltInDeskPlacement(value);
+  if (!host || !placement) return null;
+  const plan = planBuiltInDesk(host.geometry, placement);
+  return plan ? { host, plan } : null;
+}
+
 export type BuiltInDeskDoorOpening = {
   host: BuiltInDeskHost;
   yMin: number;
@@ -32,8 +44,7 @@ export function readBuiltInDeskDoorOpening(drawer: DrawerVisualEntryLike): Built
 }
 
 export function renderBuiltInDesk(args: {
-  host: BuiltInDeskHost;
-  placement: unknown;
+  desk: ResolvedBuiltInDesk;
   createBoard: (
     w: number,
     h: number,
@@ -49,12 +60,13 @@ export function renderBuiltInDesk(args: {
   addDrawerGroup: (group: Object3DLike) => unknown;
   motion: DeskDrawers;
 }): void {
-  const placement = readBuiltInDeskPlacement(args.placement);
-  if (!placement) return;
-  const { host, createBoard, material, motion } = args;
+  const {
+    desk: { host, plan },
+    createBoard,
+    material,
+    motion,
+  } = args;
   const { thickness } = host.geometry;
-  const plan = planBuiltInDesk(host.geometry, placement);
-  if (!plan) return;
   const prefix = `built_in_desk_${host.stack}_${host.moduleKey}_${host.boxId ?? 'cell'}`;
   function emit(board: BuiltInDeskBoard, suffix: string): unknown {
     const partId = `${prefix}_${suffix}`;
@@ -72,7 +84,8 @@ export function renderBuiltInDesk(args: {
   const fixedBoards = [
     emit(plan.top, 'top'),
     emit(plan.bottom, 'bottom'),
-    emit(plan.support, placement.support),
+    emit(plan.back, 'back'),
+    ...(plan.support ? [emit(plan.support, 'leg')] : []),
     ...plan.drawerPartitions.map((board, index) => emit(board, `partition_${index + 1}`)),
   ];
   for (const board of fixedBoards) markBuiltInDeskHost(board, host, prefix);
@@ -158,7 +171,7 @@ export function renderBuiltInDesk(args: {
       const { doorClearanceM } = BUILT_IN_DESK_DIMENSIONS;
       const opening: BuiltInDeskDoorOpening = {
         host,
-        yMin: plan.bottom.y - thickness / 2 - doorClearanceM,
+        yMin: plan.verticalRange.bottomY - doorClearanceM,
         yMax: plan.surfaceY + doorClearanceM,
       };
       entry.builtInDeskDoorOpening = opening;

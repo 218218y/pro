@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { applyHandles } from '../esm/native/builder/handles_apply.ts';
 import { createHandlesApplyRuntime } from '../esm/native/builder/handles_apply_shared.ts';
 import { purgeHandlesForRemovedDoors } from '../esm/native/builder/handles_purge.ts';
-import { renderBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
+import { renderBuiltInDesk, resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
 import type { DrawerVisualEntryLike } from '../types/index.js';
 
 const addOutlines = () => undefined;
@@ -198,8 +198,8 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
   const entries: DrawerVisualEntryLike[] = [];
   App.render.wardrobeGroup = wardrobe;
   App.render.drawersArray = entries;
-  renderBuiltInDesk({
-    host: {
+  const desk = resolveBuiltInDesk(
+    {
       moduleKey: 0,
       stack: 'top',
       geometry: {
@@ -212,7 +212,12 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
         thickness: 0.018,
       },
     },
-    placement: { lengthCm: 120, drawerCount: 3, support: 'leg', topNorm: 0.35, drawerSide: 'right' },
+    { lengthCm: 120, drawerCount: 3, support: 'leg', topNorm: 0.35, drawerSide: 'right' }
+  );
+  assert.ok(desk);
+  const backMaterial = {};
+  renderBuiltInDesk({
+    desk,
     createBoard(w, h, d, x, y, z, material, partId) {
       const mesh = new FakeMesh3D(new FakeGeometry3D(w, h, d), material);
       mesh.position.set(x, y, z);
@@ -221,11 +226,18 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
       return mesh;
     },
     material: {},
+    getPartMaterial: (id, material) => (id === 'built_in_desk_top_0_cell_back' ? backMaterial : material),
     addDrawerGroup(group) {
       wardrobe.add(group as unknown as FakeGroup3D);
     },
     motion: { createGroup: () => new FakeGroup3D() as never, entries },
   });
+  const back = wardrobe.children.find(child => child.userData.partId === 'built_in_desk_top_0_cell_back');
+  assert.ok(back instanceof FakeMesh3D);
+  assert.equal(back.material, backMaterial);
+  assert.equal(back.userData.__wpBuiltInDeskId, 'built_in_desk_top_0_cell');
+  assert.equal(back.parent, wardrobe);
+  assert.equal(back.userData.drawerId, undefined);
 
   for (let rebuild = 0; rebuild < 2; rebuild++) {
     applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, removeDoorsEnabled: false });

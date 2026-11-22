@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T21:09:31.658Z",
+  "generatedAt": "2026-11-22T21:40:37.185Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -1996,7 +1996,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
-      "line": 195,
+      "line": 192,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
@@ -2276,7 +2276,7 @@
     },
     {
       "file": "esm/native/builder/render_built_in_desk.ts",
-      "line": 48,
+      "line": 59,
       "term": "fallback",
       "category": "domain-default",
       "text": "getPartMaterial?: (partId: string, fallback: unknown) => unknown;"
@@ -2374,21 +2374,21 @@
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 160,
+      "line": 168,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "fallbackGridIndex?: number;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 162,
+      "line": 170,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const { rod, effectiveBottomY, localGridStep, fallbackGridIndex } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 166,
+      "line": 174,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const factor = rawYFactor ?? rawGridIndex ?? fallbackGridIndex ?? null;"

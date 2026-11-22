@@ -4,7 +4,8 @@ import { applyInteriorLayout } from './interior_pipeline.js';
 import { appendHingedDoorOpsForModule } from './hinged_doors_pipeline.js';
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
-import { renderBuiltInDesk } from './render_built_in_desk.js';
+import { renderBuiltInDesk, resolveBuiltInDesk } from './render_built_in_desk.js';
+import { fitFoldedContentsAroundDesk } from './built_in_desk_contents.js';
 import { asValueRecord } from './render_interior_sketch_shared.js';
 import {
   advanceDoorCounterPastFrontClosure,
@@ -33,6 +34,9 @@ export function applyModuleContents(
   deskHost: BuiltInDeskHost | null
 ): void {
   const wardrobeGroup = getWardrobeGroup(runtime.App);
+  const desk = wardrobeGroup
+    ? resolveBuiltInDesk(deskHost, asValueRecord(frame.config.sketchExtras)?.builtInDesk)
+    : null;
 
   if (metrics.drawerHeightTotal > 0) {
     const doorSpan = runtime.computeModuleDoorSpan(
@@ -101,6 +105,7 @@ export function applyModuleContents(
     moduleIndex: index,
     effectiveBottomY: metrics.effectiveBottomY,
     effectiveTopY: metrics.effectiveTopY,
+    ...(desk ? { builtInDeskRange: desk.plan.verticalRange } : {}),
     gridDivisions: metrics.gridDivisions,
     localGridStep: metrics.localGridStep,
     woodThick: runtime.woodThick,
@@ -134,7 +139,7 @@ export function applyModuleContents(
     wardrobeGroup,
     createBoard: runtime.createBoard,
     createRod,
-    addFoldedClothes: runtime.addFoldedClothes,
+    addFoldedClothes: runtime.addFoldedClothes && fitFoldedContentsAroundDesk(desk, runtime.addFoldedClothes),
     effectiveBottomY: metrics.effectiveBottomY,
     effectiveTopY: metrics.effectiveTopY,
     localGridStep: metrics.localGridStep,
@@ -174,11 +179,9 @@ export function applyModuleContents(
     isInternalDrawersEnabled: runtime.isInternalDrawersEnabled,
   });
 
-  const builtInDesk = asValueRecord(frame.config.sketchExtras)?.builtInDesk;
-  if (builtInDesk && deskHost && wardrobeGroup) {
+  if (desk && wardrobeGroup) {
     renderBuiltInDesk({
-      host: deskHost,
-      placement: builtInDesk,
+      desk,
       createBoard: runtime.createBoard,
       material: currentBraceShelfMat,
       getPartMaterial: runtime.getPartMaterial,

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorRodOps } from '../esm/native/builder/render_interior_rod_ops.ts';
+import { resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
+import { fitFoldedContentsAroundDesk } from '../esm/native/builder/built_in_desk_contents.ts';
 import { createRoomArchitecturePlanFromApp } from '../esm/native/builder/room_architecture_plan_adapter.ts';
 import { CARCASS_INTERIOR_GRID_POLICY } from '../esm/shared/dimensions/carcass_interior_grid_policy.ts';
 import {
@@ -171,6 +173,85 @@ test('box clearance preserves hanging space below higher boxes and ignores stand
     }),
     0.5
   );
+});
+
+const deskHost = {
+  moduleKey: 0,
+  stack: 'top' as const,
+  geometry: { leftX: -0.4, rightX: 0.4, bottomY: 0, topY: 2, backZ: -0.3, frontZ: 0.3, thickness: 0.018 },
+};
+
+test('hanging contents use the desktop as a lower boundary while preserving the rod', () => {
+  for (const support of ['wall', 'leg'] as const) {
+    const desk = resolveBuiltInDesk(deskHost, {
+      lengthCm: 100,
+      drawerCount: 3,
+      support,
+      drawerSide: 'left',
+      topNorm: 0.45,
+    });
+    assert.ok(desk);
+    for (const [rodY, expectedHeight, expectedHangers] of [
+      [1.6, 0.7, 1],
+      [0.9, 0, 0],
+      [0.6, 0.6, 1],
+    ]) {
+      const { ops, added, group } = createRodOpsHarness();
+      const clothesHeights: number[] = [];
+      let hangers = 0;
+      ops.createRodWithContents({
+        THREE: makeFakeThree(),
+        yPos: rodY,
+        innerW: 0.8,
+        effectiveBottomY: 0,
+        effectiveTopY: 2,
+        builtInDeskRange: desk.plan.verticalRange,
+        wardrobeGroup: group,
+        showHangerEnabled: true,
+        showContentsEnabled: true,
+        doorStyle: 'flat',
+        addRealisticHanger: () => hangers++,
+        addHangingClothes: (
+          _x: number,
+          _y: number,
+          _z: number,
+          _w: number,
+          _group: unknown,
+          height: number
+        ) => {
+          clothesHeights.push(height);
+        },
+      });
+      assert.equal(added.length, 1);
+      assert.equal(hangers, expectedHangers);
+      assert.equal(clothesHeights.length, 1);
+      assertClose(clothesHeights[0]!, expectedHeight!);
+    }
+  }
+});
+
+test('folded contents stop at the bottom plate and retain their clearance on other shelves', () => {
+  const desk = resolveBuiltInDesk(deskHost, {
+    lengthCm: 100,
+    drawerCount: 3,
+    support: 'wall',
+    drawerSide: 'left',
+    topNorm: 0.45,
+  });
+  assert.ok(desk);
+  const { roomArchitecturePlan } = createRodOpsHarness();
+  const heights: Array<number | undefined> = [];
+  const addFolded = fitFoldedContentsAroundDesk(desk, (_x, _y, _z, _w, _group, height) =>
+    heights.push(height)
+  );
+  const policy = { showContentsEnabled: true, sketchMode: false, addOutlines: null, roomArchitecturePlan };
+  addFolded(0, 0.5, 0, 0.7, {}, 0.6, 0.4, policy);
+  addFolded(0, 0.8, 0, 0.7, {}, 0.6, 0.4, policy);
+  addFolded(0, 0.9, 0, 0.7, {}, 0.6, 0.4, policy);
+  addFolded(1, 0.5, 0, 0.7, {}, 0.6, 0.4, policy);
+  assert.equal(heights.length, 3);
+  assertClose(heights[0]!, desk.plan.verticalRange.bottomY - 0.5);
+  assert.deepEqual(heights.slice(1), [0.6, 0.6]);
 });
 
 test('render interior rod keeps rod material independent from base leg material', () => {

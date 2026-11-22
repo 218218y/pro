@@ -138,6 +138,14 @@ test.describe('Canvas pointer parity smoke', () => {
       ]),
     };
     await expect.poll(config).toMatchObject(updatedDesk);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const partIds = window.__WP_DEBUG__?.scene.getGeometrySnapshot()?.partIds ?? [];
+          return partIds.filter(id => id.startsWith('built_in_desk_') && /_cell_(back|leg|wall)$/.test(id));
+        })
+      )
+      .toEqual(['built_in_desk_top_0_cell_back']);
     await deskButton.click();
     await expect(sketch.getByTestId('sketch-built-in-desk-length')).toHaveCount(0);
     const savedColors = await colors();

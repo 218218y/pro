@@ -13,8 +13,7 @@ import type {
 } from './corner_wing_cell_shared.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import { requireInteriorSketchDoorStyle } from './render_interior_sketch_input_contract.js';
-import type { BuiltInDeskHost } from '../../../types/built_in_desk.js';
-import { renderBuiltInDesk } from './render_built_in_desk.js';
+import { renderBuiltInDesk, type ResolvedBuiltInDesk } from './render_built_in_desk.js';
 
 type CreateRodLike = (yPos: number, limitHeight?: number | null) => void;
 
@@ -24,7 +23,7 @@ type CornerWingCellSketchExtrasParams = {
   wingGroup: GroupLike;
   cfg: unknown;
   cfgCell: CornerCellCfg;
-  deskHost?: BuiltInDeskHost;
+  desk: ResolvedBuiltInDesk | null;
   getDrawerEntries?: () => unknown[];
   cellIdx: number;
   cellKey: string;
@@ -134,11 +133,9 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       return m;
     };
 
-    const builtInDesk = asRecord(extra).builtInDesk;
-    if (builtInDesk && params.deskHost && params.getDrawerEntries) {
+    if (params.desk && params.getDrawerEntries) {
       renderBuiltInDesk({
-        host: params.deskHost,
-        placement: builtInDesk,
+        desk: params.desk,
         createBoard,
         material: shelfMat,
         getPartMaterial: getCornerMat,

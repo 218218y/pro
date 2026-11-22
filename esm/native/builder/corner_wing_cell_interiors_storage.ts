@@ -20,6 +20,8 @@ import {
   markShelfBoardUserData,
 } from '../features/part_identity/api.js';
 import { readCurtainType } from './render_door_ops_shared.js';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
+import { canSingleHangerFitBelowRod, resolveRodClearanceAboveDesk } from './render_interior_rod_clearance.js';
 import type {
   CornerWingInteriorCellRuntime,
   CornerWingInteriorLayoutOps,
@@ -33,7 +35,8 @@ import {
 export function createCornerWingInteriorLayoutOps(
   runtime: CornerWingInteriorRuntime,
   cellRuntime: CornerWingInteriorCellRuntime,
-  shelfRuntime: CornerWingInteriorShelfRuntime
+  shelfRuntime: CornerWingInteriorShelfRuntime,
+  deskRange: BuiltInDeskVerticalRange | undefined
 ): CornerWingInteriorLayoutOps {
   const createRod = (yPos: number, limitHeight: number | null = null) => {
     const rodLen = Math.max(
@@ -69,7 +72,12 @@ export function createCornerWingInteriorLayoutOps(
       ownerPartId: `corner_rod_c${cellRuntime.cell.idx}`,
       addOutlines: runtime.addOutlines,
     });
-    if (runtime.showHangerEnabled) {
+    const deskClearance = resolveRodClearanceAboveDesk(yPos, deskRange);
+    if (
+      runtime.showHangerEnabled &&
+      (deskClearance === Infinity ||
+        canSingleHangerFitBelowRod({ availableHeight: deskClearance, moduleWidth: cellRuntime.cellInnerW }))
+    ) {
       runtime.addRealisticHanger(
         cellRuntime.cellInnerCenterX,
         yPos,
@@ -96,7 +104,7 @@ export function createCornerWingInteriorLayoutOps(
           cellRuntime.cellInnerW - CORNER_WING_DRAWER_POLICY.hangingClothesWidthClearanceM
         ),
         runtime.wingGroup,
-        distToBottom,
+        Math.min(distToBottom, deskClearance),
         undefined,
         {
           showContentsEnabled: runtime.showContentsEnabled,

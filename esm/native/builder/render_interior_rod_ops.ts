@@ -6,10 +6,12 @@ import {
 import {
   canSingleHangerFitBelowRod,
   resolveInteriorRodAvailableHeight,
+  resolveRodClearanceAboveDesk,
 } from './render_interior_rod_clearance.js';
 import { resolveHorizontalSpanAgainstRoomColumnCut } from './room_architecture_geometry.js';
 import { appendInteriorRodEndSupports } from './interior_rod_support_visuals.js';
 import type { RoomArchitecturePlan, UnknownRecord } from '../../../types';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
 import type {
   InteriorObjectLike,
   InteriorTHREESurface,
@@ -64,6 +66,7 @@ type RenderInteriorRodArgs = InteriorValueRecord & {
   enableHangingClothes?: boolean;
   enableSingleHanger?: boolean;
   manualHeightLimit?: unknown;
+  builtInDeskRange?: BuiltInDeskVerticalRange;
   cfg?: RodConfigLike | null;
   config?: RodConfigLike | null;
   effectiveBottomY?: unknown;
@@ -182,7 +185,8 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     const cfg = safeArgs.cfg || {};
     const config = safeArgs.config || {};
 
-    let availableHeight = resolveInteriorRodAvailableHeight({
+    const deskClearance = resolveRodClearanceAboveDesk(yPos, safeArgs.builtInDeskRange);
+    const availableHeight = resolveInteriorRodAvailableHeight({
       config,
       yPos,
       effectiveBottomY,
@@ -273,7 +277,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     });
 
     const canRenderSingleHanger = canSingleHangerFitBelowRod({
-      availableHeight: singleHangerAvailableHeight,
+      availableHeight: Math.min(singleHangerAvailableHeight, deskClearance),
       moduleWidth: rodSpan.length,
     });
 
@@ -329,7 +333,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
           internalZ,
           hangingContentsWidth,
           group,
-          availableHeight,
+          Math.min(availableHeight, deskClearance),
           depthHint,
           {
             showContentsEnabled,

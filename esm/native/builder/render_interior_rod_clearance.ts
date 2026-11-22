@@ -21,6 +21,7 @@ import {
 } from '../features/sketch_drawer_sizing.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import type { UnknownRecord } from '../../../types';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
 
 type ShelfBlockerMode = 'contents' | 'surface';
 
@@ -78,6 +79,13 @@ export function canSingleHangerFitBelowRod(args: {
   const requiredClearance = resolveSingleHangerRequiredClearance(args.moduleWidth);
   const tolerance = Math.max(1e-5, requiredClearance * 1e-4);
   return availableHeight + tolerance >= requiredClearance;
+}
+
+export function resolveRodClearanceAboveDesk(
+  yPos: number,
+  desk: BuiltInDeskVerticalRange | null | undefined
+): number {
+  return desk && yPos > desk.bottomY ? Math.max(0, yPos - desk.surfaceY) : Infinity;
 }
 
 const FOLDED_CLOTHES_BLOCKER_HEIGHT_M =

@@ -22,6 +22,7 @@ import type {
 } from './removed_frame_side_construction_plan.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';
+import { fitFoldedContentsAroundDesk } from './built_in_desk_contents.js';
 import {
   normalizeSketchShelfVariant,
   resolveSketchBoxSegmentForContent,
@@ -50,6 +51,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     addShelfPins,
     isFn,
   } = args.args;
+  const { addFoldedClothes: renderFoldedClothes, showContentsEnabled } = args.args.input;
+  const addFoldedClothes =
+    showContentsEnabled === true && isFn(renderFoldedClothes)
+      ? fitFoldedContentsAroundDesk(args.desk ?? null, renderFoldedClothes)
+      : null;
   const { box, boxPid, geometry, regularDepth } = shell;
   const usableContentDepth = resolveSketchBoxUsableContentDepth({
     shell,
@@ -234,11 +240,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     const cellPlacements = shelfPlacements.filter(
       shelf => shelf.leftX < segmentRightX - 0.0001 && shelf.rightX > segmentLeftX + 0.0001
     );
-    if (
-      variant === 'winter_brace' &&
-      args.args.input.showContentsEnabled === true &&
-      isFn(args.args.input.addFoldedClothes)
-    ) {
+    if (variant === 'winter_brace' && addFoldedClothes) {
       const support = resolveWinterBlanketSupport({
         shelves: cellPlacements,
         winterY: shelfY,
@@ -248,7 +250,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       });
       const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       if (support && contentsWidth > 0) {
-        args.args.input.addFoldedClothes(
+        addFoldedClothes(
           shelfCenterX,
           support.shelfTopY,
           shelfZ,
@@ -267,16 +269,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
         );
       }
     }
-    if (
-      variant !== 'winter_brace' &&
-      !isCellBelowWinterBrace(cellPlacements, shelfY) &&
-      args.args.input.showContentsEnabled === true &&
-      isFn(args.args.input.addFoldedClothes)
-    ) {
+    if (variant !== 'winter_brace' && !isCellBelowWinterBrace(cellPlacements, shelfY) && addFoldedClothes) {
       const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(shelfY, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {
-        args.args.input.addFoldedClothes(
+        addFoldedClothes(
           shelfCenterX,
           shelfY + shelfH / 2,
           shelfZ,

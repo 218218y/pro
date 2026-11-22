@@ -6,6 +6,7 @@ import type { Object3DLike } from './three_like';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
 import type { HingeDir } from './domain';
+import type { BuiltInDeskVerticalRange } from './built_in_desk';
 import type { TimeoutHandleLike } from './state';
 import type { ModulesStructureItemLike } from './modules_configuration';
 import type {
@@ -653,6 +654,7 @@ export interface BuilderCreateRodWithContentsArgsLike extends BuilderRenderCommo
   enableHangingClothes?: boolean;
   enableSingleHanger?: boolean;
   manualHeightLimit?: number | null;
+  builtInDeskRange?: BuiltInDeskVerticalRange;
   cfg?: unknown;
   config?: BuilderCreateRodConfigLike | null;
   effectiveBottomY?: number;

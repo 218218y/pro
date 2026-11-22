@@ -144,7 +144,9 @@ function makeDeskPreview(App: AppContainer, edit: DeskEdit): SketchPlacementPrev
   const { top } = plan;
   const frontZ = top.z + top.depth / 2 - pivotZ + 0.015;
   const centerX = (host.geometry.leftX + host.geometry.rightX) / 2 - pivotX;
-  const previewBoards = [plan.top, plan.bottom, ...plan.drawers, plan.support].map(board => ({
+  const boards = [plan.top, plan.bottom, plan.back, ...plan.drawers];
+  if (plan.support) boards.push(plan.support);
+  const previewBoards = boards.map(board => ({
     ...board,
     x: board.x - pivotX,
     z: board.z - pivotZ,

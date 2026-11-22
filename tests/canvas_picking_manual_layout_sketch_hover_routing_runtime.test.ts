@@ -52,6 +52,7 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
   assert.ok((edit.plan.drawers[0]?.z ?? 0) > host.geometry.frontZ);
   assert.equal(edit.plan.drawers.length, 3);
   assert.equal(edit.plan.drawerPartitions.length, 3);
+  assert.ok(edit.plan.support);
   assert.equal(edit.plan.support.width, edit.plan.top.width);
   assert.equal(edit.plan.support.depth, host.geometry.thickness);
   assert.equal(edit.plan.support.y, edit.plan.support.height / 2);
@@ -60,6 +61,12 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
       edit.plan.support.y + edit.plan.support.height / 2 - (edit.plan.surfaceY - host.geometry.thickness)
     ) < 1e-12
   );
+  const { back, bottom, support, top } = edit.plan;
+  assert.ok(Math.abs(back.x - back.width / 2 - host.geometry.leftX) < 1e-12);
+  assert.ok(Math.abs(back.z - back.depth / 2 - host.geometry.frontZ) < 1e-12);
+  assert.ok(Math.abs(back.z + back.depth / 2 - (support.z - support.depth / 2)) < 1e-12);
+  assert.ok(Math.abs(back.y - back.height / 2 - (bottom.y + bottom.height / 2)) < 1e-12);
+  assert.ok(Math.abs(back.y + back.height / 2 - (top.y - top.height / 2)) < 1e-12);
 
   const config = { sketchExtras: { boxes: [{ ...box, builtInDesk: edit.placement }] } };
   const builtHit = {
@@ -81,7 +88,9 @@ test('built-in desk resolves a standalone box in front of a wardrobe and updates
   assert.equal(update.placement.topNorm, edit.placement.topNorm);
   assert.equal(update.plan.surfaceY, edit.plan.surfaceY);
   assert.equal(update.plan.drawers.length, 4);
-  assert.equal(update.plan.support?.height, 0.06);
+  assert.equal(update.plan.support, null);
+  assert.deepEqual(update.plan.verticalRange, edit.plan.verticalRange);
+  assert.ok(Math.abs(update.plan.back.depth - 1.2) < 1e-12);
   assert.equal(update.remove, false);
 
   const removal = resolveBuiltInDeskEdit(builtHit);

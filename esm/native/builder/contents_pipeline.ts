@@ -31,6 +31,7 @@ type MakeRodCreatorArgs = {
   moduleIndex?: number;
   effectiveBottomY?: number;
   effectiveTopY?: number;
+  builtInDeskRange?: BuilderCreateRodWithContentsArgsLike['builtInDeskRange'];
   gridDivisions?: number;
   localGridStep?: number;
   woodThick?: number;
@@ -93,6 +94,7 @@ function createRodArgs(
     config,
     ...(effectiveBottomY !== undefined ? { effectiveBottomY } : {}),
     ...(effectiveTopY !== undefined ? { effectiveTopY } : {}),
+    ...(baseArgs.builtInDeskRange ? { builtInDeskRange: baseArgs.builtInDeskRange } : {}),
     ...(baseArgs.gridDivisions !== undefined ? { gridDivisions: baseArgs.gridDivisions } : {}),
     ...(baseArgs.localGridStep !== undefined ? { localGridStep: baseArgs.localGridStep } : {}),
     ...(baseArgs.woodThick !== undefined ? { woodThick: baseArgs.woodThick } : {}),

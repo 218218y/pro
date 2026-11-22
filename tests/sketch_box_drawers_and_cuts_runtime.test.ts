@@ -1723,7 +1723,7 @@ async function loadInstrumentedSketchBoxRenderer(): Promise<{
     [
       './render_interior_sketch_box_desk.js',
       dataModule(
-        "export function applySketchBoxBuiltInDesks() { globalThis.__wpDrawerSpanHarness.order.push('Desk'); }"
+        "export function resolveSketchBoxDesk() { return { host: null, desk: null }; } export function applySketchBoxBuiltInDesks() { globalThis.__wpDrawerSpanHarness.order.push('Desk'); }"
       ),
     ],
     [

@@ -1,6 +1,7 @@
 import type { AppContainer, RoomWallId, UnknownCallable } from '../../../types';
 
 import type { HexCellGeometry } from '../features/hex_cell/index.js';
+import type { ResolvedBuiltInDesk } from './render_built_in_desk.js';
 
 import type {
   InteriorGroupLike,
@@ -166,6 +167,7 @@ export type RenderSketchBoxContentsArgs = {
   yFromBoxNorm: SketchBoxYFromNorm;
   resolveBoxDrawerSpan: ResolveSketchBoxDrawerSpan;
   args: RenderInteriorSketchBoxesArgs;
+  desk?: ResolvedBuiltInDesk | null;
 };
 
 export type RenderSketchBoxFrontsArgs = RenderSketchBoxContentsArgs;
