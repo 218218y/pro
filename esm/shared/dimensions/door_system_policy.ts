@@ -96,10 +96,15 @@ export const HINGED_DOOR_HARDWARE_RENDER_POLICY = Object.freeze({
   roughness: 0.2,
 });
 
+const hingedDoorSplitGapM = meters(0.006);
+
 export const HINGED_DOOR_SPLIT_GEOMETRY_POLICY = Object.freeze({
   minSegmentHeightM: meters(0.12),
   renderMinSegmentHeightM: meters(0.1),
-  splitGapM: meters(0.006),
+  splitGapM: hingedDoorSplitGapM,
+  archOuterClearanceM: meters(
+    hingedDoorSplitGapM / 2 + HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM + 0.002
+  ),
   duplicateCutToleranceMinM: meters(0.004),
   duplicateCutToleranceMaxM: meters(0.02),
   duplicateCutToleranceHeightRatio: 0.01,

@@ -36,7 +36,11 @@ export function pushHingedDoorSegment(
   if (!ctx.opsList) {
     throw new Error('[WardrobePro] Hinged door ops list missing');
   }
-  if (!args.partId || !(args.segH > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM)) return;
+  if (
+    !args.partId ||
+    !(args.segH > (args.archCut ? 0 : HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM))
+  )
+    return;
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(args.partId, args.curtainVal) : null;
   const isMirror = special === 'mirror';
   const adhesiveGlassKind = resolveAdhesiveGlassKind(special);

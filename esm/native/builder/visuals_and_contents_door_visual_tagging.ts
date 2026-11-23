@@ -6,6 +6,7 @@ import {
 import { _asObject } from './visuals_and_contents_shared.js';
 
 import type { Object3DLike } from '../../../types/index.js';
+import type { DoorArchRect } from '../../../types/maps.js';
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
 
 export function createDoorVisualPartTagger(args: { groovePartId?: string | null }): {
@@ -37,19 +38,23 @@ export function applyDoorFaceIdentityMetadata(node: Object3DLike, faceSign: numb
 }
 
 export function applyMirrorPlacementRectMetadata(node: Object3DLike, width: number, height: number): void {
-  const rec = _asObject(node);
-  if (!rec) return;
   const widthM = readGeometryRuntimePositiveNumber(width);
   const heightM = readGeometryRuntimePositiveNumber(height);
   if (widthM == null || heightM == null) return;
   const halfW = widthM / 2;
   const halfH = heightM / 2;
+  applyMirrorPlacementBoundsMetadata(node, { minX: -halfW, maxX: halfW, minY: -halfH, maxY: halfH });
+}
+
+export function applyMirrorPlacementBoundsMetadata(node: Object3DLike, rect: DoorArchRect): void {
+  const rec = _asObject(node);
+  if (!rec) return;
   const userData = _asObject(rec.userData) || {};
   rec.userData = userData;
-  userData.__mirrorRectMinX = -halfW;
-  userData.__mirrorRectMaxX = halfW;
-  userData.__mirrorRectMinY = -halfH;
-  userData.__mirrorRectMaxY = halfH;
+  userData.__mirrorRectMinX = rect.minX;
+  userData.__mirrorRectMaxX = rect.maxX;
+  userData.__mirrorRectMinY = rect.minY;
+  userData.__mirrorRectMaxY = rect.maxY;
 }
 
 export function readMirrorPlacementRectMetadata(

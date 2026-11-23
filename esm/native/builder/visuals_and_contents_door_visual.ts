@@ -5,7 +5,7 @@ import {
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
-import { createDoorContourGeometry } from './door_contour_geometry.js';
+import { createDoorContourGeometry, doorContourBounds } from './door_contour_geometry.js';
 import {
   appendMirrorDoorSurfaceLayoutPlacement,
   createMirrorDoorVisual,
@@ -21,7 +21,7 @@ import {
   createStyledMirrorDoorVisual,
 } from './visuals_and_contents_door_visual_mirror_styled.js';
 import {
-  applyMirrorPlacementRectMetadata,
+  applyMirrorPlacementBoundsMetadata,
   createDoorVisualPartTagger,
 } from './visuals_and_contents_door_visual_tagging.js';
 import {
@@ -160,7 +160,8 @@ export function createDoorVisual(
   const cutContour = options?.cutContour;
   if (cutContour) {
     tagDoorVisualPart(visualGroup);
-    applyMirrorPlacementRectMetadata(visualGroup, w, h);
+    const rect = doorContourBounds(cutContour);
+    applyMirrorPlacementBoundsMetadata(visualGroup, rect);
     visualGroup.userData.__wpDoorSurfaceContour = cutContour;
     const slab = new THREE.Mesh(createDoorContourGeometry(THREE, cutContour, thickness), mat);
     tagDoorVisualPart(slab, 'door_flat_center_panel');
@@ -183,7 +184,6 @@ export function createDoorVisual(
       contour: cutContour,
     });
     if (options?.cutMirrorMaterial && mirrorLayout) {
-      const rect = { minX: -w / 2, maxX: w / 2, minY: -h / 2, maxY: h / 2 };
       mirrorLayout.forEach((layout, placementIndex) => {
         const surfaceKind = resolveAdhesiveGlassKind(layout.surfaceKind);
         if (surfaceKind) return;

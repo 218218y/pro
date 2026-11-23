@@ -2,10 +2,11 @@ import type { AppContainer, GrooveLayoutEntry, MirrorLayoutEntry, ThreeLike } fr
 import type { DoorArchRect, DoorCurveShape } from '../../../types/maps.js';
 import {
   doorArchCutRange,
+  doorArchCutsAreSeparate,
   doorArchesOverlap,
   MIN_DOOR_ARCH_CUT_MARGIN_M,
   normalizeKnownMapSnapshot,
-  readDoorArchCut,
+  readDoorArchCuts,
   readMirrorLayoutFaceSign,
   resolveGroovePlacementInRect,
   resolveMirrorPlacementInRect,
@@ -25,6 +26,7 @@ import {
 } from './canvas_picking_door_authoring_meta.js';
 import { requestDoorAuthoringImmediateRefresh } from './canvas_picking_door_authoring_burst.js';
 import {
+  doorArchCutHitDistance,
   hitsDoorArchSlice,
   makeDoorArchCut,
   planDoorArch,
@@ -93,20 +95,37 @@ export function resolveDoorArchAction(args: {
   if (!target) return null;
   if (tool === 'cut') {
     const map = __wp_map(App, 'splitDoorsMap');
-    const match = readDoorArchCutSlice(target.surface, map[target.surface.key]);
-    if (match && hitsDoorArchSlice(match, target.point, tool)) {
-      const link = match.profile.link;
-      const keys = Object.keys(map).filter(
-        key => key === target.surface.key || (link && readDoorArchCut(map[key])?.profile.link === link)
-      );
-      const slices = keys.flatMap(key => {
-        const surface = target.allSurfaces.find(candidate => candidate.key === key);
-        const slice = surface && readDoorArchCutSlice(surface, map[key]);
-        return slice ? [slice] : [];
-      });
-      return { kind: 'remove', tool, slices, entries: keys.map(key => ({ key, index: 0 })) };
+    const cuts = readDoorArchCuts(map[target.surface.key]);
+    let matchIndex = -1;
+    let nearest = Infinity;
+    for (const [index, cut] of cuts.entries()) {
+      const distance = doorArchCutHitDistance(readDoorArchCutSlice(target.surface, cut), target.point);
+      if (distance < nearest) {
+        nearest = distance;
+        matchIndex = index;
+      }
     }
-    if (target.surfaces.some(({ surface }) => readDoorArchCut(map[surface.key]))) return null;
+    if (matchIndex !== -1) {
+      const link = cuts[matchIndex]?.profile.link;
+      const entries = Object.entries(map).flatMap(([key, value]) => {
+        if (key !== target.surface.key && !link) return [];
+        const surface =
+          key === target.surface.key
+            ? target.surface
+            : target.allSurfaces.find(candidate => candidate.key === key);
+        return readDoorArchCuts(value).flatMap((cut, index): ArchRemoval[] =>
+          (key === target.surface.key && index === matchIndex) || (link && cut.profile.link === link)
+            ? [{ key, index, ...(surface ? { slice: readDoorArchCutSlice(surface, cut) } : {}) }]
+            : []
+        );
+      });
+      return {
+        kind: 'remove',
+        tool,
+        slices: entries.flatMap(entry => (entry.slice ? [entry.slice] : [])),
+        entries,
+      };
+    }
   } else {
     const map =
       tool === 'mirror'
@@ -137,6 +156,7 @@ export function resolveDoorArchAction(args: {
       };
     }
   }
+  if (target.removalOnly) return null;
   const ui = __wp_ui(App);
   const slices = planDoorArch({
     tool,
@@ -158,17 +178,20 @@ export function resolveDoorArchAction(args: {
     })
   )
     return null;
-  if (!slices.length || (tool === 'cut' && slices.some(slice => !fitsArchAmongStraightCuts(App, slice))))
-    return null;
+  if (!slices.length || (tool === 'cut' && slices.some(slice => !fitsAmongDoorCuts(App, slice)))) return null;
   return tool === 'groove' ? resolveGrooveArchChange(App, target, slices) : { kind: 'add', tool, slices };
 }
 
-function fitsArchAmongStraightCuts(App: AppContainer, slice: DoorArchSlice): boolean {
+function fitsAmongDoorCuts(App: AppContainer, slice: DoorArchSlice): boolean {
   const { surface } = slice;
   const doorBaseKey = surface.key.slice('splitarch_'.length);
   const { rect } = surface;
   const height = rect.maxY - rect.minY;
-  const [low, high] = doorArchCutRange(rect, makeDoorArchCut(slice));
+  const nextCut = makeDoorArchCut(slice);
+  const existing = readDoorArchCuts(__wp_map(App, 'splitDoorsMap')[surface.key]);
+  if (!existing.every(cut => doorArchCutsAreSeparate(rect, cut, nextCut, MIN_DOOR_ARCH_CUT_MARGIN_M)))
+    return false;
+  const [low, high] = doorArchCutRange(rect, nextCut);
   const isClear = (y: number) =>
     y <= low - MIN_DOOR_ARCH_CUT_MARGIN_M || y >= high + MIN_DOOR_ARCH_CUT_MARGIN_M;
   const manual = readCanvasDoorSplitPosList(App, doorBaseKey);
@@ -250,7 +273,7 @@ export function commitDoorArchAction(App: AppContainer, action: DoorArchAction):
     if (action.tool === 'cut') {
       const entries =
         action.kind === 'remove'
-          ? action.entries.map(({ key }) => ({ key, value: null }))
+          ? action.entries
           : action.slices.map(slice => ({ key: slice.surface.key, value: makeDoorArchCut(slice) }));
       writeDoorArchMaps(App, { tool: 'cut', entries }, meta);
     } else if (action.tool === 'mirror') {

@@ -6,7 +6,6 @@ import type {
   DoorArchRect,
   DoorPlacementShape,
 } from '../../types/maps.js';
-
 export function readDoorPlacementShape(value: unknown): DoorPlacementShape {
   return value === 'arch' || value === 'arch-down' || value === 'arch-both' || value === 'ellipse'
     ? value
@@ -19,19 +18,27 @@ function unit(value: unknown): value is number {
 
 export function readDoorArchProfile(value: unknown): DoorArchProfile | null {
   if (!value || typeof value !== 'object') return null;
-  const { start, end, rise, link, shape } = value as Partial<DoorArchProfile>;
+  const { start, end, rise, link, shape, fitToFront } = value as Partial<DoorArchProfile>;
   if (!unit(start) || !unit(end) || !unit(rise) || end <= start || rise <= 0) return null;
   if (link !== undefined && (typeof link !== 'string' || !link || link.length > 240)) return null;
   if (shape !== undefined && shape !== 'arch-down' && shape !== 'arch-both' && shape !== 'ellipse')
     return null;
-  return { start, end, rise, ...(link ? { link } : {}), ...(shape ? { shape } : {}) };
+  if (fitToFront !== undefined && fitToFront !== true) return null;
+  return {
+    start,
+    end,
+    rise,
+    ...(link ? { link } : {}),
+    ...(shape ? { shape } : {}),
+    ...(fitToFront ? { fitToFront } : {}),
+  };
 }
 
-export function readDoorArchCut(value: unknown): DoorArchCut | null {
+function readDoorArchCut(value: unknown): DoorArchCut | null {
   if (!value || typeof value !== 'object') return null;
   const { peak, base, profile } = value as Partial<DoorArchCut>;
   const arch = readDoorArchProfile(profile);
-  if (!arch || !unit(peak)) return null;
+  if (!arch || arch.fitToFront || !unit(peak)) return null;
   if (!arch.shape) return base === undefined && peak > arch.rise && peak < 1 ? { peak, profile: arch } : null;
   if (!unit(base) || base <= 0 || peak <= base) return null;
   if (arch.shape === 'arch-down') {
@@ -40,6 +47,15 @@ export function readDoorArchCut(value: unknown): DoorArchCut | null {
     return null;
   }
   return { peak, base, profile: arch };
+}
+
+export function readDoorArchCuts(value: unknown): DoorArchCut[] {
+  // Projects saved before multi-cut authoring stored one cut at the same key.
+  const entries: unknown[] = Array.isArray(value) ? value : [value];
+  return entries.flatMap(entry => {
+    const cut = readDoorArchCut(entry);
+    return cut ? [cut] : [];
+  });
 }
 
 export function isDoorArchCutKey(key: string): boolean {
@@ -77,7 +93,12 @@ export function sampleDoorArch(
     });
 }
 
-export function doorArchOutline(rect: DoorArchRect, profile: DoorArchProfile): DoorArchPoint[] {
+export function doorArchOutline(
+  rect: DoorArchRect,
+  profile: DoorArchProfile,
+  contour?: readonly DoorArchPoint[]
+): DoorArchPoint[] {
+  if (profile.fitToFront && contour) return contour.slice();
   const top =
     profile.shape === 'arch-down'
       ? [
@@ -105,14 +126,14 @@ export function containsDoorArchPoint(
 }
 
 export function doorArchesOverlap(
-  first: { rect: DoorArchRect; profile: DoorArchProfile },
-  second: { rect: DoorArchRect; profile: DoorArchProfile }
+  first: { rect: DoorArchRect; profile: DoorArchProfile; surface: { contour?: readonly DoorArchPoint[] } },
+  second: { rect: DoorArchRect; profile: DoorArchProfile; surface: { contour?: readonly DoorArchPoint[] } }
 ): boolean {
   if (first.rect.maxY <= second.rect.minY || second.rect.maxY <= first.rect.minY) return false;
   return (
     intersectDoorContours(
-      doorArchOutline(first.rect, first.profile),
-      doorArchOutline(second.rect, second.profile)
+      doorArchOutline(first.rect, first.profile, first.surface.contour),
+      doorArchOutline(second.rect, second.profile, second.surface.contour)
     ).length > 0
   );
 }
@@ -142,6 +163,37 @@ export function doorArchCutRange(rect: DoorArchRect, cut: DoorArchCut): [number,
   const slice = resolveDoorArchCutSlice(rect, cut);
   const heights = doorArchCutEdges(slice.rect, slice.profile).flatMap(points => points.map(point => point.y));
   return [Math.min(...heights), Math.max(...heights)];
+}
+
+function cutEdgeY(edge: readonly DoorArchPoint[], x: number): number {
+  const index = edge.findIndex(point => point.x >= x);
+  if (index <= 0) return (index === 0 ? edge[0] : edge.at(-1))!.y;
+  const a = edge[index - 1]!;
+  const b = edge[index]!;
+  return a.y + ((x - a.x) * (b.y - a.y)) / (b.x - a.x);
+}
+
+export function sampleDoorCutEdgePair(lower: readonly DoorArchPoint[], upper: readonly DoorArchPoint[]) {
+  const stations = [...new Set([...lower, ...upper].map(point => point.x))].sort((a, b) => a - b);
+  return stations.map(x => ({ x, low: cutEdgeY(lower, x), high: cutEdgeY(upper, x) }));
+}
+
+export function doorArchCutsAreSeparate(
+  rect: DoorArchRect,
+  first: DoorArchCut,
+  second: DoorArchCut,
+  clearance: number
+): boolean {
+  const a = resolveDoorArchCutSlice(rect, first);
+  const b = resolveDoorArchCutSlice(rect, second);
+  const aEdges = doorArchCutEdges(a.rect, a.profile);
+  const bEdges = doorArchCutEdges(b.rect, b.profile);
+  return (
+    sampleDoorCutEdgePair(aEdges.at(-1)!, bEdges[0]!).every(
+      ({ low, high }) => high - low >= clearance - 1e-8
+    ) ||
+    sampleDoorCutEdgePair(bEdges.at(-1)!, aEdges[0]!).every(({ low, high }) => high - low >= clearance - 1e-8)
+  );
 }
 
 export function doorContourSpanAtX(contour: readonly DoorArchPoint[], x: number) {

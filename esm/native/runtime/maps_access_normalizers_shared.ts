@@ -1,4 +1,4 @@
-import { isDoorArchCutKey, readDoorArchCut } from '../../shared/door_arch_geometry.js';
+import { isDoorArchCutKey, readDoorArchCuts } from '../../shared/door_arch_geometry.js';
 import { normalizeHandleMapSizeEntry } from '../../shared/handle_catalog.js';
 import type { KnownMapName, MapsByName } from '../../../types';
 
@@ -133,8 +133,8 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
     if (isDoorArchCutKey(key)) {
-      const cut = readDoorArchCut(rec[key]);
-      if (cut) out[key] = cut;
+      const cuts = readDoorArchCuts(rec[key]);
+      if (cuts.length) out[key] = cuts;
       continue;
     }
     const isSplitToggleKey = key.startsWith('split_');

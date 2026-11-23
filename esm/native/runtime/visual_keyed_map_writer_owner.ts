@@ -7,6 +7,7 @@ import type {
 } from '../../../types';
 
 import type { DoorArchCut } from '../../../types/maps.js';
+import { readDoorArchCuts } from '../../shared/door_arch_geometry.js';
 import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
@@ -90,13 +91,21 @@ function updateArchLayouts<T>(
 export function writeDoorArchMaps(
   App: unknown,
   edit:
-    | { tool: 'cut'; entries: readonly { key: string; value: DoorArchCut | null }[] }
+    | { tool: 'cut'; entries: readonly ArchLayoutEdit<DoorArchCut>[] }
     | { tool: 'mirror'; entries: readonly ArchLayoutEdit<MirrorLayoutEntry>[] }
     | { tool: 'groove'; entries: readonly ArchLayoutEdit<GrooveLayoutEntry>[] },
   meta: ActionMetaLike
 ): void {
   if (edit.tool === 'cut') {
-    patchVisualKeyedMapEntriesFromOwner(App, 'splitDoorsMap', edit.entries, meta);
+    const map = normalizeKnownMapSnapshot('splitDoorsMap', cfgMapRecord(App, 'splitDoorsMap'));
+    const keys = new Set(edit.entries.map(entry => entry.key));
+    const cuts = Object.fromEntries([...keys].map(key => [key, readDoorArchCuts(map[key])]));
+    updateArchLayouts(cuts, edit.entries);
+    for (const key of keys) {
+      if (cuts[key]?.length) map[key] = cuts[key];
+      else delete map[key];
+    }
+    setCfgMapFromVisualKeyedOwner(App, 'splitDoorsMap', map, meta);
   } else if (edit.tool === 'mirror') {
     const mirrorLayoutMap = normalizeKnownMapSnapshot(
       'mirrorLayoutMap',

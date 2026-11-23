@@ -3,6 +3,7 @@ import type { DoorCurveShape } from '../../../types/maps.js';
 
 import {
   containsDoorArchPoint,
+  doorArchCutsAreSeparate,
   doorArchCutEdges,
   doorArchCutRange,
   doorArchOutline,
@@ -10,7 +11,7 @@ import {
   doorArchSpan,
   doorContourSpanAtX,
   intersectDoorContours,
-  readDoorArchCut,
+  readDoorArchCuts,
   readDoorPlacementShape,
   resolveDoorArchCutSlice,
 } from '../../shared/door_arch_geometry.js';
@@ -52,6 +53,7 @@ import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 
 export {
   containsDoorArchPoint,
+  doorArchCutsAreSeparate,
   doorArchCutEdges,
   doorArchCutRange,
   doorArchOutline,
@@ -61,7 +63,7 @@ export {
   intersectDoorContours,
   getDoorsArray,
   isCanonicalDoorVisualMapKey,
-  readDoorArchCut,
+  readDoorArchCuts,
   resolveDoorArchCutSlice,
   writeDoorArchMaps,
   buildDoorVisualLookupKeys,
@@ -150,9 +152,10 @@ export function writePendingGrooveLinesCountForPart(
 
 export const MIN_DOOR_ARCH_CUT_MARGIN_M =
   HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
+export const DOOR_ARCH_OUTER_CLEARANCE_M = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.archOuterClearanceM;
 
-export function readCanvasDoorArchedCut(App: AppContainer, doorBaseKey: string) {
-  return readDoorArchCut(__wp_map(App, 'splitDoorsMap')[`splitarch_${doorBaseKey}`]);
+export function readCanvasDoorArchedCuts(App: AppContainer, doorBaseKey: string) {
+  return readDoorArchCuts(__wp_map(App, 'splitDoorsMap')[`splitarch_${doorBaseKey}`]);
 }
 
 export function fitsStraightCutBesideArch(
@@ -161,10 +164,10 @@ export function fitsStraightCutBesideArch(
   bounds: { minY: number; maxY: number },
   y: number
 ): boolean {
-  const cut = readCanvasDoorArchedCut(App, doorBaseKey);
-  if (!cut) return true;
-  const [low, high] = doorArchCutRange({ ...bounds, minX: 0, maxX: 1 }, cut);
-  return y <= low - MIN_DOOR_ARCH_CUT_MARGIN_M || y >= high + MIN_DOOR_ARCH_CUT_MARGIN_M;
+  return readCanvasDoorArchedCuts(App, doorBaseKey).every(cut => {
+    const [low, high] = doorArchCutRange({ ...bounds, minX: 0, maxX: 1 }, cut);
+    return y <= low - MIN_DOOR_ARCH_CUT_MARGIN_M || y >= high + MIN_DOOR_ARCH_CUT_MARGIN_M;
+  });
 }
 
 export type DoorArchTool = 'cut' | 'mirror' | 'groove';
@@ -175,7 +178,7 @@ export function readActiveDoorArchTool(
 ): { tool: DoorArchTool; shape: DoorCurveShape } | null {
   const ui = __wp_ui(App);
   const cut = readDoorPlacementShape(ui.doorCutShape);
-  if (modes.split && modes.splitVariant === 'custom' && cut !== 'straight')
+  if (modes.split && modes.splitVariant === 'custom' && (cut === 'arch' || cut === 'arch-down'))
     return { tool: 'cut', shape: cut };
   const groove = readDoorPlacementShape(ui.doorGrooveShape);
   if (modes.groove && !ui.isChestMode && ui.grooveManualEnabled === true && groove !== 'straight')

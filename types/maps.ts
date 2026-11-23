@@ -47,13 +47,14 @@ export type DoorArchProfile = {
   end: number;
   rise: number;
   shape?: Exclude<DoorCurveShape, 'arch'>;
+  fitToFront?: true;
   link?: string;
 };
 
 export type DoorArchCut = { peak: number; base?: number; profile: DoorArchProfile };
 
 /** Split doors: canonical toggles, straight positions and shaped cuts. */
-export type SplitDoorsMap = Record<string, boolean | number[] | DoorArchCut | null | undefined>;
+export type SplitDoorsMap = Record<string, boolean | number[] | DoorArchCut[] | null | undefined>;
 
 /** Bottom split: toggle surface. */
 export type SplitDoorsBottomMap = Record<string, boolean | null | undefined>;

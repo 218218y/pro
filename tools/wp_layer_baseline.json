@@ -3774,7 +3774,7 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCut"],
+        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCuts"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3788,12 +3788,26 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCut"],
+        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCuts"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
       "reason": "The arch codec and curve are shared by persistence, exact canvas preview, and manufactured-front rendering.",
       "id": "door-arch-maps-access-normalizers-shared-door-arch-geometry"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/visual_keyed_map_writer_owner.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["readDoorArchCuts"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The visual map writer applies individual curved-cut additions and removals to the canonical list.",
+      "id": "door-arch-visual-map-writer-cut-list"
     },
     {
       "from": "services",
@@ -3816,7 +3830,13 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["doorArchCutEdges", "readDoorArchCut", "resolveDoorArchCutSlice"],
+        "importedSymbols": [
+          "doorArchCutEdges",
+          "doorArchCutsAreSeparate",
+          "readDoorArchCuts",
+          "resolveDoorArchCutSlice",
+          "sampleDoorCutEdgePair"
+        ],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3848,12 +3868,13 @@
           "containsDoorArchPoint",
           "doorArchCutEdges",
           "doorArchCutRange",
+          "doorArchCutsAreSeparate",
           "doorArchOutline",
           "doorArchesOverlap",
           "doorArchSpan",
           "doorContourSpanAtX",
           "intersectDoorContours",
-          "readDoorArchCut",
+          "readDoorArchCuts",
           "readDoorPlacementShape",
           "resolveDoorArchCutSlice"
         ],

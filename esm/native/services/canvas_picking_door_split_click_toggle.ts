@@ -4,7 +4,7 @@ import type {
 } from './canvas_picking_door_split_click_contracts.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { __wp_getRegularSplitPreviewLineY, __wp_toast } from './canvas_picking_core_helpers.js';
-import { fitsStraightCutBesideArch, readCanvasDoorArchedCut } from './canvas_picking_door_edit_shared.js';
+import { fitsStraightCutBesideArch, readCanvasDoorArchedCuts } from './canvas_picking_door_edit_shared.js';
 import { CANVAS_DOOR_CUSTOM_SPLIT_BLOCK_MESSAGE } from './canvas_picking_door_split_click_custom.js';
 import { resolveCanvasDoorStandardSplitTarget } from './canvas_picking_door_split_standard_target.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
@@ -274,7 +274,7 @@ export function handleCanvasDoorToggleSplitClick(args: {
 
   const hasManualSplitPositions = readCanvasDoorSplitPosList(App, doorBaseKey).length > 0;
 
-  const hasArch = !!readCanvasDoorArchedCut(App, doorBaseKey);
+  const hasArch = readCanvasDoorArchedCuts(App, doorBaseKey).length > 0;
   const isBottomRegion = isCanvasDoorSplitBottomClick(bounds, splitHitY);
   const isCurrentlySplit = isBottomRegion
     ? isCanvasDoorSplitBottomEnabled(App, doorBaseKey)

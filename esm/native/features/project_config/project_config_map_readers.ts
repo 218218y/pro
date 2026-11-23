@@ -19,7 +19,7 @@ import type {
   UnknownRecord,
 } from '../../../../types/index.js';
 
-import { isDoorArchCutKey, readDoorArchCut } from '../../../shared/door_arch_geometry.js';
+import { isDoorArchCutKey, readDoorArchCuts } from '../../../shared/door_arch_geometry.js';
 import {
   isCanonicalGrooveLinesCountMapKey,
   isCanonicalGroovesMapKey,
@@ -219,8 +219,8 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
     const key = String(rawKey || '');
 
     if (isDoorArchCutKey(key)) {
-      const cut = readDoorArchCut(entry);
-      if (cut) out[key] = cut;
+      const cuts = readDoorArchCuts(entry);
+      if (cuts.length) out[key] = cuts;
       continue;
     }
     if (isCanonicalSplitDoorsMapKey(key)) {

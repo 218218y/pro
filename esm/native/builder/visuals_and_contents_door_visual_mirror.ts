@@ -235,9 +235,8 @@ export function appendMirrorDoorSurfacePlacement(args: {
           { x: maxX, y: maxY },
           { x: minX, y: maxY },
         ];
-    contours = clipDoorContour(outline, args.clipContour).map(region =>
-      region.map(({ x, y }) => ({ x: x - offsetX, y: y - offsetY }))
-    );
+    const clipped = arch?.fitToFront ? [args.clipContour] : clipDoorContour(outline, args.clipContour);
+    contours = clipped.map(region => region.map(({ x, y }) => ({ x: x - offsetX, y: y - offsetY })));
     if (!contours.length) return null;
   }
   const createContour = (depth: number) =>

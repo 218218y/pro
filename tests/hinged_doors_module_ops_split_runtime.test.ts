@@ -14,7 +14,12 @@ import { readHingedDoorOp } from '../esm/native/builder/render_door_ops_shared_o
 import { readSplitDoorsMapValue } from '../esm/native/features/project_config/project_config_map_readers.ts';
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access.ts';
 import { createHingedDoorIterationState } from '../esm/native/builder/hinged_doors_module_ops_iteration.ts';
-import { doorArchCutEdges, doorArchSpan } from '../esm/shared/door_arch_geometry.ts';
+import {
+  doorArchCutEdges,
+  doorArchSpan,
+  doorContourSpanAtX,
+  readDoorArchCuts,
+} from '../esm/shared/door_arch_geometry.ts';
 import {
   makeDoorArchCut,
   planDoorArch,
@@ -211,7 +216,7 @@ test('a saved arched cut emits matching curved edges between two straight cuts',
     )
   );
   const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', persisted);
-  assert.deepEqual(splitDoorsMap.splitarch_d5, cut);
+  assert.deepEqual(splitDoorsMap.splitarch_d5, [cut]);
   assert.equal(splitDoorsMap.splitarch_d6, undefined);
   assert.deepEqual(splitDoorsMap.splitpos_d5, [0.35, 0.85]);
 
@@ -274,6 +279,10 @@ test('new shapes use the same geometry on single and paired cuts, CNC and mirror
             allSurfaces: [left, right],
           },
         });
+        if (tool === 'cut' && shape !== 'arch-down') {
+          assert.deepEqual(slices, []);
+          continue;
+        }
         assert.equal(slices.length, paired ? 2 : 1, `${tool} ${shape} paired=${paired}`);
         const first = slices[0]!;
         assert.equal(first.profile.shape, shape);
@@ -293,7 +302,7 @@ test('new shapes use the same geometry on single and paired cuts, CNC and mirror
         if (tool === 'cut') {
           const saved = makeDoorArchCut(first);
           const persisted = readSplitDoorsMapValue(JSON.parse(JSON.stringify({ splitarch_d5: saved })));
-          const restored = readDoorArchCutSlice(left, persisted.splitarch_d5);
+          const restored = readDoorArchCutSlice(left, readDoorArchCuts(persisted.splitarch_d5)[0]!);
           assert.ok(restored);
           const edges = doorArchCutEdges(restored.rect, restored.profile);
           assert.equal(edges.length, shape === 'arch-down' ? 1 : 2);
@@ -309,6 +318,35 @@ test('new shapes use the same geometry on single and paired cuts, CNC and mirror
           );
         }
       }
+    }
+  }
+});
+
+test('stacked arcs with different sampled spans leave ordered leaves through the whole width', () => {
+  const cuts = [
+    { peak: 0.37, profile: { start: 0, end: 1, rise: 0.15 } },
+    { peak: 0.51, profile: { start: 0.17, end: 0.9, rise: 0.13 } },
+    { base: 0.68, peak: 1, profile: { shape: 'arch-down' as const, start: 0, end: 1, rise: 0.08 } },
+    { peak: 0.995, profile: { start: 0, end: 1, rise: 0.14 } },
+  ];
+  const map = readSplitDoorsMapValue(JSON.parse(JSON.stringify({ splitarch_d5: cuts })));
+  assert.deepEqual(map.splitarch_d5, cuts);
+  const ctx = createCtx({ cfg: { splitDoorsMap: map } });
+  assert.equal(appendArchedHingedDoorOps(ctx, createState()), true);
+  const ops = ctx.opsList.map(readHingedDoorOp);
+  assert.deepEqual(
+    ops.map(op => op.partId),
+    ['d5_bot', 'd5_mid1', 'd5_mid2', 'd5_mid3', 'd5_top']
+  );
+  for (const x of [-0.23, -0.11, 0, 0.13, 0.23]) {
+    const spans = ops.map(op => {
+      const span = doorContourSpanAtX(op.archCut!.contour, x)!;
+      assert.ok(span.maxY > span.minY);
+      return { bottom: op.y + span.minY, top: op.y + span.maxY };
+    });
+    for (const [index, span] of spans.entries()) {
+      const above = spans[index + 1];
+      if (above) assert.ok(above.bottom > span.top, `x=${x} lower=${span.top} upper=${above.bottom}`);
     }
   }
 });

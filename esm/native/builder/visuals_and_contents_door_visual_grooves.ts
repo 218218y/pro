@@ -1,5 +1,6 @@
 import { doorArchSpan, intersectDoorContours } from '../../shared/door_arch_geometry.js';
 import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
+import { doorContourBounds } from './door_contour_geometry.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import { readGrooveLayoutList, resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
 import {
@@ -49,12 +50,15 @@ export function appendGrooveStrips(args: {
   visualGroup.userData = visualGroup.userData || {};
   visualGroup.userData.__wpGrooveSurface = true;
   visualGroup.userData.__wpGrooveSurfacePartId = groovePartId || null;
-  visualGroup.userData.__wpGrooveSurfaceRect = {
-    minX: -targetW / 2,
-    maxX: targetW / 2,
-    minY: -targetH / 2,
-    maxY: targetH / 2,
-  };
+  const rect = contour
+    ? doorContourBounds(contour)
+    : {
+        minX: -targetW / 2,
+        maxX: targetW / 2,
+        minY: -targetH / 2,
+        maxY: targetH / 2,
+      };
+  visualGroup.userData.__wpGrooveSurfaceRect = rect;
   visualGroup.userData.__wpGrooveSurfaceZ = zOffset;
   visualGroup.userData.__wpGrooveSurfaceZSign = zSign;
   if (!hasGrooves) return;
@@ -68,12 +72,13 @@ export function appendGrooveStrips(args: {
 
   const normalizedLayouts = readGrooveLayoutList(grooveLayout);
   const placements = resolveGroovePlacementListInRect({
-    rect: { minX: -targetW / 2, maxX: targetW / 2, minY: -targetH / 2, maxY: targetH / 2 },
+    rect,
     layouts: normalizedLayouts,
   });
   const explicitLinesCount = normalizeGrooveLinesCount(linesCountOverride);
   for (const [placementIndex, placement] of placements.entries()) {
     const arch = normalizedLayouts[placementIndex]?.arch;
+    const archLimits = arch?.fitToFront && contour ? null : arch;
     const isHorizontal = !arch && placement.orientation === 'horizontal';
     const distributionSpan = isHorizontal ? placement.heightM : placement.widthM;
     const stripSpan = Math.max(
@@ -96,15 +101,17 @@ export function appendGrooveStrips(args: {
     };
     for (let i = 1; i <= stripesCount; i++) {
       const crossOffset = -distributionSpan / 2 + i * gap;
-      const { minY, maxY } = arch ? doorArchSpan(archRect, arch, placement.centerX + crossOffset) : archRect;
-      const height = arch
+      const { minY, maxY } = archLimits
+        ? doorArchSpan(archRect, archLimits, placement.centerX + crossOffset)
+        : archRect;
+      const height = archLimits
         ? Math.max(
             DOOR_GROOVE_RENDER_POLICY.stripWidthM,
             maxY - minY - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
           )
         : geometryHeight;
       const x = placement.centerX + (isHorizontal ? 0 : crossOffset);
-      const y = arch ? (minY + maxY) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0);
+      const y = archLimits ? (minY + maxY) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0);
       const z = zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign;
       if (contour) {
         const x0 = x - geometryWidth / 2;

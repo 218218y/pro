@@ -9,14 +9,13 @@ import type {
 } from '../../../types/maps.js';
 import {
   containsDoorArchPoint,
+  DOOR_ARCH_OUTER_CLEARANCE_M,
   doorArchSpan,
   doorContourSpanAtX,
   doorArchOutline,
   intersectDoorContours,
   getDoorsArray,
-  MIN_DOOR_ARCH_CUT_MARGIN_M,
   isCanonicalDoorVisualMapKey,
-  readDoorArchCut,
   resolveDoorArchCutSlice,
   type DoorArchTool,
 } from './canvas_picking_door_edit_shared.js';
@@ -56,10 +55,13 @@ export type DoorArchTarget = {
   point: Vector3Like;
   surfaces: { surface: ArchSurface; offsetX: number; offsetY: number }[];
   seam: number | null;
+  snapToEnd?: boolean;
+  removalOnly?: boolean;
   allSurfaces: ArchSurface[];
 };
 
 const EDGE_SNAP_M = 0.055;
+const VERTICAL_EDGE_SNAP_M = 0.045;
 const MAX_SEAM_GAP_M = 0.025;
 const PLANE_EPSILON_M = 0.008;
 const SURFACE_INSET_M = 0.004;
@@ -191,6 +193,7 @@ export function resolveDoorArchTarget(args: {
   App: AppContainer;
   THREE: ThreeLike;
   tool: DoorArchTool;
+  shape: DoorCurveShape;
   hit: CanvasPickingClickHitState | null;
   raycaster: RaycasterLike;
 }): DoorArchTarget | null {
@@ -227,36 +230,59 @@ export function resolveDoorArchTarget(args: {
     }
   }
   const hasDoorHit = !!args.hit?.effectiveDoorId;
+  const hitFamily = hingedDoorFamily(args.hit?.effectiveDoorId);
   const nearest = surfaces
     .flatMap(surface => {
+      const direct =
+        hasDoorHit &&
+        (args.hit?.doorHitGroup === surface.group ||
+          args.hit?.effectiveDoorId === surface.group.userData.partId);
+      const hit = localRayHit(args.THREE, surface, { origin, direction });
+      if (!hit) return [];
+      const { rect } = surface;
+      const x = Math.max(rect.minX, Math.min(rect.maxX, hit.point.x));
+      const xGap = Math.abs(x - hit.point.x);
+      if (
+        xGap > EDGE_SNAP_M ||
+        hit.point.y < rect.minY - VERTICAL_EDGE_SNAP_M ||
+        hit.point.y > rect.maxY + VERTICAL_EDGE_SNAP_M
+      )
+        return [];
+      const span = surface.contour ? doorContourSpanAtX(surface.contour, x) : rect;
+      const edge = args.shape === 'arch' ? span?.maxY : args.shape === 'arch-down' ? span?.minY : undefined;
+      const snapToEnd = edge !== undefined && Math.abs(hit.point.y - edge) <= VERTICAL_EDGE_SNAP_M;
       if (
         hasDoorHit &&
-        args.hit?.doorHitGroup !== surface.group &&
-        args.hit?.effectiveDoorId !== surface.group.userData.partId
+        !direct &&
+        !(
+          snapToEnd &&
+          args.tool !== 'cut' &&
+          surface.contour &&
+          hitFamily &&
+          hitFamily === hingedDoorFamily(surface.group.userData.partId)
+        )
       )
         return [];
-      const hit = localRayHit(args.THREE, surface, { origin, direction });
-      if (
-        !hit ||
-        hit.point.x < surface.rect.minX - EDGE_SNAP_M ||
-        hit.point.x > surface.rect.maxX + EDGE_SNAP_M ||
-        hit.point.y < surface.rect.minY ||
-        hit.point.y > surface.rect.maxY
-      )
-        return [];
-      const overhang = Math.max(0, surface.rect.minX - hit.point.x, hit.point.x - surface.rect.maxX);
-      return [{ ...hit, surface, overhang }];
+      const yGap = Math.max(0, rect.minY - hit.point.y, hit.point.y - rect.maxY);
+      return [{ ...hit, surface, snapToEnd, direct, overhang: xGap + yGap }];
     })
     .sort((a, b) => {
       const depth = a.distance - b.distance;
-      return Math.abs(depth) > PLANE_EPSILON_M ? depth : a.overhang - b.overhang || depth;
+      if (Math.abs(depth) > PLANE_EPSILON_M) return depth;
+      return (
+        Number(b.snapToEnd) - Number(a.snapToEnd) ||
+        Number(b.direct) - Number(a.direct) ||
+        a.overhang - b.overhang ||
+        depth
+      );
     })[0];
   if (!nearest) return null;
-  const { surface, point } = nearest;
+  const { surface, point, snapToEnd } = nearest;
   const neighbor = findSeamNeighbor(args.THREE, surface, point, surfaces);
   if (
     !hasDoorHit &&
     !neighbor &&
+    !snapToEnd &&
     (args.tool !== 'cut' || surface.group.userData.__wpArchCutBaseMinY === undefined)
   )
     return null;
@@ -273,8 +299,14 @@ export function resolveDoorArchTarget(args: {
     surface,
     surfaces: [{ surface, offsetX: 0, offsetY: 0 }, ...(neighbor ? [neighbor] : [])],
     seam: neighbor?.seam ?? null,
+    snapToEnd,
+    removalOnly: !hasDoorHit && !neighbor && !snapToEnd,
     allSurfaces: surfaces,
   };
+}
+
+function hingedDoorFamily(partId: unknown): string | undefined {
+  return typeof partId === 'string' ? /^d[1-9]\d*(?=_(?:full|top|bot|mid\d*)$)/.exec(partId)?.[0] : undefined;
 }
 
 function readDraftM(value: unknown): number | null {
@@ -290,7 +322,6 @@ export function planDoorArch(args: {
   heightCm?: unknown;
 }): DoorArchSlice[] {
   const { tool, target, shape } = args;
-  const anchor = target.surface.rect;
   const cut = tool === 'cut';
   const minX = Math.min(...target.surfaces.map(({ surface, offsetX }) => surface.rect.minX + offsetX));
   const maxX = Math.max(...target.surfaces.map(({ surface, offsetX }) => surface.rect.maxX + offsetX));
@@ -306,35 +337,40 @@ export function planDoorArch(args: {
     : (target.seam ?? Math.max(minX + inset + half, Math.min(maxX - inset - half, target.point.x)));
   const left = centerX - half;
   const right = centerX + half;
+  const insetY = target.snapToEnd ? 0 : inset;
   const bottom =
-    Math.max(...target.surfaces.map(({ surface, offsetY }) => surface.rect.minY + offsetY)) + inset;
-  const top = Math.min(...target.surfaces.map(({ surface, offsetY }) => surface.rect.maxY + offsetY)) - inset;
+    Math.max(...target.surfaces.map(({ surface, offsetY }) => surface.rect.minY + offsetY)) + insetY;
+  const top =
+    Math.min(...target.surfaces.map(({ surface, offsetY }) => surface.rect.maxY + offsetY)) - insetY;
   const requestedHeight = readDraftM(args.heightCm);
   const doubleCurve = shape === 'arch-both' || shape === 'ellipse';
+  if (cut && doubleCurve) return [];
   const centered = doubleCurve || (tool === 'mirror' && shape === 'arch');
-  const height =
-    cut && doubleCurve
-      ? Math.min((top - bottom) * 0.58, 3.1 * half)
-      : Math.min(top - bottom, requestedHeight ?? top - bottom);
+  const height = Math.min(top - bottom, requestedHeight ?? top - bottom);
   const centerY = Math.max(bottom + height / 2, Math.min(top - height / 2, target.point.y));
+  const cutRise = Math.min(half, (top - bottom) * 0.35);
   let minY = bottom;
   let maxY = top;
   if (centered) {
-    const center = cut ? target.point.y : centerY;
-    minY = center - height / 2;
-    maxY = center + height / 2;
+    minY = centerY - height / 2;
+    maxY = centerY + height / 2;
   } else if (shape === 'arch-down') {
-    minY = Math.max(bottom, target.point.y);
-    if (!cut && requestedHeight !== null) maxY = minY + requestedHeight;
+    const pad = cut ? DOOR_ARCH_OUTER_CLEARANCE_M : 0;
+    const limit = cut ? top - cutRise - pad : top - (requestedHeight === null ? 0 : height);
+    const pointerY = target.snapToEnd && !cut ? bottom : target.point.y;
+    minY = Math.max(bottom + pad, Math.min(limit, pointerY));
+    if (!cut && requestedHeight !== null) maxY = minY + height;
   } else {
-    maxY = Math.min(top, target.point.y);
-    if (!cut && requestedHeight !== null) minY = maxY - requestedHeight;
+    const pad = cut ? DOOR_ARCH_OUTER_CLEARANCE_M : 0;
+    const limit = cut ? bottom + cutRise + pad : bottom + (requestedHeight === null ? 0 : height);
+    const pointerY = target.snapToEnd && !cut ? top : target.point.y;
+    maxY = Math.min(top - pad, Math.max(limit, pointerY));
+    if (!cut && requestedHeight !== null) minY = maxY - height;
   }
   if (minY < bottom - 1e-7 || maxY > top + 1e-7) return [];
   const span = maxY - minY;
   if (span < 0.03) return [];
 
-  const cutRise = Math.min(half, (anchor.maxY - anchor.minY) * 0.35);
   const riseM =
     shape === 'ellipse'
       ? span / 2
@@ -343,12 +379,6 @@ export function planDoorArch(args: {
         : cut
           ? cutRise
           : Math.min(half, span * 0.8);
-  if (cut) {
-    const margin = MIN_DOOR_ARCH_CUT_MARGIN_M;
-    if (shape !== 'arch' && minY - bottom < margin) return [];
-    if (shape !== 'arch-down' && top - maxY < margin) return [];
-    if (!doubleCurve && span - riseM < margin) return [];
-  }
   const link =
     target.surfaces.length === 2
       ? [
@@ -361,19 +391,23 @@ export function planDoorArch(args: {
         ].join(':')
       : undefined;
   const slices = target.surfaces.flatMap(({ surface, offsetX, offsetY }) => {
+    const fitToFront = !cut && target.snapToEnd && !!surface.contour;
     const x0 = Math.max(left, surface.rect.minX + offsetX);
     const x1 = Math.min(right, surface.rect.maxX + offsetX);
     if (x1 - x0 < 0.02) return [];
     return [
       {
         surface,
-        rect: { minX: x0 - offsetX, maxX: x1 - offsetX, minY: minY - offsetY, maxY: maxY - offsetY },
+        rect: fitToFront
+          ? surface.rect
+          : { minX: x0 - offsetX, maxX: x1 - offsetX, minY: minY - offsetY, maxY: maxY - offsetY },
         profile: {
           start: (x0 - left) / (2 * half),
           end: Math.min(1, (x1 - left) / (2 * half)),
           rise: riseM / span,
           ...(shape === 'arch' ? {} : { shape }),
           ...(link ? { link } : {}),
+          ...(fitToFront ? { fitToFront: true as const } : {}),
         },
       },
     ];
@@ -382,7 +416,9 @@ export function planDoorArch(args: {
   if (
     slices.some(slice => {
       const { contour } = slice.surface;
-      return contour && !intersectDoorContours(doorArchOutline(slice.rect, slice.profile), contour).length;
+      return (
+        contour && !intersectDoorContours(doorArchOutline(slice.rect, slice.profile, contour), contour).length
+      );
     })
   )
     return [];
@@ -401,9 +437,7 @@ export function makeDoorArchCut(slice: DoorArchSlice): DoorArchCut {
   };
 }
 
-export function readDoorArchCutSlice(surface: ArchSurface, value: unknown): DoorArchSlice | null {
-  const cut = readDoorArchCut(value);
-  if (!cut) return null;
+export function readDoorArchCutSlice(surface: ArchSurface, cut: DoorArchCut): DoorArchSlice {
   return { surface, ...resolveDoorArchCutSlice(surface.rect, cut) };
 }
 
@@ -411,18 +445,25 @@ function cutHitYInRange(curveY: number, pointerY: number): boolean {
   return pointerY >= curveY - 0.075 && pointerY <= curveY + 0.035;
 }
 
-export function hitsDoorArchSlice(slice: DoorArchSlice, point: Vector3Like, tool: DoorArchTool): boolean {
+export function doorArchCutHitDistance(slice: DoorArchSlice, point: Vector3Like): number {
   const x = Math.max(slice.rect.minX, Math.min(slice.rect.maxX, point.x));
-  if (tool === 'cut') {
-    if (Math.abs(x - point.x) >= 0.018) return false;
-    const { minY, maxY } = doorArchSpan(slice.rect, slice.profile, x);
-    const shape = slice.profile.shape;
-    return (
-      (shape !== 'arch-down' && cutHitYInRange(maxY, point.y)) || (!!shape && cutHitYInRange(-minY, -point.y))
-    );
-  }
+  if (Math.abs(x - point.x) >= 0.018) return Infinity;
+  const { minY, maxY } = doorArchSpan(slice.rect, slice.profile, x);
+  const shape = slice.profile.shape;
+  const fromTop =
+    shape !== 'arch-down' && cutHitYInRange(maxY, point.y) ? Math.abs(point.y - maxY) : Infinity;
+  const fromBottom = shape && cutHitYInRange(-minY, -point.y) ? Math.abs(point.y - minY) : Infinity;
+  return Math.min(fromTop, fromBottom);
+}
+
+export function hitsDoorArchSlice(slice: DoorArchSlice, point: Vector3Like, tool: DoorArchTool): boolean {
+  if (tool === 'cut') return Number.isFinite(doorArchCutHitDistance(slice, point));
+  const x = Math.max(slice.rect.minX, Math.min(slice.rect.maxX, point.x));
   if (Math.abs(x - point.x) > 0.01) return false;
   const face = slice.surface.contour && doorContourSpanAtX(slice.surface.contour, x);
+  if (slice.profile.fitToFront && face) {
+    return point.y >= face.minY - VERTICAL_EDGE_SNAP_M && point.y <= face.maxY + VERTICAL_EDGE_SNAP_M;
+  }
   if (slice.surface.contour && (!face || point.y < face.minY - 0.006 || point.y > face.maxY + 0.006))
     return false;
   return [0, -0.012, 0.012].some(offset =>

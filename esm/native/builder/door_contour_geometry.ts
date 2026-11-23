@@ -1,6 +1,15 @@
 import type { ThreeLike } from '../../../types';
 import type { DoorArchPoint } from '../../../types/maps.js';
 
+export function doorContourBounds(points: readonly DoorArchPoint[]) {
+  return {
+    minX: Math.min(...points.map(point => point.x)),
+    maxX: Math.max(...points.map(point => point.x)),
+    minY: Math.min(...points.map(point => point.y)),
+    maxY: Math.max(...points.map(point => point.y)),
+  };
+}
+
 export function readDoorContourPoints(value: unknown): DoorArchPoint[] | null {
   if (!Array.isArray(value) || value.length < 3) return null;
   const points: DoorArchPoint[] = [];

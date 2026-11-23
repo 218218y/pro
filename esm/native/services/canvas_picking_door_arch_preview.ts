@@ -127,7 +127,7 @@ export function showDoorArchPreview(
     { surface: ArchSurface; high: DoorArchPoint; low: DoorArchPoint; z: number; worldY: number } | undefined;
   for (const { surface, rect, profile } of action.slices) {
     const curves = isCut ? doorArchCutEdges(rect, profile) : null;
-    const outline = doorArchOutline(rect, profile);
+    const outline = doorArchOutline(rect, profile, surface.contour);
     const triangles = curves
       ? curves.flatMap(curve => ribbonTriangles(curve, action.kind === 'remove' ? 0.01 : 0.006))
       : intersectDoorContours(outline, surface.contour ?? outline);

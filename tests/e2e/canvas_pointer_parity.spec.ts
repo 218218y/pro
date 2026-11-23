@@ -579,12 +579,12 @@ test.describe('Canvas pointer parity smoke', () => {
           await expect.poll(async () => (await archCounts()).cut).toBe(2);
           const cuts = (
             (await readDebugStoreState(page)).config as {
-              splitDoorsMap: Record<string, { peak: number }>;
+              splitDoorsMap: Record<string, { peak: number }[]>;
             }
           ).splitDoorsMap;
           const peaks = Object.entries(cuts)
             .filter(([key]) => key.startsWith('splitarch_'))
-            .map(([, cut]) => cut.peak);
+            .flatMap(([, cuts]) => cuts.map(cut => cut.peak));
           expect(peaks[0]).toBeCloseTo(peaks[1]!, 5);
         } finally {
           await page.keyboard.up('Shift');
@@ -701,6 +701,115 @@ test.describe('Canvas pointer parity smoke', () => {
     await expect.poll(() => canvas.evaluate(node => (node as HTMLElement).style.cursor)).toBe('pointer');
     await page.mouse.click(curvedFront.x, curvedFront.y);
     await expect.poll(async () => (await archCounts()).groove).toBe(beforeGroove + 1);
+    expectNoRuntimeIssues(issues);
+  });
+
+  test('curved cuts stack on one door and curved finishes snap past the edge @critical', async ({
+    page,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000);
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await setDoorFeatureToggle(page, 'splitDoors', true);
+    await setDoorAuthoringMode(page, 'split-custom', true);
+    const canvas = page.locator('#viewer-container canvas').first();
+    const targets = await page.evaluate(() => {
+      const debug = window.__WP_DEBUG__!.canvas;
+      const baseOf = (partId?: string) => /^d[1-9]\d*(?=_)/.exec(partId ?? '')?.[0];
+      const doors = new Map<string, number[]>();
+      for (let index = 0; index <= 180; index++) {
+        const x = -0.45 + index * 0.005;
+        const base = baseOf(debug.inspectNdc(x, 0)?.partId);
+        if (!base) continue;
+        const row = doors.get(base) ?? [];
+        row.push(x);
+        doors.set(base, row);
+      }
+      return [...doors.entries()].slice(0, 2).map(([base, row]) => {
+        const x = row[Math.floor(row.length / 2)]!;
+        const ys = [];
+        for (let index = 0; index <= 360; index++) {
+          const y = -0.9 + index * 0.005;
+          if (baseOf(debug.inspectNdc(x, y)?.partId) === base) ys.push(y);
+        }
+        return { x, base, bottom: ys[0]!, top: ys.at(-1)! };
+      });
+    });
+    expect(targets).toHaveLength(2);
+    const [cutDoor, plainDoor] = targets;
+    if (!cutDoor || !plainDoor) throw new Error('Expected two door fronts');
+    const clickNdc = async (x: number, y: number) => {
+      const bounds = (await canvas.boundingBox())!;
+      const px = bounds.x + ((x + 1) * bounds.width) / 2;
+      const py = bounds.y + ((1 - y) * bounds.height) / 2;
+      await page.mouse.move(px, py);
+      await expect.poll(() => canvas.evaluate(node => (node as HTMLElement).style.cursor)).toBe('pointer');
+      const previous = (await readBuildDebugStats(page)).executeCount;
+      await page.mouse.click(px, py);
+      await expect.poll(async () => (await readBuildDebugStats(page)).executeCount).toBeGreaterThan(previous);
+    };
+    const readCuts = async () => {
+      const { splitDoorsMap } = (await readDebugStoreState(page)).config as {
+        splitDoorsMap: Record<string, { peak: number; base?: number }[]>;
+      };
+      return splitDoorsMap[`splitarch_${cutDoor.base}`] ?? [];
+    };
+    await expect(page.getByTestId('design-cut-shape-arch-both')).toHaveCount(0);
+    await expect(page.getByTestId('design-cut-shape-ellipse')).toHaveCount(0);
+    await page.getByTestId('design-cut-shape-arch').click();
+    await clickNdc(cutDoor.x, cutDoor.top + 0.008);
+    expect((await readCuts())[0]?.peak).toBeGreaterThan(0.98);
+    await page.getByTestId('design-cut-shape-arch-down').click();
+    await clickNdc(cutDoor.x, cutDoor.bottom - 0.008);
+    expect((await readCuts())[1]?.base).toBeLessThan(0.02);
+    await page.getByTestId('design-cut-shape-arch').click();
+    await clickNdc(cutDoor.x, 0);
+    await expect.poll(readCuts).toHaveLength(3);
+    await clickNdc(cutDoor.x, cutDoor.bottom - 0.008);
+    await expect.poll(readCuts).toHaveLength(2);
+
+    await setDoorAuthoringMode(page, 'split-custom', false);
+    const multicolor = page.getByTestId('design-multicolor-enabled-toggle');
+    if (!(await multicolor.isChecked())) await multicolor.locator('..').click();
+    await page.locator('[data-wp-search-special="mirror"]').click();
+    await page.getByTestId('design-mirror-shape-arch').click();
+    const readFinishes = async (tool: 'groove' | 'mirror', partId: string) => {
+      const config = (await readDebugStoreState(page)).config as Record<
+        string,
+        Record<string, { heightCm: number; arch?: { fitToFront?: boolean; shape?: string } }[]>
+      >;
+      return config[`${tool}LayoutMap`]?.[partId] ?? [];
+    };
+    const curvedPartId = `${cutDoor.base}_bot`;
+    await clickNdc(cutDoor.x, 0.007);
+    expect((await readFinishes('mirror', curvedPartId))[0]?.arch?.fitToFront).toBe(true);
+    await clickNdc(cutDoor.x, 0.007);
+    await expect.poll(() => readFinishes('mirror', curvedPartId)).toHaveLength(0);
+    const enterGrooves = async () => {
+      await setDoorFeatureToggle(page, 'groovesEnabled', true);
+      await setDoorAuthoringMode(page, 'groove', true);
+      const manual = page.getByTestId('design-groove-manual-button');
+      if ((await manual.getAttribute('aria-expanded')) !== 'true') await manual.click();
+    };
+    await enterGrooves();
+    await page.getByTestId('design-groove-shape-arch').click();
+    await page.locator('#wp-r-groove-draft-height').fill('22');
+    await clickNdc(cutDoor.x, 0.007);
+    const fittedGroove = (await readFinishes('groove', curvedPartId))[0];
+    expect(fittedGroove?.arch?.fitToFront).toBe(true);
+    expect(fittedGroove?.heightCm).toBeGreaterThan(22);
+    await page.locator('#wp-r-groove-draft-height').fill('');
+    await clickNdc(plainDoor.x, plainDoor.top + 0.008);
+    await page.getByTestId('design-groove-shape-arch-down').click();
+    await clickNdc(plainDoor.x, plainDoor.bottom - 0.008);
+    const config = (await readDebugStoreState(page)).config as {
+      grooveLayoutMap: Record<string, { arch?: { shape?: string } }[]>;
+    };
+    expect(
+      Object.entries(config.grooveLayoutMap)
+        .filter(([key]) => key.startsWith(`${plainDoor.base}_`))
+        .flatMap(([, entries]) => entries.map(entry => entry.arch?.shape))
+    ).toContain('arch-down');
     expectNoRuntimeIssues(issues);
   });
 

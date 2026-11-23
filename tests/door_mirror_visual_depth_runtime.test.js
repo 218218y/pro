@@ -228,3 +228,44 @@ test('an arched mirror and its reflection stay inside the contour left by a door
   }
   mirror.userData.__wpPlanarReflector.renderTarget.dispose();
 });
+
+test('a fitted mirror and reflector reach the real edges of the whole remaining front', () => {
+  const parent = new Three.Group();
+  const rect = { minX: -0.3, maxX: 0.3, minY: -0.5, maxY: 0.5 };
+  const contour = [
+    { x: -0.3, y: -0.5 },
+    { x: 0.3, y: -0.5 },
+    { x: 0.3, y: 0.42 },
+    { x: 0, y: 0.5 },
+    { x: -0.3, y: 0.42 },
+  ];
+  const mirror = appendMirrorDoorSurfaceLayoutPlacement({
+    App: {},
+    THREE: Three,
+    parent,
+    mat: new Three.MeshStandardMaterial(),
+    rect,
+    layout: { widthCm: 60, heightCm: 100, arch: { start: 0, end: 1, rise: 0.3, fitToFront: true } },
+    clipContour: contour,
+    placementIndex: 0,
+    baseHalfDepthM: 0.01,
+    thickness: 0.02,
+    zSign: 1,
+    isSketch: false,
+    role: 'door_mirror_surface',
+  });
+  assert.ok(mirror);
+  const reflector = mirror.children.find(child => child.userData.__wpPlanarReflectorSurface);
+  assert.ok(reflector);
+  for (const mesh of [mirror, reflector]) {
+    const vertices = mesh.geometry.getAttribute('position');
+    assert.ok(
+      Array.from({ length: vertices.count }, (_, i) => i).some(
+        i => vertices.getX(i) + mirror.position.x > 0.29 && vertices.getY(i) + mirror.position.y > 0.41
+      )
+    );
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  }
+  mirror.userData.__wpPlanarReflector.renderTarget.dispose();
+});
