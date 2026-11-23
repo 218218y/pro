@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-11-17T21:06:19.830Z
+Generated: 2026-11-23T03:38:29.523Z
 
 ## Summary
 
@@ -20,7 +20,7 @@ Generated: 2026-11-17T21:06:19.830Z
 - Tests reading retired layer-ledger fields: 0
 - Canonical contracts in registry: 21
 - Historical stage/wave proof files: 0
-- Cross-kind contract overlap targets: 144
+- Cross-kind contract overlap targets: 145
 
 | Category            | Count |
 | ------------------- | ----: |
@@ -144,6 +144,7 @@ Generated: 2026-11-17T21:06:19.830Z
 - `esm/native/services/canvas_picking_click_route.ts` — contract / source-guard — `tests/canvas_picking_config_meta_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/runtime_access_seam_topology_contract.test.js`
 - `esm/native/services/canvas_picking_door_action_hover_flow.ts` — contract / source-guard — `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/door_trim_mirror_avoidance_guard.test.cjs`, `tests/mirror_layout_family_guard.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sliding_wardrobe_regression_guard.test.js`
 - `esm/native/services/canvas_picking_door_edit_flow.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_flow_topology_contract.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`
+- `esm/native/services/canvas_picking_door_edit_shared.ts` — contract / ownership — `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`
 - `esm/native/services/canvas_picking_door_hinge_groove_click.ts` — contract / ownership — `tests/actions_domain_access_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/sketch_box_doors_and_ui_guard.test.cjs`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`, `tests/visual_maps_writer_ownership_topology_contract.test.js`
 - `esm/native/services/canvas_picking_door_remove_click.ts` — contract / source-guard — `tests/actions_domain_access_contracts.test.js`, `tests/builder_surface_family_contracts.test.js`, `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/canvas_picking_remove_doors_source_guard.test.js`, `tests/sketch_box_segment_doors_fix_guard.test.cjs`
 - `esm/native/services/canvas_picking_door_split_click_custom.ts` — contract / ownership — `tests/canvas_picking_door_authoring_meta_contracts.test.js`, `tests/door_system_dimension_ownership_closeout_contract.test.js`

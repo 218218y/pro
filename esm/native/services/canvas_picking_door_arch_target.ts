@@ -5,7 +5,7 @@ import {
   containsDoorArchPoint,
   doorArchY,
   getDoorsArray,
-  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+  MIN_DOOR_ARCH_CUT_MARGIN_M,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
 } from './canvas_picking_door_edit_shared.js';
@@ -292,9 +292,8 @@ export function planDoorArch(args: {
 
   const cutRise = Math.min(half, (anchor.maxY - anchor.minY) * 0.35);
   const riseM = cut ? cutRise : Math.min(half, span * 0.8);
-  const minSegment =
-    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
-  if (cut && (span - riseM < minSegment || top - maxY < minSegment)) return [];
+  if (cut && (span - riseM < MIN_DOOR_ARCH_CUT_MARGIN_M || top - maxY < MIN_DOOR_ARCH_CUT_MARGIN_M))
+    return [];
   const link =
     target.surfaces.length === 2
       ? [

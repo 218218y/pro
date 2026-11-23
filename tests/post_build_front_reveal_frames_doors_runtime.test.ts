@@ -69,6 +69,9 @@ test('front reveal door frames clear but do not redraw lines on removed sketch d
     buildRectLines() {
       return { kind: 'lines' } as any;
     },
+    buildContourLines() {
+      assert.fail('Expected a rectangular sketch reveal');
+    },
     removeLocalFrames(seg: any) {
       removedFrameClears.push(String(seg.userData.partId));
     },
@@ -120,6 +123,9 @@ test('front reveal door frames preserve sliding and hinged owner thickness defau
       captured.push({ id: String(current.group.userData.partId), z });
       return { kind: 'lines' } as any;
     },
+    buildContourLines() {
+      assert.fail('Expected a rectangular door reveal');
+    },
     removeLocalFrames() {},
   });
 
@@ -127,4 +133,55 @@ test('front reveal door frames preserve sliding and hinged owner thickness defau
     { id: 'sliding-default', z: 0.0118 },
     { id: 'hinged-default', z: 0.0098 },
   ]);
+});
+
+test('front reveal on an arched cut follows the slab instead of drawing its bounding rectangle', () => {
+  const App = {};
+  const contour = [
+    { x: -0.2, y: -0.4 },
+    { x: -0.2, y: 0.1 },
+    { x: 0, y: 0.25 },
+    { x: 0.2, y: 0.1 },
+    { x: 0.2, y: -0.4 },
+  ];
+  const added: unknown[] = [];
+  const group = {
+    children: [],
+    position: { x: 0, y: 0, z: 0.04 },
+    rotation: {},
+    userData: {
+      partId: 'd1_bot',
+      __doorWidth: 0.4,
+      __doorHeight: 0.65,
+      __doorMeshOffsetX: -0.2,
+      __wpArchCutContour: contour,
+    },
+    add(node: unknown) {
+      added.push(node);
+    },
+    remove() {},
+  };
+  getDoorsArray(App).push({ group, type: 'hinged' } as any);
+  const reveal = { kind: 'curve' };
+  applyFrontRevealDoorFrames({} as any, {
+    App: App as any,
+    THREE: {} as any,
+    wardrobeGroup: { traverse() {} } as any,
+    zNudge: 0.001,
+    localName: 'frontRevealFrames',
+    reportSoft() {},
+    cleanupStaleLocalFrames() {},
+    getRevealZSignOverride: () => null,
+    getObjectLocalBounds: () => null,
+    pickRevealLineMaterial: () => null,
+    buildRectLines: () => assert.fail('Arched segments must not get a rectangle'),
+    buildContourLines(points, offset, z) {
+      assert.deepEqual(points, contour);
+      assert.equal(offset, -0.2);
+      assert.ok(Math.abs(z - 0.01) < 1e-9);
+      return reveal as any;
+    },
+    removeLocalFrames() {},
+  });
+  assert.deepEqual(added, [reveal]);
 });

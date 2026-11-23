@@ -138,7 +138,8 @@ export function appendArchedHingedDoorOps(
   const curve = sampleDoorArch(
     { ...rect, maxY: rect.minY + cut.peak * ctx.totalDoorSpace },
     {
-      ...cut.profile,
+      start: cut.profile.start,
+      end: cut.profile.end,
       rise: cut.profile.rise / cut.peak,
     }
   );

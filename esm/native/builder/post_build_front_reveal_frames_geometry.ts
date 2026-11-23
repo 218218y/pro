@@ -2,6 +2,7 @@
 //
 // Owns reveal z-sign resolution, local-bounds measurement, and local line geometry emission.
 
+import type { DoorArchPoint } from '../../../types/maps.js';
 import type { Object3DLike, ThreeLike } from '../../../types/index.js';
 import { FRONT_REVEAL_GEOMETRY_POLICY } from '../../shared/dimensions/front_reveal_frame_policy.js';
 
@@ -17,6 +18,12 @@ import { readGeometryUserDataSign } from './geometry_user_data_contracts.js';
 export type FrontRevealGeometryRuntime = {
   getRevealZSignOverride: (ud: ValueRecord | null) => number | null;
   getObjectLocalBounds: (root: Object3DLike | null) => Box3Like | null;
+  buildContourLines: (
+    points: readonly DoorArchPoint[],
+    xOffset: number,
+    z: number,
+    lineMat?: LineMaterialLike
+  ) => Object3DLike | null;
   buildRectLines: (
     xL: number,
     xR: number,
@@ -72,6 +79,35 @@ export function createFrontRevealGeometryRuntime(
     }
   };
 
+  const makeLine = (geom: unknown, lineMat: unknown, childName?: string) => {
+    if (!geom || !lineMat) return null;
+    const line = new THREE.LineSegments(geom, lineMat);
+    if (childName) line.name = childName;
+    line.frustumCulled = false;
+    line.userData = { kind: 'frontRevealFramesLines', local: true, hideWhenOpen: false };
+    return line;
+  };
+
+  const buildContourLines: FrontRevealGeometryRuntime['buildContourLines'] = (
+    points,
+    xOffset,
+    z,
+    lineMat = baseLineMaterial
+  ) => {
+    const vertices = points.flatMap((point, index) => {
+      const next = points[(index + 1) % points.length];
+      if (!next) return [];
+      return [
+        new THREE.Vector3(point.x + xOffset, point.y, z),
+        new THREE.Vector3(next.x + xOffset, next.y, z),
+      ];
+    });
+    const geometry = new THREE.BufferGeometry();
+    if (typeof geometry.setFromPoints !== 'function') return null;
+    geometry.setFromPoints(vertices);
+    return makeLine(geometry, lineMat, localName);
+  };
+
   const buildRectLines = (
     xL: number,
     xR: number,
@@ -106,15 +142,6 @@ export function createFrontRevealGeometryRuntime(
       return geom;
     };
 
-    const makeLine = (geom: unknown, lineMat: unknown, childName?: string) => {
-      if (!geom || !lineMat) return null;
-      const line = new THREE.LineSegments(geom, lineMat);
-      if (childName) line.name = childName;
-      line.frustumCulled = false;
-      line.userData = { kind: 'frontRevealFramesLines', local: true, hideWhenOpen: false };
-      return line;
-    };
-
     if (lineMatOrDual === 'dual') {
       const g = new THREE.Group();
       g.name = localName;
@@ -142,5 +169,6 @@ export function createFrontRevealGeometryRuntime(
     getRevealZSignOverride,
     getObjectLocalBounds,
     buildRectLines,
+    buildContourLines,
   };
 }

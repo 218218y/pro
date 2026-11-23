@@ -1,6 +1,27 @@
 import type { ThreeLike } from '../../../types';
 import type { DoorArchPoint } from '../../../types/maps.js';
 
+export function readDoorContourPoints(value: unknown): DoorArchPoint[] | null {
+  if (!Array.isArray(value) || value.length < 3) return null;
+  const points: DoorArchPoint[] = [];
+  const input: unknown[] = value;
+  for (const point of input) {
+    if (
+      !point ||
+      typeof point !== 'object' ||
+      !('x' in point) ||
+      !('y' in point) ||
+      typeof point.x !== 'number' ||
+      typeof point.y !== 'number' ||
+      !Number.isFinite(point.x) ||
+      !Number.isFinite(point.y)
+    )
+      return null;
+    points.push({ x: point.x, y: point.y });
+  }
+  return points;
+}
+
 export function createDoorContourGeometry(THREE: ThreeLike, points: readonly DoorArchPoint[], depth: number) {
   const shape = new THREE.Shape();
   const [first, ...rest] = points;

@@ -172,6 +172,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         __wpDoorId: doorIdNum,
         ...(doorOp.archCut
           ? {
+              __wpArchCutContour: doorOp.archCut.contour,
               __wpArchCutBaseMinY: doorOp.archCut.baseMinY,
               __wpArchCutBaseMaxY: doorOp.archCut.baseMaxY,
             }

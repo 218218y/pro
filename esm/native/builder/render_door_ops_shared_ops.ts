@@ -5,6 +5,7 @@ import type {
 } from './render_door_ops_shared_contracts.js';
 import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
 import { isRecord } from './render_door_ops_shared_core.js';
+import { readDoorContourPoints } from './door_contour_geometry.js';
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 
 function readFinite(value: unknown, defaultValue = 0): number {
@@ -101,27 +102,19 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     op.winterBraceDoorPlan = { cuts: plan.cuts.slice(), fixedBelowY: plan.fixedBelowY };
   }
   if (value.archCut !== undefined) {
-    const cut = value.archCut;
+    const cut = isRecord(value.archCut) ? value.archCut : null;
+    const contour = readDoorContourPoints(cut?.contour);
     if (
-      !isRecord(cut) ||
-      !Array.isArray(cut.contour) ||
-      cut.contour.length < 3 ||
+      !cut ||
+      !contour ||
       typeof cut.baseMinY !== 'number' ||
       !Number.isFinite(cut.baseMinY) ||
       typeof cut.baseMaxY !== 'number' ||
-      !Number.isFinite(cut.baseMaxY) ||
-      !cut.contour.every(
-        point =>
-          isRecord(point) &&
-          typeof point.x === 'number' &&
-          typeof point.y === 'number' &&
-          Number.isFinite(point.x) &&
-          Number.isFinite(point.y)
-      )
+      !Number.isFinite(cut.baseMaxY)
     ) {
       throw new TypeError('Invalid arched door cut contour');
     }
-    op.archCut = { contour: cut.contour, baseMinY: cut.baseMinY, baseMaxY: cut.baseMaxY };
+    op.archCut = { contour, baseMinY: cut.baseMinY, baseMaxY: cut.baseMaxY };
   }
   const carcassMountFaceX = readRenderOpNumber(value.carcassMountFaceX);
   if (carcassMountFaceX != null) {

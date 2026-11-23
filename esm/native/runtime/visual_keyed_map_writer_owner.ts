@@ -1,5 +1,12 @@
-import type { ActionMetaLike, MapsByName, UnknownRecord } from '../../../types';
+import type {
+  ActionMetaLike,
+  GrooveLayoutEntry,
+  MapsByName,
+  MirrorLayoutEntry,
+  UnknownRecord,
+} from '../../../types';
 
+import type { DoorArchCut } from '../../../types/maps.js';
 import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
@@ -62,25 +69,58 @@ function readNormalizedVisualKeyedMap(
   return { ...(normalizeKnownMapSnapshot(mapName, cfgMapRecord(App, mapName)) as Record<string, unknown>) };
 }
 
+type ArchLayoutEdit<T> = { key: string; value: T } | { key: string; index: number };
+
+function updateArchLayouts<T>(
+  map: Record<string, T[] | undefined>,
+  edits: readonly ArchLayoutEdit<T>[]
+): void {
+  for (const key of new Set(edits.map(edit => edit.key))) {
+    const next = (map[key] ?? []).filter(
+      (_layout, index) => !edits.some(edit => edit.key === key && 'index' in edit && edit.index === index)
+    );
+    for (const edit of edits) {
+      if (edit.key === key && 'value' in edit) next.push(edit.value);
+    }
+    if (next.length) map[key] = next;
+    else delete map[key];
+  }
+}
+
 export function writeDoorArchMaps(
   App: unknown,
-  patch:
-    | { splitDoorsMap: MapsByName['splitDoorsMap'] }
-    | { mirrorLayoutMap: MapsByName['mirrorLayoutMap'] }
-    | { grooveLayoutMap: MapsByName['grooveLayoutMap']; groovesMap: MapsByName['groovesMap'] },
+  edit:
+    | { tool: 'cut'; entries: readonly { key: string; value: DoorArchCut | null }[] }
+    | { tool: 'mirror'; entries: readonly ArchLayoutEdit<MirrorLayoutEntry>[] }
+    | { tool: 'groove'; entries: readonly ArchLayoutEdit<GrooveLayoutEntry>[] },
   meta: ActionMetaLike
 ): void {
-  const normalized =
-    'splitDoorsMap' in patch
-      ? { splitDoorsMap: normalizeKnownMapSnapshot('splitDoorsMap', patch.splitDoorsMap) }
-      : 'mirrorLayoutMap' in patch
-        ? { mirrorLayoutMap: normalizeKnownMapSnapshot('mirrorLayoutMap', patch.mirrorLayoutMap) }
-        : {
-            grooveLayoutMap: normalizeKnownMapSnapshot('grooveLayoutMap', patch.grooveLayoutMap),
-            groovesMap: normalizeKnownMapSnapshot('groovesMap', patch.groovesMap),
-          };
-  const replace = Object.fromEntries(Object.keys(normalized).map(key => [key, true]));
-  commitConfigMapOwnerPatchWithReplaceKeys(App, normalized, replace, meta);
+  if (edit.tool === 'cut') {
+    patchVisualKeyedMapEntriesFromOwner(App, 'splitDoorsMap', edit.entries, meta);
+  } else if (edit.tool === 'mirror') {
+    const mirrorLayoutMap = normalizeKnownMapSnapshot(
+      'mirrorLayoutMap',
+      cfgMapRecord(App, 'mirrorLayoutMap')
+    );
+    updateArchLayouts(mirrorLayoutMap, edit.entries);
+    setCfgMapFromVisualKeyedOwner(App, 'mirrorLayoutMap', mirrorLayoutMap, meta);
+  } else {
+    const grooveLayoutMap = normalizeKnownMapSnapshot(
+      'grooveLayoutMap',
+      cfgMapRecord(App, 'grooveLayoutMap')
+    );
+    const groovesMap = normalizeKnownMapSnapshot('groovesMap', cfgMapRecord(App, 'groovesMap'));
+    updateArchLayouts(grooveLayoutMap, edit.entries);
+    for (const { key } of edit.entries) {
+      groovesMap[toCanonicalGroovesMapKey(key)] = !!grooveLayoutMap[key]?.length;
+    }
+    commitConfigMapOwnerPatchWithReplaceKeys(
+      App,
+      { grooveLayoutMap, groovesMap },
+      { grooveLayoutMap: true, groovesMap: true },
+      meta
+    );
+  }
 }
 
 export function setCfgVisualKeyedMapFromOwner<K extends VisualKeyedMapName>(

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T21:06:19.830Z",
+  "generatedAt": "2026-11-23T03:38:29.523Z",
   "totals": {
     "tests": 1296,
     "unitRunnerTests": 1281,
@@ -17,7 +17,7 @@
     "retiredLayerLedgerAccessTests": 0,
     "canonicalContracts": 21,
     "historicalArchitectureProofs": 0,
-    "contractOverlapTargets": 144
+    "contractOverlapTargets": 145
   },
   "categories": {
     "contract": 400,
@@ -1825,6 +1825,20 @@
         {
           "file": "tests/canvas_picking_remove_doors_source_guard.test.js",
           "kind": "source-guard"
+        }
+      ]
+    },
+    {
+      "target": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "kinds": ["contract", "ownership"],
+      "owners": [
+        {
+          "file": "tests/canvas_picking_door_authoring_meta_contracts.test.js",
+          "kind": "contract"
+        },
+        {
+          "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+          "kind": "ownership"
         }
       ]
     },

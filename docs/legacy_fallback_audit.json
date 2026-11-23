@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T02:52:49.572Z",
+  "generatedAt": "2026-11-23T03:36:04.356Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -2297,14 +2297,14 @@
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 212,
+      "line": 222,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "const layoutFallbackKind = doorOp.isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/render_door_ops_hinged.ts",
-      "line": 214,
+      "line": 224,
       "term": "layoutFallbackKind",
       "category": "domain-default",
       "text": "doorOp.isMirror || mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
@@ -3018,7 +3018,7 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
-      "line": 82,
+      "line": 85,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-cache-write-fallback: mirror-canvas caching is an optimization and must not block visual creation"
@@ -3032,91 +3032,91 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 37,
+      "line": 38,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 40,
+      "line": 41,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "return resolveAdhesiveGlassKind(layout?.surfaceKind) || fallbackKind;"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 45,
+      "line": 46,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 50,
+      "line": 51,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "surfaceKind: readDoorVisualSurfaceKind(layout, fallbackKind),"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 56,
+      "line": 57,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 61,
+      "line": 62,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "const kind = readDoorVisualSurfaceKind(layout, fallbackKind);"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 93,
+      "line": 94,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "fallbackFaceSign: number"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 98,
+      "line": 99,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) !== -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 105,
+      "line": 106,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "function hasInsideFullMirrorLayout(mirrorLayout: MirrorLayoutList | null, fallbackFaceSign: number): boolean {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 109,
+      "line": 110,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) === -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 153,
+      "line": 162,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const surfaceFallbackKind = isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 157,
+      "line": 166,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "hasMixedDoorSurfaceKinds(mirrorLayout, surfaceFallbackKind)"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 159,
+      "line": 168,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const mixedLayout = materializeDoorVisualSurfaceKinds(mirrorLayout, surfaceFallbackKind);"
@@ -5825,56 +5825,56 @@
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 23,
+      "line": 24,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 26,
+      "line": 27,
       "term": "fallback",
       "category": "runtime-default",
       "text": "return resolveDoorSurfaceOverlayKind(entry?.surfaceKind) || fallback;"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 37,
+      "line": 38,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 40,
+      "line": 41,
       "term": "fallback",
       "category": "runtime-default",
       "text": "layout => readMirrorLayoutSurfaceKind(layout, fallback) === surfaceKind"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 47,
+      "line": 48,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: DoorSurfaceOverlayKind = DEFAULT_DOOR_SURFACE_OVERLAY_KIND"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 50,
+      "line": 51,
       "term": "fallback",
       "category": "runtime-default",
       "text": "layout => readMirrorLayoutSurfaceKind(layout, fallback) === surfaceKind"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 56,
+      "line": 57,
       "term": "fallback",
       "category": "runtime-default",
       "text": "fallback: DoorSurfaceOverlayKind"
     },
     {
       "file": "esm/shared/mirror_layout_contracts_shared.ts",
-      "line": 60,
+      "line": 61,
       "term": "fallback",
       "category": "runtime-default",
       "text": "surfaceKind: readMirrorLayoutSurfaceKind(layout, fallback),"

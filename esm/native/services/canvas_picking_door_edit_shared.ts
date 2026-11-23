@@ -40,7 +40,6 @@ import {
 import {
   buildDoorVisualLookupKeys,
   toCanonicalGrooveLinesCountMapKey,
-  toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
 import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
@@ -50,11 +49,9 @@ export {
   doorArchOutline,
   doorArchY,
   getDoorsArray,
-  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
   sampleDoorArch,
-  toCanonicalGroovesMapKey,
   writeDoorArchMaps,
   buildDoorVisualLookupKeys,
   buildGrooveLayoutFromHit,
@@ -139,6 +136,9 @@ export function writePendingGrooveLinesCountForPart(
     createCanvasPickingDoorAuthoringRefreshGatedMeta(App, source)
   );
 }
+
+export const MIN_DOOR_ARCH_CUT_MARGIN_M =
+  HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
 
 export function isCanvasDoorArchCutSegment(group: unknown): boolean {
   return typeof asRecord(asRecord(group)?.userData)?.__wpArchCutBaseMinY === 'number';

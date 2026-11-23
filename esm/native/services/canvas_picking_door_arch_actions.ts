@@ -7,7 +7,6 @@ import {
   resolveGroovePlacementInRect,
   resolveMirrorPlacementInRect,
   resolvePendingGrooveLinesCount,
-  toCanonicalGroovesMapKey,
   writeDoorArchMaps,
 } from './canvas_picking_door_edit_shared.js';
 import { __wp_historyBatch, __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
@@ -156,68 +155,41 @@ function makeSurfaceLayout(slice: DoorArchSlice) {
   };
 }
 
-function removeSurfaceArches<T extends SurfaceEntry>(
-  map: Record<string, T[] | undefined>,
-  entries: ArchRemoval[]
-): void {
-  for (const key of new Set(entries.map(entry => entry.key))) {
-    const next = map[key]?.filter(
-      (_layout, index) => !entries.some(entry => entry.key === key && entry.index === index)
-    );
-    if (next?.length) map[key] = next;
-    else delete map[key];
-  }
-}
-
 export function commitDoorArchAction(App: AppContainer, action: DoorArchAction): void {
   const source = `doorArch:${action.tool}:${action.kind}`;
   const structural = createCanvasPickingDoorAuthoringStructuralMeta(source);
   const meta = createCanvasPickingDoorAuthoringRefreshGatedMeta(App, source, structural);
   __wp_historyBatch(App, structural, () => {
     if (action.tool === 'cut') {
-      const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', __wp_map(App, 'splitDoorsMap'));
-      if (action.kind === 'remove') {
-        for (const entry of action.entries) delete splitDoorsMap[entry.key];
-      } else {
-        for (const slice of action.slices) splitDoorsMap[slice.surface.key] = makeDoorArchCut(slice);
-      }
-      writeDoorArchMaps(App, { splitDoorsMap }, meta);
+      const entries =
+        action.kind === 'remove'
+          ? action.entries.map(({ key }) => ({ key, value: null }))
+          : action.slices.map(slice => ({ key: slice.surface.key, value: makeDoorArchCut(slice) }));
+      writeDoorArchMaps(App, { tool: 'cut', entries }, meta);
     } else if (action.tool === 'mirror') {
-      const mirrorLayoutMap = normalizeKnownMapSnapshot('mirrorLayoutMap', __wp_map(App, 'mirrorLayoutMap'));
-      if (action.kind === 'remove') {
-        removeSurfaceArches(mirrorLayoutMap, action.entries);
-      } else {
-        for (const slice of action.slices) {
-          const { key, face } = slice.surface;
-          mirrorLayoutMap[key] = [
-            ...(mirrorLayoutMap[key] ?? []),
-            {
-              ...makeSurfaceLayout(slice),
-              surfaceKind: 'mirror',
-              faceSign: face,
-            },
-          ];
-        }
-      }
-      writeDoorArchMaps(App, { mirrorLayoutMap }, meta);
+      const entries =
+        action.kind === 'remove'
+          ? action.entries
+          : action.slices.map(slice => ({
+              key: slice.surface.key,
+              value: {
+                ...makeSurfaceLayout(slice),
+                surfaceKind: 'mirror' as const,
+                faceSign: slice.surface.face,
+              },
+            }));
+      writeDoorArchMaps(App, { tool: 'mirror', entries }, meta);
     } else {
-      const grooveLayoutMap = normalizeKnownMapSnapshot('grooveLayoutMap', __wp_map(App, 'grooveLayoutMap'));
-      const groovesMap = normalizeKnownMapSnapshot('groovesMap', __wp_map(App, 'groovesMap'));
-      if (action.kind === 'remove') {
-        removeSurfaceArches(grooveLayoutMap, action.entries);
-        for (const { key } of action.entries) {
-          if (!grooveLayoutMap[key]) groovesMap[toCanonicalGroovesMapKey(key)] = false;
-        }
-      } else {
-        for (const slice of action.slices) {
-          const { key } = slice.surface;
-          const layout = makeSurfaceLayout(slice);
-          const count = resolvePendingGrooveLinesCount(App, layout.widthCm / 100, undefined, key);
-          grooveLayoutMap[key] = [...(grooveLayoutMap[key] ?? []), { ...layout, linesCount: count }];
-          groovesMap[toCanonicalGroovesMapKey(key)] = true;
-        }
-      }
-      writeDoorArchMaps(App, { grooveLayoutMap, groovesMap }, meta);
+      const entries =
+        action.kind === 'remove'
+          ? action.entries
+          : action.slices.map(slice => {
+              const { key } = slice.surface;
+              const layout = makeSurfaceLayout(slice);
+              const linesCount = resolvePendingGrooveLinesCount(App, layout.widthCm / 100, undefined, key);
+              return { key, value: { ...layout, linesCount } };
+            });
+      writeDoorArchMaps(App, { tool: 'groove', entries }, meta);
     }
   });
   requestDoorAuthoringImmediateRefresh(App, source);

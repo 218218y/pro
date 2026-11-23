@@ -3,7 +3,8 @@
 // Owns the canonical runtime contracts shared by front reveal frame helpers.
 
 import type { AppContainer, Object3DLike, ThreeLike } from '../../../types/index.js';
-import type { Box3Like, LineMaterialLike, TraversableLike, ValueRecord } from './post_build_extras_shared.js';
+import type { FrontRevealGeometryRuntime } from './post_build_front_reveal_frames_geometry.js';
+import type { LineMaterialLike, TraversableLike } from './post_build_extras_shared.js';
 
 export type FrontRevealFramesRuntime = {
   App: AppContainer;
@@ -13,16 +14,6 @@ export type FrontRevealFramesRuntime = {
   localName: string;
   reportSoft: (op: string, error: unknown) => void;
   cleanupStaleLocalFrames: () => void;
-  getRevealZSignOverride: (ud: ValueRecord | null) => number | null;
-  getObjectLocalBounds: (root: Object3DLike | null) => Box3Like | null;
   pickRevealLineMaterial: (root: Object3DLike | null) => LineMaterialLike | null;
-  buildRectLines: (
-    xL: number,
-    xR: number,
-    yB: number,
-    yT: number,
-    z: number,
-    lineMatOrDual?: LineMaterialLike | 'dual'
-  ) => Object3DLike | null;
   removeLocalFrames: (root: Object3DLike | null) => void;
-};
+} & FrontRevealGeometryRuntime;

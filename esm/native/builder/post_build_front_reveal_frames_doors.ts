@@ -2,6 +2,7 @@
 //
 // Owns hinged/sliding door iteration and segmented sketch-door local frames.
 
+import { readDoorContourPoints } from './door_contour_geometry.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { FRONT_REVEAL_THICKNESS_POLICY } from '../../shared/dimensions/front_reveal_frame_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
@@ -147,7 +148,15 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
     }
 
     const lineMat = runtime.pickRevealLineMaterial(g);
-    const lines = runtime.buildRectLines(xLeft, xRight, yMin, yMax, z, lineMat || undefined);
+    const contour = readDoorContourPoints(g.userData.__wpArchCutContour);
+    const lines = contour
+      ? runtime.buildContourLines(
+          contour,
+          readGeometryUserDataNumber(g.userData.__doorMeshOffsetX) ?? 0,
+          z,
+          lineMat || undefined
+        )
+      : runtime.buildRectLines(xLeft, xRight, yMin, yMax, z, lineMat || undefined);
     if (lines) g.add(lines);
   }
 }
