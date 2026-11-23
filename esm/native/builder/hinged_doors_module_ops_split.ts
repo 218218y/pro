@@ -125,11 +125,11 @@ export function appendArchedHingedDoorOps(
   ctx: HingedDoorModuleOpsContext,
   state: HingedDoorIterationState
 ): boolean {
-  const cuts = ctx.splitDoors
+  const archCuts = ctx.splitDoors
     ? readDoorArchCuts(ctx.cfg.splitDoorsMap?.[`splitarch_d${state.currentDoorId}`])
     : [];
   if (
-    !cuts.length ||
+    !archCuts.length ||
     ctx.winterBraceDoorPlan.cuts.length ||
     hasSketchExternalDrawerDoorCutsInConfig(ctx.configRecord)
   )
@@ -156,8 +156,8 @@ export function appendArchedHingedDoorOps(
     state.bottomSplitEnabled
   );
   const clearance = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM + minSegment;
-  const accepted: typeof cuts = [];
-  const curved = cuts.flatMap(cut => {
+  const accepted: typeof archCuts = [];
+  const curved = archCuts.flatMap(cut => {
     const slice = resolveDoorArchCutSlice(rect, cut);
     const edges = doorArchCutEdges(slice.rect, slice.profile).map(curve => ({
       min: Math.min(...curve.map(point => point.y)),
