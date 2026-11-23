@@ -8,6 +8,7 @@ import {
   resolveMirrorPlacementInRect,
   resolvePendingGrooveLinesCount,
   writeDoorArchMaps,
+  type DoorArchTool,
 } from './canvas_picking_door_edit_shared.js';
 import { __wp_historyBatch, __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 import {
@@ -23,7 +24,6 @@ import {
   resolveDoorArchTarget,
   type ArchSurface,
   type DoorArchSlice,
-  type DoorArchTool,
 } from './canvas_picking_door_arch_target.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import type { RaycasterLike } from './canvas_picking_engine.js';

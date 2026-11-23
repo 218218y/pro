@@ -8,6 +8,7 @@ import {
   MIN_DOOR_ARCH_CUT_MARGIN_M,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
+  type DoorArchTool,
 } from './canvas_picking_door_edit_shared.js';
 import {
   readDoorLeafRectFromUserData,
@@ -20,8 +21,6 @@ import {
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import type { RaycasterLike } from './canvas_picking_engine.js';
 import { __wp_scopeCornerPartKeyForStack } from './canvas_picking_core_helpers.js';
-
-export type DoorArchTool = 'cut' | 'mirror' | 'groove';
 
 export type ArchSurface = {
   group: Object3DLike;

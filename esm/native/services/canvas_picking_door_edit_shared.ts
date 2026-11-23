@@ -11,7 +11,6 @@ import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_
 import { isCanonicalDoorVisualMapKey } from '../../shared/door_visual_key_contracts_shared.js';
 import { getToolsServiceMaybe } from '../runtime/service_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import type { DoorArchTool } from './canvas_picking_door_arch_target.js';
 import { asRecord as readRecord } from '../runtime/record.js';
 import { normalizeKnownMapSnapshot, writeDoorArchMaps } from '../runtime/maps_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
@@ -143,6 +142,8 @@ export const MIN_DOOR_ARCH_CUT_MARGIN_M =
 export function isCanvasDoorArchCutSegment(group: unknown): boolean {
   return typeof asRecord(asRecord(group)?.userData)?.__wpArchCutBaseMinY === 'number';
 }
+
+export type DoorArchTool = 'cut' | 'mirror' | 'groove';
 
 export function readActiveDoorArchTool(
   App: AppContainer,
