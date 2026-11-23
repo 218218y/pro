@@ -1,7 +1,11 @@
 import type { Vector3Like } from '../../../types/three_like.js';
 import type { AppContainer, GeometryLike, SketchPlacementPreviewArgsLike, ThreeLike } from '../../../types';
 import type { DoorArchPoint } from '../../../types/maps.js';
-import { doorArchOutline, intersectDoorContours, sampleDoorArch } from './canvas_picking_door_edit_shared.js';
+import {
+  doorArchCutEdges,
+  doorArchOutline,
+  intersectDoorContours,
+} from './canvas_picking_door_edit_shared.js';
 import type { DoorArchAction } from './canvas_picking_door_arch_actions.js';
 import type { ArchSurface } from './canvas_picking_door_arch_target.js';
 import {
@@ -62,12 +66,14 @@ function ribbonTriangles(path: DoorArchPoint[], halfWidth: number): DoorArchPoin
 function archMeasurementPreview(
   App: AppContainer,
   surface: ArchSurface,
-  crown: DoorArchPoint,
+  high: DoorArchPoint,
+  low: DoorArchPoint,
   z: number,
   op: DoorArchAction['kind']
 ): SketchPlacementPreviewArgsLike {
   const width = surface.rect.maxX - surface.rect.minX;
-  const lineHeight = 0.0001;
+  const lineHeight = Math.max(0.0001, high.y - low.y);
+  const centerY = (high.y + low.y) / 2;
   const textScale = 0.9;
   const { verticalLabelOutset } = resolveCellMeasurementLabelOutsets(textScale);
   const clearanceMeasurements = buildRectClearanceMeasurementEntries({
@@ -75,8 +81,8 @@ function archMeasurementPreview(
     containerMaxX: surface.rect.maxX,
     containerMinY: surface.rect.minY,
     containerMaxY: surface.rect.maxY,
-    targetCenterX: crown.x,
-    targetCenterY: crown.y,
+    targetCenterX: high.x,
+    targetCenterY: centerY,
     targetWidth: width,
     targetHeight: lineHeight,
     z: z + 0.0025 * surface.face,
@@ -92,8 +98,8 @@ function archMeasurementPreview(
     anchor: surface.anchor,
     anchorParent: surface.anchor,
     kind: 'rod',
-    x: crown.x,
-    y: crown.y,
+    x: high.x,
+    y: centerY,
     z,
     w: width,
     h: lineHeight,
@@ -117,12 +123,13 @@ export function showDoorArchPreview(
   clearDoorArchPreview(marker);
   const vertices: number[] = [];
   const isCut = action.tool === 'cut';
-  let highest: { surface: ArchSurface; crown: DoorArchPoint; z: number; worldY: number } | undefined;
+  let measurement:
+    { surface: ArchSurface; high: DoorArchPoint; low: DoorArchPoint; z: number; worldY: number } | undefined;
   for (const { surface, rect, profile } of action.slices) {
-    const curve = isCut ? sampleDoorArch(rect, profile) : null;
-    const outline = curve ?? doorArchOutline(rect, profile);
-    const triangles = curve
-      ? ribbonTriangles(curve, action.kind === 'remove' ? 0.01 : 0.006)
+    const curves = isCut ? doorArchCutEdges(rect, profile) : null;
+    const outline = doorArchOutline(rect, profile);
+    const triangles = curves
+      ? curves.flatMap(curve => ribbonTriangles(curve, action.kind === 'remove' ? 0.01 : 0.006))
       : intersectDoorContours(outline, surface.contour ?? outline);
     const z = surface.z + (isCut ? 0.018 : 0.008) * surface.face;
     for (const { x, y } of triangles) {
@@ -130,12 +137,18 @@ export function showDoorArchPreview(
       vertices.push(point.x, point.y, point.z);
     }
     if (action.tool !== 'mirror' && triangles.length) {
-      let crown = (curve ?? triangles)[0]!;
-      for (const point of curve ?? triangles) {
-        if (point.y > crown.y) crown = point;
+      const points = curves?.flat() ?? triangles;
+      let high = points[0]!;
+      let low = high;
+      for (const point of points) {
+        if (point.y > high.y) high = point;
+        if (point.y < low.y) low = point;
       }
-      const worldY = surface.toWorld(new THREE.Vector3(crown.x, crown.y, z)).y;
-      if (!highest || worldY > highest.worldY + 1e-8) highest = { surface, crown, z, worldY };
+      if (!profile.shape) low = high;
+      if (profile.shape === 'arch-down') high = low;
+      const sign = profile.shape === 'arch-down' ? -1 : 1;
+      const worldY = sign * surface.toWorld(new THREE.Vector3(high.x, high.y, z)).y;
+      if (!measurement || worldY > measurement.worldY + 1e-8) measurement = { surface, high, low, z, worldY };
     }
   }
   if (!vertices.length) return false;
@@ -155,8 +168,9 @@ export function showDoorArchPreview(
       ? __matAreaRemove
       : __matAreaAdd;
   marker.visible = true;
-  if (highest) {
-    setSketchPreview?.(archMeasurementPreview(App, highest.surface, highest.crown, highest.z, action.kind));
+  if (measurement) {
+    const { surface, high, low, z } = measurement;
+    setSketchPreview?.(archMeasurementPreview(App, surface, high, low, z, action.kind));
   }
   return true;
 }

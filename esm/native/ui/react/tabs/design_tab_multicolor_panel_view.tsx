@@ -1,3 +1,4 @@
+import type { DoorPlacementShape } from '../../../../../types/maps.js';
 import type { ChangeEvent, ReactElement } from 'react';
 
 import { Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
@@ -33,8 +34,8 @@ type MirrorDraftFieldKey = 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWid
 export type MultiColorPanelViewProps = {
   embedded?: boolean;
   viewState: MultiColorPanelViewState;
-  mirrorArch: boolean;
-  onSetMirrorArch: (arched: boolean) => void;
+  mirrorShape: DoorPlacementShape;
+  onSetMirrorShape: (shape: DoorPlacementShape) => void;
   onToggleEnabled: (checked: boolean) => void;
   onFinishPaintMode: () => void;
   onPickBrush: (paintId: string, curtainPreset?: CurtainPreset) => void;
@@ -318,8 +319,8 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
                 />
                 <DoorArchShapeOptions
                   tool="mirror"
-                  arched={!!props.mirrorArch}
-                  onChange={props.onSetMirrorArch}
+                  shape={props.mirrorShape}
+                  onChange={props.onSetMirrorShape}
                 />
               </>
             ) : null}

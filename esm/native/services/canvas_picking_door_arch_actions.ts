@@ -1,5 +1,5 @@
 import type { AppContainer, GrooveLayoutEntry, MirrorLayoutEntry, ThreeLike } from '../../../types';
-import type { DoorArchRect } from '../../../types/maps.js';
+import type { DoorArchRect, DoorCurveShape } from '../../../types/maps.js';
 import {
   doorArchCutRange,
   doorArchesOverlap,
@@ -84,6 +84,7 @@ export function resolveDoorArchAction(args: {
   App: AppContainer;
   THREE: ThreeLike;
   tool: DoorArchTool;
+  shape: DoorCurveShape;
   hit: CanvasPickingClickHitState | null;
   raycaster: RaycasterLike;
 }): DoorArchAction | null {
@@ -139,6 +140,7 @@ export function resolveDoorArchAction(args: {
   const ui = __wp_ui(App);
   const slices = planDoorArch({
     tool,
+    shape: args.shape,
     target,
     widthCm: tool === 'mirror' ? ui.currentMirrorDraftWidthCm : ui.currentGrooveDraftWidthCm,
     heightCm: tool === 'groove' ? ui.currentGrooveDraftHeightCm : ui.currentMirrorDraftHeightCm,

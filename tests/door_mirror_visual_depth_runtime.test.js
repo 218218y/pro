@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import * as Three from 'three';
 import {
+  appendMirrorDoorSurfaceLayoutPlacement,
   createMirrorDoorVisual,
   makeArchedMirrorReflectorShape,
 } from '../esm/native/builder/visuals_and_contents_door_visual_mirror.ts';
@@ -186,5 +187,44 @@ test('arched mirror visuals attach a shaped planar reflector over the solid mirr
   reflector.geometry.dispose();
   mirror.material.dispose();
   reflector.material.dispose();
+  mirror.userData.__wpPlanarReflector.renderTarget.dispose();
+});
+
+test('an arched mirror and its reflection stay inside the contour left by a door cut', () => {
+  const parent = new Three.Group();
+  const rect = { minX: -0.3, maxX: 0.3, minY: -0.5, maxY: 0.5 };
+  const maxY = 0.2;
+  const mirror = appendMirrorDoorSurfaceLayoutPlacement({
+    App: {},
+    THREE: Three,
+    parent,
+    mat: new Three.MeshStandardMaterial(),
+    rect,
+    layout: { widthCm: 50, heightCm: 90, faceSign: -1, arch: { start: 0, end: 1, rise: 0.3 } },
+    clipContour: [
+      { x: -0.3, y: -0.5 },
+      { x: 0.3, y: -0.5 },
+      { x: 0.3, y: 0 },
+      { x: 0, y: maxY },
+      { x: -0.3, y: 0 },
+    ],
+    placementIndex: 0,
+    baseHalfDepthM: 0.01,
+    thickness: 0.02,
+    zSign: 1,
+    isSketch: false,
+    role: 'door_mirror_surface',
+  });
+  assert.ok(mirror);
+  assert.equal(parent.children[0], mirror);
+  const reflector = mirror.children.find(child => child.userData.__wpPlanarReflectorSurface);
+  assert.ok(reflector);
+  for (const mesh of [mirror, reflector]) {
+    mesh.geometry.computeBoundingBox();
+    assert.ok(mesh.geometry.boundingBox.max.y + mirror.position.y <= maxY + 1e-6);
+    assert.ok(mesh.geometry.boundingBox.max.y + mirror.position.y >= maxY - 0.01);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  }
   mirror.userData.__wpPlanarReflector.renderTarget.dispose();
 });

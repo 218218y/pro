@@ -208,7 +208,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         raycaster: __wpRaycaster,
         mouse: __wpMouse,
       });
-      const action = resolveDoorArchAction({ App, THREE, tool: archTool, hit, raycaster: __wpRaycaster });
+      const action = resolveDoorArchAction({ App, THREE, ...archTool, hit, raycaster: __wpRaycaster });
       return !!action && showDoorArchPreview(cutMarker, App, THREE, action, __setSketchPreview);
     }
 

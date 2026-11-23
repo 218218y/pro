@@ -6,12 +6,9 @@ import { applyDoorHandles } from '../esm/native/builder/handles_apply_doors.ts';
 import {
   appendHingedDoorHardware,
   bindHingedDoorHardwareRuntimeContext,
-  createHingedDoorHardwareRenderState,
 } from '../esm/native/builder/render_hinged_door_hardware.ts';
-import {
-  HINGED_DOOR_HARDWARE_RENDER_POLICY,
-  HINGED_DOOR_RENDER_POLICY,
-} from '../esm/shared/dimensions/door_system_policy.ts';
+import { createBuilderHingedDoorHardwareRenderState } from '../esm/native/builder/hinged_door_motion_metadata.ts';
+import { HINGED_DOOR_RENDER_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 import { STANDARD_HANDLE_RENDER_POLICY } from '../esm/shared/dimensions/handle_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
@@ -141,9 +138,8 @@ function installInitialHinges(args: {
   isLeftHinge: boolean;
   carcassMountFaceX?: number;
 }): void {
-  const state = createHingedDoorHardwareRenderState(
+  const state = createBuilderHingedDoorHardwareRenderState(
     FakeTHREE as any,
-    HINGED_DOOR_HARDWARE_RENDER_POLICY,
     HINGED_DOOR_RENDER_POLICY.visualThicknessM
   );
   assert.ok(state);

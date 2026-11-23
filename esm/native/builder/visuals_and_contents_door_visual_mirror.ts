@@ -3,9 +3,9 @@
 // Owns the mirror-door construction path (wood backing + one-or-many mirror placements).
 // Kept separate so the canonical `createDoorVisual(...)` seam stays readable.
 
-import { doorArchOutline } from '../../shared/door_arch_geometry.js';
-import type { DoorArchProfile } from '../../../types/maps.js';
-import { createDoorContourGeometry } from './door_contour_geometry.js';
+import { clipDoorContour, doorArchOutline } from '../../shared/door_arch_geometry.js';
+import type { DoorArchPoint, DoorArchProfile } from '../../../types/maps.js';
+import { createDoorContourRegionsGeometry } from './door_contour_geometry.js';
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { installPlanarMirrorReflector } from '../runtime/render_access.js';
 import { DOOR_MIRROR_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
@@ -133,7 +133,17 @@ export function createArchedMirrorGeometry(
   arch: DoorArchProfile
 ) {
   const rect = { minX: -width / 2, maxX: width / 2, minY: -height / 2, maxY: height / 2 };
-  const geometry = createDoorContourGeometry(THREE, doorArchOutline(rect, arch), depth);
+  return createMirrorContourGeometry(THREE, width, height, depth, [doorArchOutline(rect, arch)]);
+}
+
+function createMirrorContourGeometry(
+  THREE: ThreeLike,
+  width: number,
+  height: number,
+  depth: number,
+  contours: DoorArchPoint[][]
+) {
+  const geometry = createDoorContourRegionsGeometry(THREE, contours, depth);
   if (depth !== 0) return geometry;
 
   // ShapeGeometry uses metre coordinates for UVs. The planar material masks
@@ -201,7 +211,8 @@ export function appendMirrorDoorSurfacePlacement(args: {
   groovePartId?: string | null;
   tagDoorVisualPart?: TagDoorVisualPartFn | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
-}): Object3DLike {
+  clipContour?: readonly DoorArchPoint[];
+}): Object3DLike | null {
   const tagDoorVisualPart: TagDoorVisualPartFn =
     typeof args.tagDoorVisualPart === 'function' ? args.tagDoorVisualPart : (_node, _visualRole) => undefined;
   const depthLayout = resolveMirrorDoorDepthLayout(args.thickness);
@@ -209,10 +220,35 @@ export function appendMirrorDoorSurfacePlacement(args: {
   const surfaceCenterZ = args.baseHalfDepthM + depthLayout.adhesiveGap + depthLayout.mirrorThick / 2;
   const arch = args.placementLayout?.arch;
   const { mirrorWidthM, mirrorHeightM } = args.placement;
+  const { offsetX, offsetY } = args.placement;
+  let contours: DoorArchPoint[][] | undefined;
+  if (args.clipContour) {
+    const minX = offsetX - mirrorWidthM / 2;
+    const maxX = offsetX + mirrorWidthM / 2;
+    const minY = offsetY - mirrorHeightM / 2;
+    const maxY = offsetY + mirrorHeightM / 2;
+    const outline = arch
+      ? doorArchOutline({ minX, maxX, minY, maxY }, arch)
+      : [
+          { x: minX, y: minY },
+          { x: maxX, y: minY },
+          { x: maxX, y: maxY },
+          { x: minX, y: maxY },
+        ];
+    contours = clipDoorContour(outline, args.clipContour).map(region =>
+      region.map(({ x, y }) => ({ x: x - offsetX, y: y - offsetY }))
+    );
+    if (!contours.length) return null;
+  }
+  const createContour = (depth: number) =>
+    contours
+      ? createMirrorContourGeometry(args.THREE, mirrorWidthM, mirrorHeightM, depth, contours)
+      : arch
+        ? createArchedMirrorGeometry(args.THREE, mirrorWidthM, mirrorHeightM, depth, arch)
+        : null;
   const mirrorMesh = new args.THREE.Mesh(
-    arch
-      ? createArchedMirrorGeometry(args.THREE, mirrorWidthM, mirrorHeightM, depthLayout.mirrorThick, arch)
-      : new args.THREE.BoxGeometry(mirrorWidthM, mirrorHeightM, depthLayout.mirrorThick),
+    createContour(depthLayout.mirrorThick) ??
+      new args.THREE.BoxGeometry(mirrorWidthM, mirrorHeightM, depthLayout.mirrorThick),
     args.mat
   );
   mirrorMesh.userData = mirrorMesh.userData || {};
@@ -234,21 +270,29 @@ export function appendMirrorDoorSurfacePlacement(args: {
   tagDoorVisualPart(mirrorMesh, args.role);
   mirrorMesh.position.set(args.placement.offsetX, args.placement.offsetY, surfaceCenterZ * placementFaceSign);
   try {
+    const shape = contours
+      ? makeClippedMirrorReflectorShape(
+          args.THREE,
+          mirrorWidthM,
+          mirrorHeightM,
+          depthLayout.mirrorThick,
+          contours,
+          placementFaceSign
+        )
+      : arch
+        ? makeArchedMirrorReflectorShape(
+            args.THREE,
+            mirrorWidthM,
+            mirrorHeightM,
+            depthLayout.mirrorThick,
+            arch,
+            placementFaceSign
+          )
+        : null;
     installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
       faceSign: placementFaceSign,
       sketchMode: args.isSketch,
-      ...(arch
-        ? {
-            shape: makeArchedMirrorReflectorShape(
-              args.THREE,
-              mirrorWidthM,
-              mirrorHeightM,
-              depthLayout.mirrorThick,
-              arch,
-              placementFaceSign
-            ),
-          }
-        : {}),
+      ...(shape ? { shape } : {}),
     });
   } catch {
     // Keep the existing envMap mirror material for cube mode.
@@ -271,9 +315,7 @@ export function appendMirrorDoorSurfacePlacement(args: {
           Math.max(0.25, args.placement.mirrorWidthM * 3),
           Math.max(0.25, args.placement.mirrorHeightM * 3)
         );
-        const markGeo = arch
-          ? createArchedMirrorGeometry(args.THREE, mirrorWidthM, mirrorHeightM, 0, arch)
-          : new args.THREE.PlaneGeometry(mirrorWidthM, mirrorHeightM);
+        const markGeo = createContour(0) ?? new args.THREE.PlaneGeometry(mirrorWidthM, mirrorHeightM);
         const markMat = new args.THREE.MeshBasicMaterial({
           map: tex,
           transparent: true,
@@ -316,7 +358,8 @@ export function appendMirrorDoorSurfaceLayoutPlacement(args: {
   groovePartId?: string | null;
   tagDoorVisualPart?: TagDoorVisualPartFn | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;
-}): Object3DLike {
+  clipContour?: readonly DoorArchPoint[];
+}): Object3DLike | null {
   const placement = resolveMirrorPlacementInRect({ rect: args.rect, layout: args.layout });
   return appendMirrorDoorSurfacePlacement({
     App: args.App,
@@ -334,7 +377,29 @@ export function appendMirrorDoorSurfaceLayoutPlacement(args: {
     groovePartId: args.groovePartId ?? null,
     tagDoorVisualPart: args.tagDoorVisualPart ?? null,
     mirrorReflectorProfile: args.mirrorReflectorProfile ?? null,
+    ...(args.clipContour ? { clipContour: args.clipContour } : {}),
   });
+}
+
+function makeClippedMirrorReflectorShape(
+  THREE: ThreeLike,
+  widthM: number,
+  heightM: number,
+  depthM: number,
+  contours: DoorArchPoint[][],
+  faceSign: number
+) {
+  return {
+    widthM,
+    heightM,
+    depthM,
+    createPlane: (w: number, h: number) => {
+      const scaleX = (w / widthM) * faceSign;
+      const scaleY = h / heightM;
+      const scaled = contours.map(region => region.map(({ x, y }) => ({ x: x * scaleX, y: y * scaleY })));
+      return createMirrorContourGeometry(THREE, w, h, 0, scaled);
+    },
+  };
 }
 
 export function applyMirrorReflectorProfileMetadata(

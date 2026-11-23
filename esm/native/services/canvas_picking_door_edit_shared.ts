@@ -1,15 +1,18 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import type { DoorCurveShape } from '../../../types/maps.js';
 
 import {
   containsDoorArchPoint,
+  doorArchCutEdges,
   doorArchCutRange,
   doorArchOutline,
   doorArchesOverlap,
-  doorArchY,
+  doorArchSpan,
   doorContourSpanAtX,
   intersectDoorContours,
   readDoorArchCut,
-  sampleDoorArch,
+  readDoorPlacementShape,
+  resolveDoorArchCutSlice,
 } from '../../shared/door_arch_geometry.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { isCanonicalDoorVisualMapKey } from '../../shared/door_visual_key_contracts_shared.js';
@@ -49,16 +52,17 @@ import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 
 export {
   containsDoorArchPoint,
+  doorArchCutEdges,
   doorArchCutRange,
   doorArchOutline,
   doorArchesOverlap,
-  doorArchY,
+  doorArchSpan,
   doorContourSpanAtX,
   intersectDoorContours,
   getDoorsArray,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
-  sampleDoorArch,
+  resolveDoorArchCutSlice,
   writeDoorArchMaps,
   buildDoorVisualLookupKeys,
   buildGrooveLayoutFromHit,
@@ -168,17 +172,17 @@ export type DoorArchTool = 'cut' | 'mirror' | 'groove';
 export function readActiveDoorArchTool(
   App: AppContainer,
   modes: { split: boolean; groove: boolean; paint: boolean; splitVariant: string }
-): DoorArchTool | null {
+): { tool: DoorArchTool; shape: DoorCurveShape } | null {
   const ui = __wp_ui(App);
-  if (modes.split && modes.splitVariant === 'custom' && ui.doorCutArch === true) return 'cut';
-  if (modes.groove && !ui.isChestMode && ui.grooveManualEnabled === true && ui.doorGrooveArch === true)
-    return 'groove';
-  if (
-    modes.paint &&
-    ui.doorMirrorArch === true &&
-    getToolsServiceMaybe(App)?.getPaintColor?.() === 'mirror'
-  ) {
-    return 'mirror';
+  const cut = readDoorPlacementShape(ui.doorCutShape);
+  if (modes.split && modes.splitVariant === 'custom' && cut !== 'straight')
+    return { tool: 'cut', shape: cut };
+  const groove = readDoorPlacementShape(ui.doorGrooveShape);
+  if (modes.groove && !ui.isChestMode && ui.grooveManualEnabled === true && groove !== 'straight')
+    return { tool: 'groove', shape: groove };
+  const mirror = readDoorPlacementShape(ui.doorMirrorShape);
+  if (modes.paint && mirror !== 'straight' && getToolsServiceMaybe(App)?.getPaintColor?.() === 'mirror') {
+    return { tool: 'mirror', shape: mirror };
   }
   return null;
 }

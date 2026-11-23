@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T07:57:30.268Z",
+  "generatedAt": "2026-11-23T08:27:10.845Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -3032,91 +3032,91 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 39,
+      "line": 45,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 42,
+      "line": 48,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "return resolveAdhesiveGlassKind(layout?.surfaceKind) || fallbackKind;"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 47,
+      "line": 53,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
-    },
-    {
-      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 52,
-      "term": "fallbackKind",
-      "category": "domain-default",
-      "text": "surfaceKind: readDoorVisualSurfaceKind(layout, fallbackKind),"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
       "line": 58,
       "term": "fallbackKind",
       "category": "domain-default",
+      "text": "surfaceKind: readDoorVisualSurfaceKind(layout, fallbackKind),"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "line": 64,
+      "term": "fallbackKind",
+      "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 63,
+      "line": 69,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "const kind = readDoorVisualSurfaceKind(layout, fallbackKind);"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 95,
+      "line": 101,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "fallbackFaceSign: number"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 100,
+      "line": 106,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) !== -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 107,
+      "line": 113,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "function hasInsideFullMirrorLayout(mirrorLayout: MirrorLayoutList | null, fallbackFaceSign: number): boolean {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 111,
+      "line": 117,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) === -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 179,
+      "line": 213,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const surfaceFallbackKind = isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 183,
+      "line": 217,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "hasMixedDoorSurfaceKinds(mirrorLayout, surfaceFallbackKind)"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 185,
+      "line": 219,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const mixedLayout = materializeDoorVisualSurfaceKinds(mirrorLayout, surfaceFallbackKind);"

@@ -6,7 +6,10 @@ import {
 } from '../features/door_authoring/api.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import { createDoorContourGeometry } from './door_contour_geometry.js';
-import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
+import {
+  appendMirrorDoorSurfaceLayoutPlacement,
+  createMirrorDoorVisual,
+} from './visuals_and_contents_door_visual_mirror.js';
 import { createMixedSurfaceDoorVisual } from './visuals_and_contents_door_visual_mixed_surfaces.js';
 import {
   createAdhesiveGlassDoorVisual,
@@ -17,7 +20,10 @@ import {
   createStyledFullMirrorDoorVisual,
   createStyledMirrorDoorVisual,
 } from './visuals_and_contents_door_visual_mirror_styled.js';
-import { createDoorVisualPartTagger } from './visuals_and_contents_door_visual_tagging.js';
+import {
+  applyMirrorPlacementRectMetadata,
+  createDoorVisualPartTagger,
+} from './visuals_and_contents_door_visual_tagging.js';
 import {
   createFlatDoorVisual,
   createGlassDoorVisual,
@@ -151,8 +157,12 @@ export function createDoorVisual(
   const __forceCurtainFix = !!forceCurtainFix;
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
 
-  if (options?.cutContour) {
-    const slab = new THREE.Mesh(createDoorContourGeometry(THREE, options.cutContour, thickness), mat);
+  const cutContour = options?.cutContour;
+  if (cutContour) {
+    tagDoorVisualPart(visualGroup);
+    applyMirrorPlacementRectMetadata(visualGroup, w, h);
+    visualGroup.userData.__wpDoorSurfaceContour = cutContour;
+    const slab = new THREE.Mesh(createDoorContourGeometry(THREE, cutContour, thickness), mat);
     tagDoorVisualPart(slab, 'door_flat_center_panel');
     addOutlines(slab);
     visualGroup.add(slab);
@@ -170,8 +180,32 @@ export function createDoorVisual(
       zOffset: (thickness / 2) * zSign,
       grooveLayout: options.grooveLayout ?? null,
       linesCountOverride: options.grooveLinesCount ?? null,
-      contour: options.cutContour,
+      contour: cutContour,
     });
+    if (options?.cutMirrorMaterial && mirrorLayout) {
+      const rect = { minX: -w / 2, maxX: w / 2, minY: -h / 2, maxY: h / 2 };
+      mirrorLayout.forEach((layout, placementIndex) => {
+        const surfaceKind = resolveAdhesiveGlassKind(layout.surfaceKind);
+        if (surfaceKind) return;
+        appendMirrorDoorSurfaceLayoutPlacement({
+          App,
+          THREE,
+          parent: visualGroup,
+          mat: options.cutMirrorMaterial,
+          rect,
+          layout,
+          placementIndex,
+          clipContour: cutContour,
+          baseHalfDepthM: thickness / 2,
+          thickness,
+          zSign,
+          isSketch,
+          role: 'door_mirror_surface',
+          groovePartId,
+          tagDoorVisualPart,
+        });
+      });
+    }
     return visualGroup;
   }
 

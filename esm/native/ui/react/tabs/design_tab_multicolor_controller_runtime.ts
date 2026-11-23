@@ -1,3 +1,4 @@
+import type { DoorPlacementShape } from '../../../../../types/maps.js';
 import type { AppContainer, ToolsNamespaceLike, UnknownRecord } from '../../../../../types';
 
 import { MODES, getTools, setUiScalarSoft } from '../../../services/api.js';
@@ -36,7 +37,7 @@ export type DesignTabMulticolorController = {
   syncPaintColorFromTools: () => string | null;
   toggleEnabled: (checked: boolean) => void;
   setCurtain: (next: CurtainPreset) => void;
-  setMirrorArch: (arched: boolean) => void;
+  setMirrorShape: (shape: DoorPlacementShape) => void;
   setMirrorDraftField: (key: DesignTabMirrorDraftKey, value: string) => void;
   finishPaintMode: () => void;
   enterPaintMode: (paintId: string, curtainPreset?: CurtainPreset) => void;
@@ -158,8 +159,8 @@ export function createDesignTabMulticolorController(
       if (!checked) finishPaintMode();
     },
     setCurtain,
-    setMirrorArch(arched) {
-      setUiScalarSoftImpl(args.app, 'doorMirrorArch', arched, { source: 'react:designTab:mirrorShape' });
+    setMirrorShape(shape) {
+      setUiScalarSoftImpl(args.app, 'doorMirrorShape', shape, { source: 'react:designTab:mirrorShape' });
     },
     setMirrorDraftField(key: DesignTabMirrorDraftKey, value: string) {
       try {

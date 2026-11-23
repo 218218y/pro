@@ -1,4 +1,9 @@
-import { readDoorArchCut, sampleDoorArch } from '../../shared/door_arch_geometry.js';
+import type { DoorArchPoint } from '../../../types/maps.js';
+import {
+  doorArchCutEdges,
+  readDoorArchCut,
+  resolveDoorArchCutSlice,
+} from '../../shared/door_arch_geometry.js';
 import {
   HINGED_DOOR_RENDER_POLICY,
   HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
@@ -135,16 +140,14 @@ export function appendArchedHingedDoorOps(
     minY: ctx.doorBottomY,
     maxY: ctx.doorBottomY + ctx.totalDoorSpace,
   };
-  const curve = sampleDoorArch(
-    { ...rect, maxY: rect.minY + cut.peak * ctx.totalDoorSpace },
-    {
-      start: cut.profile.start,
-      end: cut.profile.end,
-      rise: cut.profile.rise / cut.peak,
-    }
-  );
-  const curveLow = Math.min(...curve.map(point => point.y));
-  const curveHigh = Math.max(...curve.map(point => point.y));
+  const slice = resolveDoorArchCutSlice(rect, cut);
+  const curved = doorArchCutEdges(slice.rect, slice.profile).map(curve => ({
+    min: Math.min(...curve.map(point => point.y)),
+    max: Math.max(...curve.map(point => point.y)),
+    curve,
+  }));
+  const curveLow = curved[0]!.min;
+  const curveHigh = curved.at(-1)!.max;
   const minSegment = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM;
   if (!(halfWidth > 0) || curveLow - gap - rect.minY < minSegment || rect.maxY - curveHigh - gap < minSegment)
     return false;
@@ -161,10 +164,9 @@ export function appendArchedHingedDoorOps(
   const clearance = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM + minSegment;
   if (straight.some(y => y > curveLow - clearance && y < curveHigh + clearance)) return false;
 
-  const boundaries = [
-    ...straight.map(y => ({ min: y, max: y, curved: false })),
-    { min: curveLow, max: curveHigh, curved: true },
-  ].sort((a, b) => a.min - b.min);
+  const boundaries = [...straight.map(y => ({ min: y, max: y, curve: null })), ...curved].sort(
+    (a, b) => a.min - b.min
+  );
   const count = boundaries.length + 1;
   const fullCurtain = ctx.resolveCurtainForPart(state.sourceKey, null);
   const fullGroove = ctx.grooveValSafe(state.currentDoorId, 'full', false);
@@ -175,19 +177,24 @@ export function appendArchedHingedDoorOps(
     const lower = boundaries[index - 1];
     const upper = boundaries[index];
     const partId = partIdForSegment(state, count, index);
-    const bottom = lower ? lower.min + (lower.curved ? gap : splitHalfGap) : rect.minY;
-    const top = upper ? upper.max - (upper.curved ? gap : splitHalfGap) : rect.maxY;
+    const bottom = lower ? lower.min + (lower.curve ? gap : splitHalfGap) : rect.minY;
+    const top = upper ? upper.max - (upper.curve ? gap : splitHalfGap) : rect.maxY;
     const segY = (bottom + top) / 2;
-    const safeHandleBottom = lower?.curved ? curveHigh + gap : bottom;
-    const safeHandleTop = upper?.curved ? curveLow - gap : top;
-    const contour =
-      lower?.curved || upper?.curved
-        ? [
-            { x: -halfWidth, y: (lower?.curved ? top - halfClearance : bottom + halfClearance) - segY },
-            ...curve.map(point => ({ x: point.x, y: point.y - segY + (lower?.curved ? gap : -gap) })),
-            { x: halfWidth, y: (lower?.curved ? top - halfClearance : bottom + halfClearance) - segY },
-          ]
-        : null;
+    const safeHandleBottom = lower?.curve ? lower.max + gap : bottom;
+    const safeHandleTop = upper?.curve ? upper.min - gap : top;
+    const ellipseInsert = !!(slice.profile.shape === 'ellipse' && lower?.curve && upper?.curve);
+    const lowerEdge = lower?.curve?.map(point => ({ x: point.x, y: point.y - segY + gap }));
+    const upperEdge = upper?.curve?.map(point => ({ x: point.x, y: point.y - segY - gap }));
+    let contour: DoorArchPoint[] | null = null;
+    if (lowerEdge && upperEdge) {
+      contour = joinCurvedCutEdges(lowerEdge, upperEdge);
+    } else {
+      const curve = lowerEdge ?? upperEdge;
+      if (curve) {
+        const flatY = (lowerEdge ? top - halfClearance : bottom + halfClearance) - segY;
+        contour = [{ x: -halfWidth, y: flatY }, ...curve, { x: halfWidth, y: flatY }];
+      }
+    }
     pushHingedDoorSegment(ctx, state, {
       partId,
       segY,
@@ -195,10 +202,38 @@ export function appendArchedHingedDoorOps(
       curtainVal: ctx.resolveCurtainForPart(partId, fullCurtain),
       grooveFlag: grooveForPart(ctx, partId, fullGroove),
       handleAbsY: clampHandleAbsY(ctx, defaultHandle, safeHandleBottom, safeHandleTop, partId),
-      allowHandle: true,
+      allowHandle: !ellipseInsert,
+      ...(ellipseInsert ? { fixedClosed: true } : {}),
       colorVal: ctx.getPartColorValueSafe(partId),
       ...(contour ? { archCut: { contour, baseMinY: rect.minY - segY, baseMaxY: rect.maxY - segY } } : {}),
     });
   }
   return true;
+}
+
+function joinCurvedCutEdges(lower: DoorArchPoint[], upper: DoorArchPoint[]): DoorArchPoint[] {
+  const bottom: DoorArchPoint[] = [];
+  const top: DoorArchPoint[] = [];
+  for (const [index, low] of lower.entries()) {
+    const high = upper[index]!;
+    const span = high.y - low.y;
+    const previous = lower[index - 1];
+    const previousHigh = upper[index - 1];
+    if (previous && previousHigh) {
+      const previousSpan = previousHigh.y - previous.y;
+      if (span * previousSpan < 0) {
+        const ratio = previousSpan / (previousSpan - span);
+        const join = {
+          x: previous.x + ratio * (low.x - previous.x),
+          y: previous.y + ratio * (low.y - previous.y),
+        };
+        bottom.push(join);
+        top.push(join);
+      }
+    }
+    if (span <= 0) continue;
+    bottom.push(low);
+    top.push(high);
+  }
+  return [...bottom, ...top.reverse()];
 }

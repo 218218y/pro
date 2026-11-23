@@ -1,3 +1,4 @@
+import type { DoorPlacementShape } from '../../../../../types/maps.js';
 import type { CorniceDimensionsCm, CorniceDimensionOverridesCm } from '../../../../../types/cornice_type.js';
 import type { FrontColorShelfInheritanceMode } from '../../../features/front_color_shelf_inheritance.js';
 import type { GrooveOrientation } from '../../../../../types';
@@ -29,10 +30,10 @@ export type DesignTabDoorFeaturesSectionModel = {
   grooveLinesCountIsAuto: boolean;
   grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
-  doorCutArch: boolean;
-  doorGrooveArch: boolean;
-  setDoorCutArch: (arched: boolean) => void;
-  setDoorGrooveArch: (arched: boolean) => void;
+  doorCutShape: DoorPlacementShape;
+  doorGrooveShape: DoorPlacementShape;
+  setDoorCutShape: (shape: DoorPlacementShape) => void;
+  setDoorGrooveShape: (shape: DoorPlacementShape) => void;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
@@ -108,8 +109,8 @@ export type DesignTabControllerState = {
   grooveLinesCountIsAuto: boolean;
   grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
-  doorCutArch: boolean;
-  doorGrooveArch: boolean;
+  doorCutShape: DoorPlacementShape;
+  doorGrooveShape: DoorPlacementShape;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;

@@ -1,3 +1,4 @@
+import type { DoorPlacementShape } from '../../../../../types/maps.js';
 import type { UiStateLike } from '../../../../../types';
 import type { CorniceDimensionOverridesCm } from '../../../../../types/cornice_type.js';
 import {
@@ -48,8 +49,8 @@ export type DesignTabUiState = {
   isChestMode: boolean;
   groovesEnabled: boolean;
   grooveManualEnabled: boolean;
-  doorCutArch: boolean;
-  doorGrooveArch: boolean;
+  doorCutShape: DoorPlacementShape;
+  doorGrooveShape: DoorPlacementShape;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
@@ -138,8 +139,8 @@ export function readDesignTabUiState(ui: UiStateLike | null | undefined): Design
     isChestMode: readBoolean(rec?.isChestMode),
     groovesEnabled: readBoolean(rec?.groovesEnabled),
     grooveManualEnabled: readBoolean(rec?.grooveManualEnabled),
-    doorCutArch: ui?.doorCutArch === true,
-    doorGrooveArch: ui?.doorGrooveArch === true,
+    doorCutShape: ui?.doorCutShape ?? 'straight',
+    doorGrooveShape: ui?.doorGrooveShape ?? 'straight',
     grooveDraftHeightCm: readDraftString(rec?.currentGrooveDraftHeightCm),
     grooveDraftWidthCm: readDraftString(rec?.currentGrooveDraftWidthCm),
     grooveOrientation: rec?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical',

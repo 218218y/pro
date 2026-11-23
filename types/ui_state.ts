@@ -6,6 +6,7 @@ import type { CorniceDimensionOverridesCm } from './cornice_type.js';
 // store.ui must be represented here explicitly.
 
 import type { UnknownRecord } from './common';
+import type { DoorPlacementShape } from './maps.js';
 import type { UiRawInputsLike } from './ui_raw';
 
 export type ShoeDrawerAutoBasePreviousType = 'plinth' | 'legs' | 'none' | null;
@@ -48,9 +49,9 @@ export interface UiState {
   grooveManualEnabled?: boolean;
   currentGrooveDraftHeightCm?: string;
   currentGrooveDraftWidthCm?: string;
-  doorCutArch?: boolean;
-  doorMirrorArch?: boolean;
-  doorGrooveArch?: boolean;
+  doorCutShape?: DoorPlacementShape;
+  doorMirrorShape?: DoorPlacementShape;
+  doorGrooveShape?: DoorPlacementShape;
   currentGrooveOrientation?: 'vertical' | 'horizontal';
   currentMirrorDraftHeightCm?: string | number;
   currentMirrorDraftWidthCm?: string | number;

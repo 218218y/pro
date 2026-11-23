@@ -1,4 +1,4 @@
-import { doorArchY, intersectDoorContours } from '../../shared/door_arch_geometry.js';
+import { doorArchSpan, intersectDoorContours } from '../../shared/door_arch_geometry.js';
 import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import { readGrooveLayoutList, resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
@@ -57,7 +57,6 @@ export function appendGrooveStrips(args: {
   };
   visualGroup.userData.__wpGrooveSurfaceZ = zOffset;
   visualGroup.userData.__wpGrooveSurfaceZSign = zSign;
-  if (contour) visualGroup.userData.__wpGrooveSurfaceContour = contour;
   if (!hasGrooves) return;
 
   const grooveMat = getCachedDoorVisualMaterial(
@@ -97,15 +96,15 @@ export function appendGrooveStrips(args: {
     };
     for (let i = 1; i <= stripesCount; i++) {
       const crossOffset = -distributionSpan / 2 + i * gap;
-      const top = arch ? doorArchY(archRect, arch, placement.centerX + crossOffset) : archRect.maxY;
+      const { minY, maxY } = arch ? doorArchSpan(archRect, arch, placement.centerX + crossOffset) : archRect;
       const height = arch
         ? Math.max(
             DOOR_GROOVE_RENDER_POLICY.stripWidthM,
-            top - archRect.minY - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
+            maxY - minY - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
           )
         : geometryHeight;
       const x = placement.centerX + (isHorizontal ? 0 : crossOffset);
-      const y = arch ? (archRect.minY + top) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0);
+      const y = arch ? (minY + maxY) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0);
       const z = zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign;
       if (contour) {
         const x0 = x - geometryWidth / 2;

@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import { createApplyHingedDoorsOps } from '../esm/native/builder/render_door_ops_hinged.ts';
 import {
   attachHingedDoorHardware,
-  createHingedDoorHardwareRenderState,
   readHingedDoorHardwareRuntimeContext,
 } from '../esm/native/builder/render_hinged_door_hardware.ts';
+import { createBuilderHingedDoorHardwareRenderState } from '../esm/native/builder/hinged_door_motion_metadata.ts';
 import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 import {
   resolveHingedDoorMotionFrameX,
@@ -532,7 +532,7 @@ test('hinge hardware mirrors its door-back geometry for a negative front directi
   const doorGroup = new THREE.Group();
   mount.add(doorGroup);
   doorGroup.position.set(0, 0.9, -0.3);
-  const state = createHingedDoorHardwareRenderState(THREE as any, HINGED_DOOR_HARDWARE_RENDER_POLICY, 0.018);
+  const state = createBuilderHingedDoorHardwareRenderState(THREE as any, 0.018);
 
   attachHingedDoorHardware({
     THREE: THREE as any,
@@ -578,7 +578,7 @@ test('the hinge cup and carcass mounts fit the real side of the curved lower lea
   const wardrobeGroup = new THREE.Group();
   const doorGroup = new THREE.Group();
   doorGroup.position.y = 0.9;
-  const state = createHingedDoorHardwareRenderState(THREE, HINGED_DOOR_HARDWARE_RENDER_POLICY, 0.02);
+  const state = createBuilderHingedDoorHardwareRenderState(THREE, 0.02);
   assert.ok(state);
   const edge = 0.248;
   assert.equal(

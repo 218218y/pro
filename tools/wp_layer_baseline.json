@@ -3760,7 +3760,7 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["doorArchY", "intersectDoorContours"],
+        "importedSymbols": ["doorArchSpan", "intersectDoorContours"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3816,7 +3816,7 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["readDoorArchCut", "sampleDoorArch"],
+        "importedSymbols": ["doorArchCutEdges", "readDoorArchCut", "resolveDoorArchCutSlice"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3830,7 +3830,7 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["doorArchOutline"],
+        "importedSymbols": ["clipDoorContour", "doorArchOutline"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3846,20 +3846,36 @@
         "kind": "value",
         "importedSymbols": [
           "containsDoorArchPoint",
+          "doorArchCutEdges",
           "doorArchCutRange",
           "doorArchOutline",
           "doorArchesOverlap",
-          "doorArchY",
+          "doorArchSpan",
           "doorContourSpanAtX",
           "intersectDoorContours",
           "readDoorArchCut",
-          "sampleDoorArch"
+          "readDoorPlacementShape",
+          "resolveDoorArchCutSlice"
         ],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
       "reason": "One curve and codec are shared by project maps, pointer preview and mesh generation.",
       "id": "door-arch-canvas-picking-door-edit-shared-door-arch-geometry"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/hinged_door_motion_metadata.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["doorContourSpanAtX"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "Hinge clearance follows the same contour as the manufactured front, including leaves curved at both ends.",
+      "id": "door-arch-hinged-door-hardware-contour"
     },
     {
       "from": "services",

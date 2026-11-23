@@ -28,6 +28,7 @@ export function pushHingedDoorSegment(
     grooveFlag: unknown;
     handleAbsY: number;
     allowHandle: boolean;
+    fixedClosed?: boolean;
     colorVal: string | null;
     archCut?: HingedDoorArchCutRender;
   }
@@ -54,8 +55,9 @@ export function pushHingedDoorSegment(
   const op = attachHiddenModuleDoors(
     {
       fixedClosed:
-        ctx.winterBraceDoorPlan.fixedBelowY !== null &&
-        args.segY + args.segH / 2 <= ctx.winterBraceDoorPlan.fixedBelowY + 1e-6,
+        args.fixedClosed === true ||
+        (ctx.winterBraceDoorPlan.fixedBelowY !== null &&
+          args.segY + args.segH / 2 <= ctx.winterBraceDoorPlan.fixedBelowY + 1e-6),
       partId: args.partId,
       ...(args.archCut ? { archCut: args.archCut } : {}),
       moduleIndex: ctx.index,

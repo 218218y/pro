@@ -241,7 +241,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
         const doorVisualOptions = {
           grooveLayout: resolveGrooveLayout(cfg, partId),
-          ...(doorOp.archCut ? { cutContour: doorOp.archCut.contour } : {}),
+          ...(doorOp.archCut ? { cutContour: doorOp.archCut.contour, cutMirrorMaterial: mirrorMat } : {}),
           ...(glassFrameStyle ? { glassFrameStyle } : null),
           ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
         };

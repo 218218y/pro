@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Vector3 } from 'three';
 
 import {
   computeCustomSplitCutsY,
@@ -13,6 +14,16 @@ import { readHingedDoorOp } from '../esm/native/builder/render_door_ops_shared_o
 import { readSplitDoorsMapValue } from '../esm/native/features/project_config/project_config_map_readers.ts';
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access.ts';
 import { createHingedDoorIterationState } from '../esm/native/builder/hinged_doors_module_ops_iteration.ts';
+import { doorArchCutEdges, doorArchSpan } from '../esm/shared/door_arch_geometry.ts';
+import {
+  makeDoorArchCut,
+  planDoorArch,
+  readDoorArchCutSlice,
+  hitsDoorArchSlice,
+  type ArchSurface,
+} from '../esm/native/services/canvas_picking_door_arch_target.ts';
+import type { DoorCurveShape } from '../types/maps.js';
+import type { Vector3Like } from '../types/three_like.js';
 
 function createCtx(overrides: Record<string, unknown> = {}) {
   const base = {
@@ -226,5 +237,100 @@ test('a saved arched cut emits matching curved edges between two straight cuts',
     assert.equal(point.x, other.x);
     const clearance = upper.y + other.y - (lower.y + point.y);
     assert.ok(clearance > 0 && clearance < 0.02);
+  }
+});
+
+test('new shapes use the same geometry on single and paired cuts, CNC and mirrors', () => {
+  const rect = { minX: -0.24, maxX: 0.24, minY: 0, maxY: 2 };
+  const makeSurface = (key: string): ArchSurface => ({
+    key,
+    rect,
+    z: 0,
+    face: 1,
+    anchor: {} as ArchSurface['anchor'],
+    group: {} as ArchSurface['group'],
+    toWorld: point => point,
+    toLocal: point => point,
+  });
+  const left = makeSurface('splitarch_d5');
+  const right = makeSurface('splitarch_d6');
+  const offsetX = 0.484;
+  const y = 1;
+  for (const shape of ['arch-down', 'arch-both', 'ellipse'] as const) {
+    for (const tool of ['cut', 'groove', 'mirror'] as const) {
+      for (const paired of [false, true]) {
+        const point = new Vector3(paired ? offsetX / 2 : 0, y, 0) as unknown as Vector3Like;
+        const slices = planDoorArch({
+          tool,
+          shape,
+          target: {
+            surface: left,
+            point,
+            seam: paired ? offsetX / 2 : null,
+            surfaces: [
+              { surface: left, offsetX: 0, offsetY: 0 },
+              ...(paired ? [{ surface: right, offsetX, offsetY: 0 }] : []),
+            ],
+            allSurfaces: [left, right],
+          },
+        });
+        assert.equal(slices.length, paired ? 2 : 1, `${tool} ${shape} paired=${paired}`);
+        const first = slices[0]!;
+        assert.equal(first.profile.shape, shape);
+        if (paired) {
+          const second = slices[1]!;
+          assert.ok(first.profile.link);
+          assert.equal(first.profile.link, second.profile.link);
+          const a = doorArchSpan(first.rect, first.profile, first.rect.maxX);
+          const b = doorArchSpan(second.rect, second.profile, second.rect.minX);
+          assert.ok(Math.abs(a.minY - b.minY) < 1e-8);
+          assert.ok(Math.abs(a.maxY - b.maxY) < 1e-8);
+        }
+        if (shape === 'arch-down') {
+          assert.equal(first.rect.minY, y);
+          assert.ok(first.rect.maxY > y);
+        }
+        if (tool === 'cut') {
+          const saved = makeDoorArchCut(first);
+          const persisted = readSplitDoorsMapValue(JSON.parse(JSON.stringify({ splitarch_d5: saved })));
+          const restored = readDoorArchCutSlice(left, persisted.splitarch_d5);
+          assert.ok(restored);
+          const edges = doorArchCutEdges(restored.rect, restored.profile);
+          assert.equal(edges.length, shape === 'arch-down' ? 1 : 2);
+          const onEdge = edges[0]![10]!;
+          assert.ok(
+            hitsDoorArchSlice(restored, new Vector3(onEdge.x, onEdge.y, 0) as unknown as Vector3Like, tool)
+          );
+        } else {
+          const x = (first.rect.minX + first.rect.maxX) / 2;
+          const { minY, maxY } = doorArchSpan(first.rect, first.profile, x);
+          assert.ok(
+            hitsDoorArchSlice(first, new Vector3(x, (minY + maxY) / 2, 0) as unknown as Vector3Like, tool)
+          );
+        }
+      }
+    }
+  }
+});
+
+test('both cut edges produce an independent middle leaf with a hinge only where it can mount', () => {
+  for (const shape of ['arch-down', 'arch-both', 'ellipse'] satisfies DoorCurveShape[]) {
+    const base = 0.3;
+    const peak = shape === 'arch-down' ? 1 : 0.7;
+    const rise = shape === 'ellipse' ? (peak - base) / 2 : 0.12;
+    const ctx = createCtx({
+      cfg: { splitDoorsMap: { splitarch_d5: { base, peak, profile: { shape, start: 0, end: 1, rise } } } },
+    });
+    assert.equal(appendArchedHingedDoorOps(ctx, createState()), true);
+    const ops = ctx.opsList.map(readHingedDoorOp);
+    assert.deepEqual(
+      ops.map(op => op.partId),
+      shape === 'arch-down' ? ['d5_bot', 'd5_top'] : ['d5_bot', 'd5_mid', 'd5_top']
+    );
+    assert.ok(ops.every(op => op.archCut?.contour.length > 20));
+    if (shape !== 'arch-down') {
+      assert.equal(ops[1].fixedClosed, shape === 'ellipse');
+      assert.equal(ops[1].allowHandle !== false, shape === 'arch-both');
+    }
   }
 });

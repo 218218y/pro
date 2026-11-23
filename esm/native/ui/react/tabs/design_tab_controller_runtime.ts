@@ -1,3 +1,4 @@
+import type { DoorPlacementShape } from '../../../../../types/maps.js';
 import { readCorniceDimensionCm } from '../../../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { CorniceDimensionsCm } from '../../../../../types/cornice_type.js';
 import type { AppContainer, ConfigStateLike, GrooveOrientation, UiStateLike } from '../../../../../types';
@@ -40,8 +41,8 @@ export type DesignTabControllerRuntime = {
   setGrooveLinesCount: (count: number) => void;
   resetGrooveLinesCount: () => void;
   toggleGrooveManual: () => void;
-  setDoorCutArch: (arched: boolean) => void;
-  setDoorGrooveArch: (arched: boolean) => void;
+  setDoorCutShape: (shape: DoorPlacementShape) => void;
+  setDoorGrooveShape: (shape: DoorPlacementShape) => void;
   setGrooveDraftHeightCm: (value: string) => void;
   setGrooveDraftWidthCm: (value: string) => void;
   setGrooveOrientation: (orientation: GrooveOrientation) => void;
@@ -220,12 +221,12 @@ export function createDesignTabControllerRuntime(
       );
     },
 
-    setDoorCutArch(arched: boolean) {
-      setUiScalarSoft(app, 'doorCutArch', arched);
+    setDoorCutShape(shape: DoorPlacementShape) {
+      setUiScalarSoft(app, 'doorCutShape', shape);
     },
 
-    setDoorGrooveArch(arched: boolean) {
-      setUiScalarSoft(app, 'doorGrooveArch', arched);
+    setDoorGrooveShape(shape: DoorPlacementShape) {
+      setUiScalarSoft(app, 'doorGrooveShape', shape);
     },
 
     toggleGrooveManual() {

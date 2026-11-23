@@ -95,13 +95,13 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
     const action = resolveDoorArchAction({
       App,
       THREE,
-      tool: archTool,
+      ...archTool,
       hit: hitState,
       raycaster: __wpRaycaster,
     });
     if (action) commitDoorArchAction(App, action);
     else if (!resetCanvasPickingEmptyClick({ App, hitState, modeState }) && hitState?.effectiveDoorId)
-      __wp_toast(App, 'אין מקום לקשת במיקום הזה. הזז את הסמן ובדוק את התצוגה המקדימה.', 'error');
+      __wp_toast(App, 'אין מקום לצורה במיקום הזה. הזז את הסמן ובדוק את התצוגה המקדימה.', 'error');
     return;
   }
   // A cut is a gap in the door mesh, so the ray can hit a selector or carcass

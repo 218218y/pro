@@ -1,5 +1,17 @@
 /** The visible horizontal slice of one arch, in coordinates of the complete arch. */
-import type { DoorArchCut, DoorArchPoint, DoorArchProfile, DoorArchRect } from '../../types/maps.js';
+import type {
+  DoorArchCut,
+  DoorArchPoint,
+  DoorArchProfile,
+  DoorArchRect,
+  DoorPlacementShape,
+} from '../../types/maps.js';
+
+export function readDoorPlacementShape(value: unknown): DoorPlacementShape {
+  return value === 'arch' || value === 'arch-down' || value === 'arch-both' || value === 'ellipse'
+    ? value
+    : 'straight';
+}
 
 function unit(value: unknown): value is number {
   return typeof value === 'number' && value >= 0 && value <= 1;
@@ -7,32 +19,48 @@ function unit(value: unknown): value is number {
 
 export function readDoorArchProfile(value: unknown): DoorArchProfile | null {
   if (!value || typeof value !== 'object') return null;
-  const { start, end, rise, link } = value as Partial<DoorArchProfile>;
+  const { start, end, rise, link, shape } = value as Partial<DoorArchProfile>;
   if (!unit(start) || !unit(end) || !unit(rise) || end <= start || rise <= 0) return null;
   if (link !== undefined && (typeof link !== 'string' || !link || link.length > 240)) return null;
-  return { start, end, rise, ...(link ? { link } : {}) };
+  if (shape !== undefined && shape !== 'arch-down' && shape !== 'arch-both' && shape !== 'ellipse')
+    return null;
+  return { start, end, rise, ...(link ? { link } : {}), ...(shape ? { shape } : {}) };
 }
 
 export function readDoorArchCut(value: unknown): DoorArchCut | null {
   if (!value || typeof value !== 'object') return null;
-  const { peak, profile } = value as Partial<DoorArchCut>;
+  const { peak, base, profile } = value as Partial<DoorArchCut>;
   const arch = readDoorArchProfile(profile);
-  if (!arch || !unit(peak) || peak <= arch.rise || peak >= 1) return null;
-  return { peak, profile: arch };
+  if (!arch || !unit(peak)) return null;
+  if (!arch.shape) return base === undefined && peak > arch.rise && peak < 1 ? { peak, profile: arch } : null;
+  if (!unit(base) || base <= 0 || peak <= base) return null;
+  if (arch.shape === 'arch-down') {
+    if (peak !== 1 || arch.rise >= peak - base) return null;
+  } else if (peak >= 1 || arch.rise * 2 > peak - base + 1e-9) {
+    return null;
+  }
+  return { peak, base, profile: arch };
 }
 
 export function isDoorArchCutKey(key: string): boolean {
   return /^splitarch_d[1-9]\d*$/.test(key);
 }
 
-export function doorArchY(rect: DoorArchRect, profile: DoorArchProfile, x: number): number {
+export function doorArchSpan(rect: DoorArchRect, profile: DoorArchProfile, x: number) {
   const u = profile.start + ((profile.end - profile.start) * (x - rect.minX)) / (rect.maxX - rect.minX);
-  return (
-    rect.maxY - (rect.maxY - rect.minY) * profile.rise * (1 - Math.sqrt(Math.max(0, 1 - (2 * u - 1) ** 2)))
-  );
+  const rise = profile.shape === 'ellipse' ? 0.5 : profile.rise;
+  const delta = (rect.maxY - rect.minY) * rise * (1 - Math.sqrt(Math.max(0, 1 - (2 * u - 1) ** 2)));
+  return {
+    minY: profile.shape ? rect.minY + delta : rect.minY,
+    maxY: profile.shape === 'arch-down' ? rect.maxY : rect.maxY - delta,
+  };
 }
 
-export function sampleDoorArch(rect: DoorArchRect, profile: DoorArchProfile): DoorArchPoint[] {
+export function sampleDoorArch(
+  rect: DoorArchRect,
+  profile: DoorArchProfile,
+  edge: 'minY' | 'maxY' = 'maxY'
+): DoorArchPoint[] {
   const first = Math.acos(1 - 2 * profile.start);
   const last = Math.acos(1 - 2 * profile.end);
   const angles = [first, last];
@@ -45,12 +73,25 @@ export function sampleDoorArch(rect: DoorArchRect, profile: DoorArchProfile): Do
     .map(angle => {
       const fraction = ((1 - Math.cos(angle)) / 2 - profile.start) / (profile.end - profile.start);
       const x = rect.minX + (rect.maxX - rect.minX) * Math.max(0, Math.min(1, fraction));
-      return { x, y: doorArchY(rect, profile, x) };
+      return { x, y: doorArchSpan(rect, profile, x)[edge] };
     });
 }
 
 export function doorArchOutline(rect: DoorArchRect, profile: DoorArchProfile): DoorArchPoint[] {
-  return [{ x: rect.minX, y: rect.minY }, ...sampleDoorArch(rect, profile), { x: rect.maxX, y: rect.minY }];
+  const top =
+    profile.shape === 'arch-down'
+      ? [
+          { x: rect.minX, y: rect.maxY },
+          { x: rect.maxX, y: rect.maxY },
+        ]
+      : sampleDoorArch(rect, profile);
+  const bottom = profile.shape
+    ? sampleDoorArch(rect, profile, 'minY')
+    : [
+        { x: rect.minX, y: rect.minY },
+        { x: rect.maxX, y: rect.minY },
+      ];
+  return [...top, ...bottom.reverse()];
 }
 
 export function containsDoorArchPoint(
@@ -58,49 +99,49 @@ export function containsDoorArchPoint(
   profile: DoorArchProfile,
   point: DoorArchPoint
 ): boolean {
-  return (
-    point.x >= rect.minX &&
-    point.x <= rect.maxX &&
-    point.y >= rect.minY &&
-    point.y <= doorArchY(rect, profile, point.x)
-  );
-}
-
-function archSpanAtHeight(rect: DoorArchRect, profile: DoorArchProfile, y: number) {
-  const span = rect.maxY - rect.minY;
-  const rise = span * profile.rise;
-  const level = (y - (rect.maxY - rise)) / rise;
-  if (level >= 1) return null;
-  const radius = level <= 0 ? 1 : Math.sqrt(1 - level ** 2);
-  const left = Math.max(profile.start, (1 - radius) / 2);
-  const right = Math.min(profile.end, (1 + radius) / 2);
-  if (left >= right) return null;
-  const scale = (rect.maxX - rect.minX) / (profile.end - profile.start);
-  return {
-    left: rect.minX + (left - profile.start) * scale,
-    right: rect.minX + (right - profile.start) * scale,
-  };
+  if (point.x < rect.minX || point.x > rect.maxX) return false;
+  const { minY, maxY } = doorArchSpan(rect, profile, point.x);
+  return point.y >= minY && point.y <= maxY;
 }
 
 export function doorArchesOverlap(
   first: { rect: DoorArchRect; profile: DoorArchProfile },
   second: { rect: DoorArchRect; profile: DoorArchProfile }
 ): boolean {
-  const bottom = Math.max(first.rect.minY, second.rect.minY);
-  const a = archSpanAtHeight(first.rect, first.profile, bottom);
-  const b = archSpanAtHeight(second.rect, second.profile, bottom);
-  return !!a && !!b && Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.0001;
+  if (first.rect.maxY <= second.rect.minY || second.rect.maxY <= first.rect.minY) return false;
+  return (
+    intersectDoorContours(
+      doorArchOutline(first.rect, first.profile),
+      doorArchOutline(second.rect, second.profile)
+    ).length > 0
+  );
+}
+
+export function resolveDoorArchCutSlice(rect: DoorArchRect, cut: DoorArchCut) {
+  const height = rect.maxY - rect.minY;
+  const base = cut.base ?? 0;
+  return {
+    rect: { ...rect, minY: rect.minY + base * height, maxY: rect.minY + cut.peak * height },
+    profile: {
+      start: cut.profile.start,
+      end: cut.profile.end,
+      rise: cut.profile.rise / (cut.peak - base),
+      ...(cut.profile.shape ? { shape: cut.profile.shape } : {}),
+      ...(cut.profile.link ? { link: cut.profile.link } : {}),
+    },
+  };
+}
+
+export function doorArchCutEdges(rect: DoorArchRect, profile: DoorArchProfile): DoorArchPoint[][] {
+  if (!profile.shape) return [sampleDoorArch(rect, profile)];
+  const lower = sampleDoorArch(rect, profile, 'minY');
+  return profile.shape === 'arch-down' ? [lower] : [lower, sampleDoorArch(rect, profile)];
 }
 
 export function doorArchCutRange(rect: DoorArchRect, cut: DoorArchCut): [number, number] {
-  const height = rect.maxY - rect.minY;
-  const arc = { ...rect, maxY: rect.minY + cut.peak * height };
-  const profile = { ...cut.profile, rise: cut.profile.rise / cut.peak };
-  const crown = Math.max(0, Math.min(1, (0.5 - profile.start) / (profile.end - profile.start)));
-  return [
-    Math.min(doorArchY(arc, profile, arc.minX), doorArchY(arc, profile, arc.maxX)),
-    doorArchY(arc, profile, arc.minX + crown * (arc.maxX - arc.minX)),
-  ];
+  const slice = resolveDoorArchCutSlice(rect, cut);
+  const heights = doorArchCutEdges(slice.rect, slice.profile).flatMap(points => points.map(point => point.y));
+  return [Math.min(...heights), Math.max(...heights)];
 }
 
 export function doorContourSpanAtX(contour: readonly DoorArchPoint[], x: number) {
@@ -122,17 +163,13 @@ export function doorContourSpanAtX(contour: readonly DoorArchPoint[], x: number)
   return minY <= maxY ? { minY, maxY } : null;
 }
 
-/** Triangulate the intersection of two contours whose vertical sections are single spans. */
-export function intersectDoorContours(
-  outline: readonly DoorArchPoint[],
-  clip: readonly DoorArchPoint[]
-): DoorArchPoint[] {
+function intersectDoorContourBands(outline: readonly DoorArchPoint[], clip: readonly DoorArchPoint[]) {
   const xMin = Math.max(...[outline, clip].map(path => Math.min(...path.map(point => point.x))));
   const xMax = Math.min(...[outline, clip].map(path => Math.max(...path.map(point => point.x))));
   const stations = [...new Set([xMin, xMax, ...outline.map(point => point.x), ...clip.map(point => point.x)])]
     .filter(x => x >= xMin && x <= xMax)
     .sort((a, b) => a - b);
-  const triangles: DoorArchPoint[] = [];
+  const bands: { ll: DoorArchPoint; lr: DoorArchPoint; ul: DoorArchPoint; ur: DoorArchPoint }[] = [];
   for (let index = 1; index < stations.length; index++) {
     const x0 = stations[index - 1]!;
     const x1 = stations[index]!;
@@ -166,8 +203,32 @@ export function intersectDoorContours(
       const lr = { x: right.x, y: right.low };
       const ul = { x: left.x, y: left.high };
       const ur = { x: right.x, y: right.high };
-      triangles.push(ll, lr, ul, ul, lr, ur);
+      bands.push({ ll, lr, ul, ur });
     }
   }
-  return triangles;
+  return bands;
+}
+
+/** The two contours must each have a single vertical span at every x. */
+export function intersectDoorContours(outline: readonly DoorArchPoint[], clip: readonly DoorArchPoint[]) {
+  return intersectDoorContourBands(outline, clip).flatMap(({ ll, lr, ul, ur }) => [ll, lr, ul, ul, lr, ur]);
+}
+
+export function clipDoorContour(outline: readonly DoorArchPoint[], clip: readonly DoorArchPoint[]) {
+  const regions: DoorArchPoint[][] = [];
+  let lower: DoorArchPoint[] = [];
+  let upper: DoorArchPoint[] = [];
+  for (const { ll, lr, ul, ur } of intersectDoorContourBands(outline, clip)) {
+    const lastLow = lower.at(-1);
+    const lastHigh = upper.at(-1);
+    if (!lastLow || !lastHigh || Math.abs(lastLow.x - ll.x) > 1e-8 || ul.y - ll.y < 1e-8) {
+      if (lower.length) regions.push([...lower, ...upper.reverse()]);
+      lower = [ll];
+      upper = [ul];
+    }
+    lower.push(lr);
+    upper.push(ur);
+  }
+  if (lower.length) regions.push([...lower, ...upper.reverse()]);
+  return regions;
 }

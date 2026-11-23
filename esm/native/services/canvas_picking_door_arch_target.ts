@@ -1,9 +1,15 @@
 import type { Vector3Like } from '../../../types/three_like.js';
 import type { AppContainer, Object3DLike, ThreeLike, Vec3Like } from '../../../types';
-import type { DoorArchCut, DoorArchPoint, DoorArchProfile, DoorArchRect } from '../../../types/maps.js';
+import type {
+  DoorArchCut,
+  DoorArchPoint,
+  DoorArchProfile,
+  DoorArchRect,
+  DoorCurveShape,
+} from '../../../types/maps.js';
 import {
   containsDoorArchPoint,
-  doorArchY,
+  doorArchSpan,
   doorContourSpanAtX,
   doorArchOutline,
   intersectDoorContours,
@@ -11,6 +17,7 @@ import {
   MIN_DOOR_ARCH_CUT_MARGIN_M,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
+  resolveDoorArchCutSlice,
   type DoorArchTool,
 } from './canvas_picking_door_edit_shared.js';
 import {
@@ -80,8 +87,7 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
       rect = { ...rect, minY: ud.__wpArchCutBaseMinY, maxY: ud.__wpArchCutBaseMaxY };
     }
   } else {
-    if (!isCanonicalDoorVisualMapKey(key) || (tool === 'mirror' && ud.__wpArchCutBaseMinY !== undefined))
-      return null;
+    if (!isCanonicalDoorVisualMapKey(key)) return null;
     if (tool === 'groove') {
       const surface = resolveGrooveSurfaceOwnerByPartId(group, key);
       if (!surface || face < 0) return null;
@@ -89,8 +95,6 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
       if (typeof surfaceZ !== 'number') return null;
       owner = surface as Object3DLike;
       rect = readGrooveSurfaceRectFromUserData(owner.userData);
-      const outline = owner.userData.__wpGrooveSurfaceContour;
-      if (Array.isArray(outline)) contour = outline as DoorArchPoint[];
       z = surfaceZ;
     } else {
       const surface = resolveMirrorPlacementOwnerByPartId(group, key);
@@ -98,6 +102,8 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
       owner = surface as Object3DLike;
       rect = readMirrorPlacementRectFromUserData(owner.userData);
     }
+    const outline = owner.userData.__wpDoorSurfaceContour;
+    if (Array.isArray(outline)) contour = outline as DoorArchPoint[];
   }
   if (!rect || rect.maxX <= rect.minX || rect.maxY <= rect.minY) return null;
   if (typeof owner.localToWorld !== 'function' || typeof owner.worldToLocal !== 'function') return null;
@@ -278,11 +284,12 @@ function readDraftM(value: unknown): number | null {
 
 export function planDoorArch(args: {
   tool: DoorArchTool;
+  shape: DoorCurveShape;
   target: DoorArchTarget;
   widthCm?: unknown;
   heightCm?: unknown;
 }): DoorArchSlice[] {
-  const { tool, target } = args;
+  const { tool, target, shape } = args;
   const anchor = target.surface.rect;
   const cut = tool === 'cut';
   const minX = Math.min(...target.surfaces.map(({ surface, offsetX }) => surface.rect.minX + offsetX));
@@ -303,27 +310,50 @@ export function planDoorArch(args: {
     Math.max(...target.surfaces.map(({ surface, offsetY }) => surface.rect.minY + offsetY)) + inset;
   const top = Math.min(...target.surfaces.map(({ surface, offsetY }) => surface.rect.maxY + offsetY)) - inset;
   const requestedHeight = readDraftM(args.heightCm);
-  const height = Math.min(top - bottom, requestedHeight ?? top - bottom);
+  const doubleCurve = shape === 'arch-both' || shape === 'ellipse';
+  const centered = doubleCurve || (tool === 'mirror' && shape === 'arch');
+  const height =
+    cut && doubleCurve
+      ? Math.min((top - bottom) * 0.58, 3.1 * half)
+      : Math.min(top - bottom, requestedHeight ?? top - bottom);
   const centerY = Math.max(bottom + height / 2, Math.min(top - height / 2, target.point.y));
-  const maxY = tool === 'mirror' ? centerY + height / 2 : Math.min(top, target.point.y);
-  const minY =
-    tool === 'mirror'
-      ? centerY - height / 2
-      : tool === 'groove' && requestedHeight !== null
-        ? maxY - requestedHeight
-        : bottom;
-  if (minY < bottom - 1e-7) return [];
+  let minY = bottom;
+  let maxY = top;
+  if (centered) {
+    const center = cut ? target.point.y : centerY;
+    minY = center - height / 2;
+    maxY = center + height / 2;
+  } else if (shape === 'arch-down') {
+    minY = Math.max(bottom, target.point.y);
+    if (!cut && requestedHeight !== null) maxY = minY + requestedHeight;
+  } else {
+    maxY = Math.min(top, target.point.y);
+    if (!cut && requestedHeight !== null) minY = maxY - requestedHeight;
+  }
+  if (minY < bottom - 1e-7 || maxY > top + 1e-7) return [];
   const span = maxY - minY;
   if (span < 0.03) return [];
 
   const cutRise = Math.min(half, (anchor.maxY - anchor.minY) * 0.35);
-  const riseM = cut ? cutRise : Math.min(half, span * 0.8);
-  if (cut && (span - riseM < MIN_DOOR_ARCH_CUT_MARGIN_M || top - maxY < MIN_DOOR_ARCH_CUT_MARGIN_M))
-    return [];
+  const riseM =
+    shape === 'ellipse'
+      ? span / 2
+      : doubleCurve
+        ? Math.min(half, span * 0.33)
+        : cut
+          ? cutRise
+          : Math.min(half, span * 0.8);
+  if (cut) {
+    const margin = MIN_DOOR_ARCH_CUT_MARGIN_M;
+    if (shape !== 'arch' && minY - bottom < margin) return [];
+    if (shape !== 'arch-down' && top - maxY < margin) return [];
+    if (!doubleCurve && span - riseM < margin) return [];
+  }
   const link =
     target.surfaces.length === 2
       ? [
           tool,
+          shape,
           ...target.surfaces.map(item => item.surface.key).sort(),
           minY.toFixed(4),
           maxY.toFixed(4),
@@ -342,6 +372,7 @@ export function planDoorArch(args: {
           start: (x0 - left) / (2 * half),
           end: Math.min(1, (x1 - left) / (2 * half)),
           rise: riseM / span,
+          ...(shape === 'arch' ? {} : { shape }),
           ...(link ? { link } : {}),
         },
       },
@@ -361,7 +392,8 @@ export function planDoorArch(args: {
 export function makeDoorArchCut(slice: DoorArchSlice): DoorArchCut {
   const fullHeight = slice.surface.rect.maxY - slice.surface.rect.minY;
   return {
-    peak: (slice.rect.maxY - slice.surface.rect.minY) / fullHeight,
+    peak: slice.profile.shape === 'arch-down' ? 1 : (slice.rect.maxY - slice.surface.rect.minY) / fullHeight,
+    ...(slice.profile.shape ? { base: (slice.rect.minY - slice.surface.rect.minY) / fullHeight } : {}),
     profile: {
       ...slice.profile,
       rise: (slice.profile.rise * (slice.rect.maxY - slice.rect.minY)) / fullHeight,
@@ -372,12 +404,7 @@ export function makeDoorArchCut(slice: DoorArchSlice): DoorArchCut {
 export function readDoorArchCutSlice(surface: ArchSurface, value: unknown): DoorArchSlice | null {
   const cut = readDoorArchCut(value);
   if (!cut) return null;
-  const rect = surface.rect;
-  return {
-    surface,
-    rect: { ...rect, maxY: rect.minY + cut.peak * (rect.maxY - rect.minY) },
-    profile: { ...cut.profile, rise: cut.profile.rise / cut.peak },
-  };
+  return { surface, ...resolveDoorArchCutSlice(surface.rect, cut) };
 }
 
 function cutHitYInRange(curveY: number, pointerY: number): boolean {
@@ -387,16 +414,18 @@ function cutHitYInRange(curveY: number, pointerY: number): boolean {
 export function hitsDoorArchSlice(slice: DoorArchSlice, point: Vector3Like, tool: DoorArchTool): boolean {
   const x = Math.max(slice.rect.minX, Math.min(slice.rect.maxX, point.x));
   if (tool === 'cut') {
-    return Math.abs(x - point.x) < 0.018 && cutHitYInRange(doorArchY(slice.rect, slice.profile, x), point.y);
+    if (Math.abs(x - point.x) >= 0.018) return false;
+    const { minY, maxY } = doorArchSpan(slice.rect, slice.profile, x);
+    const shape = slice.profile.shape;
+    return (
+      (shape !== 'arch-down' && cutHitYInRange(maxY, point.y)) || (!!shape && cutHitYInRange(-minY, -point.y))
+    );
   }
   if (Math.abs(x - point.x) > 0.01) return false;
   const face = slice.surface.contour && doorContourSpanAtX(slice.surface.contour, x);
   if (slice.surface.contour && (!face || point.y < face.minY - 0.006 || point.y > face.maxY + 0.006))
     return false;
-  // A pick on the apex or the narrow air gap should still remove the previewed region.
-  const y = point.y - 0.012;
-  return (
-    containsDoorArchPoint(slice.rect, slice.profile, { x, y: Math.max(slice.rect.minY, y) }) &&
-    point.y >= slice.rect.minY - 0.012
+  return [0, -0.012, 0.012].some(offset =>
+    containsDoorArchPoint(slice.rect, slice.profile, { x, y: point.y + offset })
   );
 }

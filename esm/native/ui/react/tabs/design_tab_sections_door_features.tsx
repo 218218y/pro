@@ -8,7 +8,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
   const model = props.model;
   if (model.wardrobeType !== 'hinged' && model.wardrobeType !== 'sliding') return null;
   const showDoorCutAndRemovalControls = !model.isChestMode;
-  const grooveArch = model.grooveManualEnabled && model.doorGrooveArch;
+  const grooveArch = model.grooveManualEnabled && model.doorGrooveShape !== 'straight';
   const showGrooveLinesControls = model.grooveActive || model.isChestMode;
 
   return (
@@ -66,8 +66,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               {model.isChestMode ? null : (
                 <DoorArchShapeOptions
                   tool="groove"
-                  arched={!!grooveArch}
-                  onChange={model.setDoorGrooveArch}
+                  shape={model.doorGrooveShape}
+                  onChange={model.setDoorGrooveShape}
                 />
               )}
               <div className="wp-section-title">מידות חריטה</div>
@@ -221,8 +221,8 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               {model.splitIsCustom ? (
                 <DoorArchShapeOptions
                   tool="cut"
-                  arched={!!model.doorCutArch}
-                  onChange={model.setDoorCutArch}
+                  shape={model.doorCutShape}
+                  onChange={model.setDoorCutShape}
                 />
               ) : null}
 
@@ -245,7 +245,7 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
 
               <div
                 className={
-                  model.splitIsCustom && !model.doorCutArch
+                  model.splitIsCustom && model.doorCutShape === 'straight'
                     ? 'wp-r-editmode-hint'
                     : 'wp-r-editmode-hint hidden'
                 }

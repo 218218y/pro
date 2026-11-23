@@ -1,5 +1,6 @@
 import type { ThreeLike, UnknownRecord } from '../../../types/index.js';
 import { HINGED_DOOR_HARDWARE_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { doorContourSpanAtX } from '../../shared/door_arch_geometry.js';
 import {
   createHingedDoorHardwareRenderState,
   type HingedDoorHardwareRenderState,
@@ -48,5 +49,10 @@ export function createBuilderHingedDoorHardwareRenderState(
   THREE: ThreeLike,
   doorThicknessM: number
 ): HingedDoorHardwareRenderState | null {
-  return createHingedDoorHardwareRenderState(THREE, HINGED_DOOR_HARDWARE_RENDER_POLICY, doorThicknessM);
+  return createHingedDoorHardwareRenderState(
+    THREE,
+    HINGED_DOOR_HARDWARE_RENDER_POLICY,
+    doorThicknessM,
+    doorContourSpanAtX
+  );
 }

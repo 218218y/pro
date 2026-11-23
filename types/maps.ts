@@ -39,14 +39,18 @@ export type HingeMap = Record<string, string | UnknownRecord | null | undefined>
 export type DoorArchPoint = { x: number; y: number };
 export type DoorArchRect = { minX: number; maxX: number; minY: number; maxY: number };
 
+export type DoorCurveShape = 'arch' | 'arch-down' | 'arch-both' | 'ellipse';
+export type DoorPlacementShape = 'straight' | DoorCurveShape;
+
 export type DoorArchProfile = {
   start: number;
   end: number;
   rise: number;
+  shape?: Exclude<DoorCurveShape, 'arch'>;
   link?: string;
 };
 
-export type DoorArchCut = { peak: number; profile: DoorArchProfile };
+export type DoorArchCut = { peak: number; base?: number; profile: DoorArchProfile };
 
 /** Split doors: canonical toggles, straight positions and shaped cuts. */
 export type SplitDoorsMap = Record<string, boolean | number[] | DoorArchCut | null | undefined>;

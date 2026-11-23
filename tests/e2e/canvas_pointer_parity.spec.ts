@@ -674,6 +674,21 @@ test.describe('Canvas pointer parity smoke', () => {
     }
 
     await setDoorAuthoringMode(page, 'split-custom', false);
+    const multicolor = page.getByTestId('design-multicolor-enabled-toggle');
+    if (!(await multicolor.isChecked())) await multicolor.locator('..').click();
+    await page.locator('[data-wp-search-special="mirror"]').click();
+    await page.getByTestId('design-mirror-shape-arch').click();
+    const mirrorOnCurve = await pointOnCanvas({ x: targets.single.x, y: -0.24 });
+    const beforeMirror = (await readBuildDebugStats(page)).executeCount;
+    await page.mouse.move(mirrorOnCurve.x, mirrorOnCurve.y);
+    await expect.poll(() => canvas.evaluate(node => (node as HTMLElement).style.cursor)).toBe('pointer');
+    await page.mouse.click(mirrorOnCurve.x, mirrorOnCurve.y);
+    await expect.poll(async () => (await archCounts()).mirror).toBe(1);
+    await expect
+      .poll(async () => (await readBuildDebugStats(page)).executeCount)
+      .toBeGreaterThan(beforeMirror);
+    const background = await pointOnCanvas({ x: 0.75, y: -0.3 });
+    await page.mouse.click(background.x, background.y);
     await setDoorFeatureToggle(page, 'groovesEnabled', true);
     await setDoorAuthoringMode(page, 'groove', true);
     const manualGroove = page.getByTestId('design-groove-manual-button');
