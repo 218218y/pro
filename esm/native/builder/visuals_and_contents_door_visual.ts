@@ -4,6 +4,7 @@ import {
   readMirrorLayoutFaceSign,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
+import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import { createDoorContourGeometry } from './door_contour_geometry.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import { createMixedSurfaceDoorVisual } from './visuals_and_contents_door_visual_mixed_surfaces.js';
@@ -155,6 +156,22 @@ export function createDoorVisual(
     tagDoorVisualPart(slab, 'door_flat_center_panel');
     addOutlines(slab);
     visualGroup.add(slab);
+    appendGrooveStrips({
+      App,
+      THREE,
+      visualGroup,
+      tagDoorVisualPart,
+      hasGrooves,
+      isSketch,
+      groovePartId,
+      zSign,
+      targetW: w,
+      targetH: h,
+      zOffset: (thickness / 2) * zSign,
+      grooveLayout: options.grooveLayout ?? null,
+      linesCountOverride: options.grooveLinesCount ?? null,
+      contour: options.cutContour,
+    });
     return visualGroup;
   }
 

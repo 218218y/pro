@@ -2,9 +2,12 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 
 import {
   containsDoorArchPoint,
+  doorArchCutRange,
   doorArchOutline,
   doorArchesOverlap,
   doorArchY,
+  doorContourSpanAtX,
+  intersectDoorContours,
   readDoorArchCut,
   sampleDoorArch,
 } from '../../shared/door_arch_geometry.js';
@@ -46,9 +49,12 @@ import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 
 export {
   containsDoorArchPoint,
+  doorArchCutRange,
   doorArchOutline,
   doorArchesOverlap,
   doorArchY,
+  doorContourSpanAtX,
+  intersectDoorContours,
   getDoorsArray,
   isCanonicalDoorVisualMapKey,
   readDoorArchCut,
@@ -141,8 +147,20 @@ export function writePendingGrooveLinesCountForPart(
 export const MIN_DOOR_ARCH_CUT_MARGIN_M =
   HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
 
-export function isCanvasDoorArchCutSegment(group: unknown): boolean {
-  return typeof asRecord(asRecord(group)?.userData)?.__wpArchCutBaseMinY === 'number';
+export function readCanvasDoorArchedCut(App: AppContainer, doorBaseKey: string) {
+  return readDoorArchCut(__wp_map(App, 'splitDoorsMap')[`splitarch_${doorBaseKey}`]);
+}
+
+export function fitsStraightCutBesideArch(
+  App: AppContainer,
+  doorBaseKey: string,
+  bounds: { minY: number; maxY: number },
+  y: number
+): boolean {
+  const cut = readCanvasDoorArchedCut(App, doorBaseKey);
+  if (!cut) return true;
+  const [low, high] = doorArchCutRange({ ...bounds, minX: 0, maxX: 1 }, cut);
+  return y <= low - MIN_DOOR_ARCH_CUT_MARGIN_M || y >= high + MIN_DOOR_ARCH_CUT_MARGIN_M;
 }
 
 export type DoorArchTool = 'cut' | 'mirror' | 'groove';

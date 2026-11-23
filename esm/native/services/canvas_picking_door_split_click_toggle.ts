@@ -3,7 +3,9 @@ import type {
   CanvasDoorSplitClickArgs,
 } from './canvas_picking_door_split_click_contracts.js';
 import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
-import { __wp_getRegularSplitPreviewLineY } from './canvas_picking_core_helpers.js';
+import { __wp_getRegularSplitPreviewLineY, __wp_toast } from './canvas_picking_core_helpers.js';
+import { fitsStraightCutBesideArch, readCanvasDoorArchedCut } from './canvas_picking_door_edit_shared.js';
+import { CANVAS_DOOR_CUSTOM_SPLIT_BLOCK_MESSAGE } from './canvas_picking_door_split_click_custom.js';
 import { resolveCanvasDoorStandardSplitTarget } from './canvas_picking_door_split_standard_target.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
@@ -272,8 +274,28 @@ export function handleCanvasDoorToggleSplitClick(args: {
 
   const hasManualSplitPositions = readCanvasDoorSplitPosList(App, doorBaseKey).length > 0;
 
-  if (isCanvasDoorSplitBottomClick(bounds, splitHitY)) {
-    const next = hasManualSplitPositions ? true : !isCanvasDoorSplitBottomEnabled(App, doorBaseKey);
+  const hasArch = !!readCanvasDoorArchedCut(App, doorBaseKey);
+  const isBottomRegion = isCanvasDoorSplitBottomClick(bounds, splitHitY);
+  const isCurrentlySplit = isBottomRegion
+    ? isCanvasDoorSplitBottomEnabled(App, doorBaseKey)
+    : foundModuleStack === 'bottom' || hasArch
+      ? isCanvasDoorSplitExplicit(App, doorBaseKey)
+      : isCanvasDoorSplitEnabled(App, doorBaseKey);
+  const nextSplit = hasManualSplitPositions || !isCurrentlySplit;
+  if (nextSplit && hasArch && bounds && click.doorHitGroup) {
+    const lineY = __wp_getRegularSplitPreviewLineY({
+      App,
+      hitDoorGroup: click.doorHitGroup as never,
+      bounds,
+      isBottomRegion,
+    });
+    if (lineY != null && !fitsStraightCutBesideArch(App, doorBaseKey, bounds, lineY)) {
+      __wp_toast(App, CANVAS_DOOR_CUSTOM_SPLIT_BLOCK_MESSAGE, 'error');
+      return true;
+    }
+  }
+
+  if (isBottomRegion) {
     runCanvasDoorSplitHistoryBatch(App, 'splitDoorsBottom:click', () => {
       if (hasManualSplitPositions) {
         // split_* is also the manual-mode enable bit. Once manual positions are
@@ -301,7 +323,7 @@ export function handleCanvasDoorToggleSplitClick(args: {
       callCanvasDoorSplitBottomAction({
         App,
         key: splitBottomKey,
-        next,
+        next: nextSplit,
         source: 'splitDoorsBottom:click',
         op: 'splitBottom.missingDomainApi',
       });
@@ -309,12 +331,6 @@ export function handleCanvasDoorToggleSplitClick(args: {
     });
     return true;
   }
-
-  const isCurrentlySplit =
-    foundModuleStack === 'bottom'
-      ? isCanvasDoorSplitExplicit(App, doorBaseKey)
-      : isCanvasDoorSplitEnabled(App, doorBaseKey);
-  const nextSplit = hasManualSplitPositions ? true : !isCurrentlySplit;
 
   runCanvasDoorSplitHistoryBatch(App, 'splitDoors:click', () => {
     writeCanvasDoorSplitPosList({

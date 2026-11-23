@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T03:36:04.356Z",
+  "generatedAt": "2026-11-23T07:57:30.268Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -3032,91 +3032,91 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 38,
+      "line": 39,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 41,
+      "line": 42,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "return resolveAdhesiveGlassKind(layout?.surfaceKind) || fallbackKind;"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 46,
+      "line": 47,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 51,
+      "line": 52,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "surfaceKind: readDoorVisualSurfaceKind(layout, fallbackKind),"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 57,
+      "line": 58,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "fallbackKind: 'mirror' | 'black_glass' | 'frosted_glass'"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 62,
+      "line": 63,
       "term": "fallbackKind",
       "category": "domain-default",
       "text": "const kind = readDoorVisualSurfaceKind(layout, fallbackKind);"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 94,
+      "line": 95,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "fallbackFaceSign: number"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 99,
+      "line": 100,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) !== -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 106,
+      "line": 107,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "function hasInsideFullMirrorLayout(mirrorLayout: MirrorLayoutList | null, fallbackFaceSign: number): boolean {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 110,
+      "line": 111,
       "term": "fallbackFaceSign",
       "category": "domain-default",
       "text": "if (isFullMirrorLayoutEntry(layout) && readMirrorLayoutFaceSign(layout, fallbackFaceSign) === -1) {"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 162,
+      "line": 179,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const surfaceFallbackKind = isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 166,
+      "line": 183,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "hasMixedDoorSurfaceKinds(mirrorLayout, surfaceFallbackKind)"
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
-      "line": 168,
+      "line": 185,
       "term": "surfaceFallbackKind",
       "category": "domain-default",
       "text": "const mixedLayout = materializeDoorVisualSurfaceKinds(mirrorLayout, surfaceFallbackKind);"
@@ -3942,7 +3942,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_door_split_click_custom.ts",
-      "line": 97,
+      "line": 98,
       "term": "fallback",
       "category": "domain-default",
       "text": "// door-split-fallback: malformed split geometry or optional refresh failure must not corrupt the committed split state"

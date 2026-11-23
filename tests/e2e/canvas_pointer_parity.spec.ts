@@ -531,7 +531,6 @@ test.describe('Canvas pointer parity smoke', () => {
         await setDoorFeatureToggle(page, 'groovesEnabled', true);
         await page.getByTestId('design-groove-manual-button').click();
       } else if (tool === 'mirror') {
-        await setDoorAuthoringMode(page, 'groove', false);
         await page.getByTestId('design-multicolor-enabled-toggle').locator('..').click();
         await page.locator('[data-wp-search-special="mirror"]').click();
       }
@@ -540,7 +539,9 @@ test.describe('Canvas pointer parity smoke', () => {
         const point = await pointOnCanvas(targets[placement]);
         await page.mouse.move(point.x, point.y);
         await expect
-          .poll(async () => canvas.evaluate(node => (node as HTMLElement).style.cursor))
+          .poll(async () => canvas.evaluate(node => (node as HTMLElement).style.cursor), {
+            message: `preview ${tool} ${placement}`,
+          })
           .toBe('pointer');
         const beforeAdd = (await readBuildDebugStats(page)).executeCount;
         await page.mouse.click(point.x, point.y);
@@ -549,7 +550,9 @@ test.describe('Canvas pointer parity smoke', () => {
           .poll(async () => (await readBuildDebugStats(page)).executeCount)
           .toBeGreaterThan(beforeAdd);
         const removeFrom =
-          tool !== 'mirror' ? point : { x: point.x + (placement === 'pair' ? 9 : 0), y: point.y + 22 };
+          tool === 'cut'
+            ? { x: point.x, y: point.y + 10 }
+            : { x: point.x + (placement === 'pair' ? 9 : 0), y: point.y + 22 };
         await page.mouse.move(removeFrom.x, removeFrom.y);
         const beforeRemove = (await readBuildDebugStats(page)).executeCount;
         await page.mouse.click(removeFrom.x, removeFrom.y);
@@ -620,8 +623,13 @@ test.describe('Canvas pointer parity smoke', () => {
         await page.mouse.click(single.x, single.y);
         await expect.poll(readGrooves).toHaveLength(1);
         expect((await readGrooves())[0]?.heightCm).toBeCloseTo(42, 6);
-        await page.mouse.click(single.x, single.y);
-        await expect.poll(async () => (await archCounts()).groove).toBe(0);
+        const earlierPlacementInterior = { x: single.x, y: single.y + 28 };
+        await page.mouse.click(earlierPlacementInterior.x, earlierPlacementInterior.y);
+        await expect.poll(readGrooves).toHaveLength(0);
+        await page.mouse.click(earlierPlacementInterior.x, earlierPlacementInterior.y);
+        await expect.poll(readGrooves).toHaveLength(1);
+        await page.mouse.click(earlierPlacementInterior.x, earlierPlacementInterior.y);
+        await expect.poll(readGrooves).toHaveLength(0);
       }
       const background = await pointOnCanvas({ x: 0.75, y: -0.3 });
       await page.mouse.click(background.x, background.y);
@@ -629,6 +637,55 @@ test.describe('Canvas pointer parity smoke', () => {
         .poll(async () => (await readDebugStoreState(page)).mode)
         .toMatchObject({ primary: 'none' });
     }
+
+    await setDoorAuthoringMode(page, 'split-custom', true);
+    const readMixedCutCounts = async () => {
+      const { splitDoorsMap = {} } = (await readDebugStoreState(page)).config as {
+        splitDoorsMap?: Record<string, unknown>;
+      };
+      return {
+        arcs: Object.keys(splitDoorsMap).filter(key => key.startsWith('splitarch_')).length,
+        straight: Object.keys(splitDoorsMap).filter(key => key.startsWith('splitpos_')).length,
+      };
+    };
+    for (const [target, order] of [
+      [targets.single, ['straight', 'arch']],
+      [targets.neighbor, ['arch', 'straight']],
+    ] as const) {
+      const before = await readMixedCutCounts();
+      for (const shape of order) {
+        await page.getByTestId(`design-cut-shape-${shape}`).click();
+        const point = await pointOnCanvas({ x: target.x, y: shape === 'straight' ? 0.3 : -0.1 });
+        const buildCount = (await readBuildDebugStats(page)).executeCount;
+        await page.mouse.click(point.x, point.y);
+        await expect
+          .poll(async () => (await readBuildDebugStats(page)).executeCount)
+          .toBeGreaterThan(buildCount);
+      }
+      await expect.poll(readMixedCutCounts).toEqual({ arcs: before.arcs + 1, straight: before.straight + 1 });
+      await expect
+        .poll(() =>
+          page.evaluate(x => {
+            const canvasDebug = window.__WP_DEBUG__!.canvas;
+            return new Set([0.4, 0.13, -0.24].map(y => canvasDebug.inspectNdc(x, y)?.partId)).size;
+          }, target.x)
+        )
+        .toBe(3);
+    }
+
+    await setDoorAuthoringMode(page, 'split-custom', false);
+    await setDoorFeatureToggle(page, 'groovesEnabled', true);
+    await setDoorAuthoringMode(page, 'groove', true);
+    const manualGroove = page.getByTestId('design-groove-manual-button');
+    if ((await manualGroove.getAttribute('aria-expanded')) !== 'true') await manualGroove.click();
+    await page.getByTestId('design-groove-shape-arch').click();
+    await page.locator('#wp-r-groove-draft-height').fill('22');
+    const curvedFront = await pointOnCanvas({ x: targets.neighbor.x, y: -0.22 });
+    const beforeGroove = (await archCounts()).groove;
+    await page.mouse.move(curvedFront.x, curvedFront.y);
+    await expect.poll(() => canvas.evaluate(node => (node as HTMLElement).style.cursor)).toBe('pointer');
+    await page.mouse.click(curvedFront.x, curvedFront.y);
+    await expect.poll(async () => (await archCounts()).groove).toBe(beforeGroove + 1);
     expectNoRuntimeIssues(issues);
   });
 

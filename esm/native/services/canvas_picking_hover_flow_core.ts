@@ -209,7 +209,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
         mouse: __wpMouse,
       });
       const action = resolveDoorArchAction({ App, THREE, tool: archTool, hit, raycaster: __wpRaycaster });
-      return !!action && showDoorArchPreview(cutMarker, THREE, action);
+      return !!action && showDoorArchPreview(cutMarker, App, THREE, action, __setSketchPreview);
     }
 
     if (!__isSplitEditMode) {

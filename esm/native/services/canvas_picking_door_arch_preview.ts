@@ -1,7 +1,13 @@
 import type { Vector3Like } from '../../../types/three_like.js';
-import type { GeometryLike, ThreeLike } from '../../../types';
-import { doorArchOutline, sampleDoorArch } from './canvas_picking_door_edit_shared.js';
+import type { AppContainer, GeometryLike, SketchPlacementPreviewArgsLike, ThreeLike } from '../../../types';
+import type { DoorArchPoint } from '../../../types/maps.js';
+import { doorArchOutline, intersectDoorContours, sampleDoorArch } from './canvas_picking_door_edit_shared.js';
 import type { DoorArchAction } from './canvas_picking_door_arch_actions.js';
+import type { ArchSurface } from './canvas_picking_door_arch_target.js';
+import {
+  buildRectClearanceMeasurementEntries,
+  resolveCellMeasurementLabelOutsets,
+} from './canvas_picking_hover_clearance_measurements.js';
 
 type PreviewMarker = {
   geometry: GeometryLike;
@@ -10,9 +16,8 @@ type PreviewMarker = {
   position: Vector3Like;
   scale: Vector3Like;
   quaternion: { identity(): void };
-  userData: { __matAdd: unknown; __matRemove: unknown };
+  userData: { __matAdd: unknown; __matRemove: unknown; __matAreaAdd: unknown; __matAreaRemove: unknown };
   visible?: boolean;
-  frustumCulled: boolean;
 };
 
 const baseGeometries = new WeakMap<PreviewMarker, GeometryLike>();
@@ -33,38 +38,104 @@ export function clearDoorArchPreview(value: unknown): void {
   baseGeometries.delete(marker);
 }
 
-export function showDoorArchPreview(value: unknown, THREE: ThreeLike, action: DoorArchAction): boolean {
+function ribbonTriangles(path: DoorArchPoint[], halfWidth: number): DoorArchPoint[] {
+  const edges = path.map((point, index) => {
+    const a = path[index - 1] ?? point;
+    const b = path[index + 1] ?? point;
+    const length = Math.hypot(b.x - a.x, b.y - a.y);
+    const x = (-(b.y - a.y) / length) * halfWidth;
+    const y = ((b.x - a.x) / length) * halfWidth;
+    return {
+      left: { x: point.x + x, y: point.y + y },
+      right: { x: point.x - x, y: point.y - y },
+    };
+  });
+  const triangles: DoorArchPoint[] = [];
+  for (let i = 1; i < edges.length; i++) {
+    const a = edges[i - 1]!;
+    const b = edges[i]!;
+    triangles.push(a.left, a.right, b.left, b.left, a.right, b.right);
+  }
+  return triangles;
+}
+
+function archMeasurementPreview(
+  App: AppContainer,
+  surface: ArchSurface,
+  crown: DoorArchPoint,
+  z: number,
+  op: DoorArchAction['kind']
+): SketchPlacementPreviewArgsLike {
+  const width = surface.rect.maxX - surface.rect.minX;
+  const lineHeight = 0.0001;
+  const textScale = 0.9;
+  const { verticalLabelOutset } = resolveCellMeasurementLabelOutsets(textScale);
+  const clearanceMeasurements = buildRectClearanceMeasurementEntries({
+    containerMinX: surface.rect.minX,
+    containerMaxX: surface.rect.maxX,
+    containerMinY: surface.rect.minY,
+    containerMaxY: surface.rect.maxY,
+    targetCenterX: crown.x,
+    targetCenterY: crown.y,
+    targetWidth: width,
+    targetHeight: lineHeight,
+    z: z + 0.0025 * surface.face,
+    styleKey: 'cell',
+    textScale,
+    verticalLabelOutset,
+    faceSign: surface.face,
+    viewFaceSign: surface.face,
+    labelFaceSign: surface.face,
+  });
+  return {
+    App,
+    anchor: surface.anchor,
+    anchorParent: surface.anchor,
+    kind: 'rod',
+    x: crown.x,
+    y: crown.y,
+    z,
+    w: width,
+    h: lineHeight,
+    d: 0.004,
+    woodThick: 0.004,
+    op,
+    showPrimaryBody: false,
+    clearanceMeasurements,
+  };
+}
+
+export function showDoorArchPreview(
+  value: unknown,
+  App: AppContainer,
+  THREE: ThreeLike,
+  action: DoorArchAction,
+  setSketchPreview?: ((args: SketchPlacementPreviewArgsLike) => unknown) | null
+): boolean {
   const marker = readMarker(value);
   if (!marker?.parent?.worldToLocal) return false;
   clearDoorArchPreview(marker);
   const vertices: number[] = [];
+  const isCut = action.tool === 'cut';
+  let highest: { surface: ArchSurface; crown: DoorArchPoint; z: number; worldY: number } | undefined;
   for (const { surface, rect, profile } of action.slices) {
-    const path = action.tool === 'cut' ? sampleDoorArch(rect, profile) : doorArchOutline(rect, profile);
-    if (action.tool !== 'cut' && path[0]) path.push(path[0]);
-    const z = surface.z + 0.007 * surface.face;
-    for (let i = 1; i < path.length; i++) {
-      const a = path[i - 1];
-      const b = path[i];
-      if (!a || !b) continue;
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const length = Math.hypot(dx, dy);
-      if (length < 1e-7) continue;
-      const rx = (-dy / length) * 0.002;
-      const ry = (dx / length) * 0.002;
-      const corners = [
-        [a.x + rx, a.y + ry],
-        [a.x - rx, a.y - ry],
-        [b.x + rx, b.y + ry],
-        [b.x - rx, b.y - ry],
-      ];
-      const points = corners.map(([x, y]) =>
-        marker.parent.worldToLocal(surface.toWorld(new THREE.Vector3(x, y, z)))
-      );
-      for (const index of [0, 1, 2, 2, 1, 3]) {
-        const point = points[index];
-        if (point) vertices.push(point.x, point.y, point.z);
+    const curve = isCut ? sampleDoorArch(rect, profile) : null;
+    const outline = curve ?? doorArchOutline(rect, profile);
+    const triangles = curve
+      ? ribbonTriangles(curve, action.kind === 'remove' ? 0.01 : 0.006)
+      : intersectDoorContours(outline, surface.contour ?? outline);
+    const z = surface.z + (isCut ? 0.018 : 0.008) * surface.face;
+    for (const { x, y } of triangles) {
+      const point = marker.parent.worldToLocal(surface.toWorld(new THREE.Vector3(x, y, z)));
+      vertices.push(point.x, point.y, point.z);
+    }
+    if (action.tool !== 'mirror' && triangles.length) {
+      let crown = (curve ?? triangles)[0]!;
+      for (const point of curve ?? triangles) {
+        if (point.y > crown.y) crown = point;
       }
+      const worldY = surface.toWorld(new THREE.Vector3(crown.x, crown.y, z)).y;
+      if (!highest || worldY > highest.worldY + 1e-8) highest = { surface, crown, z, worldY };
     }
   }
   if (!vertices.length) return false;
@@ -75,7 +146,17 @@ export function showDoorArchPreview(value: unknown, THREE: ThreeLike, action: Do
   marker.position.set(0, 0, 0);
   marker.scale.set(1, 1, 1);
   marker.quaternion.identity();
-  marker.material = action.kind === 'remove' ? marker.userData.__matRemove : marker.userData.__matAdd;
+  const { __matAdd, __matRemove, __matAreaAdd, __matAreaRemove } = marker.userData;
+  marker.material = isCut
+    ? action.kind === 'remove'
+      ? __matRemove
+      : __matAdd
+    : action.kind === 'remove'
+      ? __matAreaRemove
+      : __matAreaAdd;
   marker.visible = true;
+  if (highest) {
+    setSketchPreview?.(archMeasurementPreview(App, highest.surface, highest.crown, highest.z, action.kind));
+  }
   return true;
 }

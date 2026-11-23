@@ -6,6 +6,7 @@ import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_
 import { getCamera, getDoorsArray } from '../runtime/render_access.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
+import { fitsStraightCutBesideArch } from './canvas_picking_door_edit_shared.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
 import {
@@ -300,7 +301,7 @@ export function handleCanvasDoorCustomSplitClick(args: {
     nextListRaw = prevList0.filter((_n, idx) => idx !== removeTarget.index);
   } else {
     const addValidation = validateCanvasDoorCustomSplitAdd({ bounds, prevList: prevList0, pointerY: hitY });
-    if (!addValidation.canAdd) {
+    if (!addValidation.canAdd || !fitsStraightCutBesideArch(App, doorBaseKey, bounds, addValidation.yAbs)) {
       __wp_toast(App, CANVAS_DOOR_CUSTOM_SPLIT_BLOCK_MESSAGE, 'error');
       return true;
     }

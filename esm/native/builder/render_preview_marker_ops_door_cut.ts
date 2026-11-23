@@ -12,7 +12,7 @@ import {
 } from './render_preview_marker_ops_shared.js';
 import { createMarkerMaterial } from './render_preview_marker_ops_materials.js';
 
-const DOOR_CUT_HOVER_VISUAL_VERSION = 2;
+const DOOR_CUT_HOVER_VISUAL_VERSION = 3;
 
 function configureDoorCutHoverMarker(THREE: MarkerTHREESurface, mesh: MarkerMeshLike): MarkerMeshLike {
   mesh.userData = mesh.userData || {};
@@ -42,6 +42,8 @@ function configureDoorCutHoverMarker(THREE: MarkerTHREESurface, mesh: MarkerMesh
   mesh.userData.__matAdd = addMat;
   mesh.userData.__matRemove = removeMat;
   mesh.userData.__matAligned = alignedMat;
+  mesh.userData.__matAreaAdd = createMarkerMaterial(THREE, 0x7fd3ff, 0.32);
+  mesh.userData.__matAreaRemove = createMarkerMaterial(THREE, 0xff4d4f, 0.42);
   mesh.userData.__doorCutHoverVisualVersion = DOOR_CUT_HOVER_VISUAL_VERSION;
   mesh.renderOrder = 10000;
   return mesh;

@@ -6,7 +6,7 @@ import {
 } from './canvas_picking_door_split_hover_feedback.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
-import { isCanvasDoorArchCutSegment } from './canvas_picking_door_edit_shared.js';
+import { fitsStraightCutBesideArch } from './canvas_picking_door_edit_shared.js';
 import { validateCanvasDoorCustomSplitAdd } from './canvas_picking_door_split_click_custom.js';
 import { resolveCanvasDoorStandardSplitTarget } from './canvas_picking_door_split_standard_target.js';
 import {
@@ -50,10 +50,6 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   const isSplitCustom = splitVariant === 'custom';
   const activeMarker: MarkerLike | null = (isSplitCustom ? cutMarker : marker) || null;
   const hit = __resolveHoverHit(args, args.isDoorLikePartId);
-  if (isCanvasDoorArchCutSegment(hit?.hitDoorGroup)) {
-    if (cutMarker) cutMarker.visible = false;
-    return false;
-  }
   let screenRemoveCandidate: CanvasDoorCustomSplitScreenRemoveCandidate | null = null;
   if (!hit && isSplitCustom) {
     screenRemoveCandidate = resolveCanvasDoorCustomSplitScreenRemoveCandidate({
@@ -208,7 +204,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
         pointerY,
       });
       yUse = addValidation.yAbs;
-      isBlocked = !addValidation.canAdd;
+      isBlocked = !addValidation.canAdd || !fitsStraightCutBesideArch(App, doorBaseKey, { minY, maxY }, yUse);
       hasAlignedCut =
         !isBlocked &&
         hasCanvasDoorCustomSplitHeightAlignment({

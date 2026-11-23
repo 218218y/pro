@@ -9,7 +9,7 @@ import {
   pushHingedDoorSegment,
 } from './hinged_doors_module_ops_shared.js';
 import { hasSketchExternalDrawerDoorCutsInConfig } from './sketch_external_drawer_door_cut_ownership.js';
-import { grooveForPart } from './hinged_doors_module_ops_split_parts.js';
+import { grooveForPart, partIdForSegment } from './hinged_doors_module_ops_split_parts.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -149,23 +149,45 @@ export function appendArchedHingedDoorOps(
   if (!(halfWidth > 0) || curveLow - gap - rect.minY < minSegment || rect.maxY - curveHigh - gap < minSegment)
     return false;
 
+  const custom = state.topSplitEnabled ? computeCustomSplitCutsY(ctx, state) : [];
+  const fixedTop =
+    state.topSplitEnabled && ctx.isDoorSplitExplicitOn(ctx.cfg.splitDoorsMap, state.currentDoorId);
+  const straight = mergeSplitCuts(
+    ctx,
+    custom.length ? custom : fixedTop ? [computeTopSplitLineY(ctx, state)] : [],
+    computeBottomSplitLineY(ctx, state, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM),
+    state.bottomSplitEnabled
+  );
+  const clearance = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM + minSegment;
+  if (straight.some(y => y > curveLow - clearance && y < curveHigh + clearance)) return false;
+
+  const boundaries = [
+    ...straight.map(y => ({ min: y, max: y, curved: false })),
+    { min: curveLow, max: curveHigh, curved: true },
+  ].sort((a, b) => a.min - b.min);
+  const count = boundaries.length + 1;
   const fullCurtain = ctx.resolveCurtainForPart(state.sourceKey, null);
   const fullGroove = ctx.grooveValSafe(state.currentDoorId, 'full', false);
   const defaultHandle = computeDefaultHandleAbsY(ctx, state.currentDoorId);
-  for (const upper of [false, true]) {
-    const partId = upper ? state.topKey : state.botKey;
-    const bottom = upper ? curveLow + gap : rect.minY;
-    const top = upper ? rect.maxY : curveHigh - gap;
+  const halfClearance = HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM / 2;
+  const splitHalfGap = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM / 2;
+  for (let index = 0; index < count; index++) {
+    const lower = boundaries[index - 1];
+    const upper = boundaries[index];
+    const partId = partIdForSegment(state, count, index);
+    const bottom = lower ? lower.min + (lower.curved ? gap : splitHalfGap) : rect.minY;
+    const top = upper ? upper.max - (upper.curved ? gap : splitHalfGap) : rect.maxY;
     const segY = (bottom + top) / 2;
-    const safeHandleBottom = upper ? curveHigh + gap : bottom;
-    const safeHandleTop = upper ? top : curveLow - gap;
-    const halfClearance = HINGED_DOOR_RENDER_POLICY.visualHeightClearanceM / 2;
-    const straightEdge = (upper ? top - halfClearance : bottom + halfClearance) - segY;
-    const contour = [
-      { x: -halfWidth, y: straightEdge },
-      ...curve.map(point => ({ x: point.x, y: point.y - segY + (upper ? gap : -gap) })),
-      { x: halfWidth, y: straightEdge },
-    ];
+    const safeHandleBottom = lower?.curved ? curveHigh + gap : bottom;
+    const safeHandleTop = upper?.curved ? curveLow - gap : top;
+    const contour =
+      lower?.curved || upper?.curved
+        ? [
+            { x: -halfWidth, y: (lower?.curved ? top - halfClearance : bottom + halfClearance) - segY },
+            ...curve.map(point => ({ x: point.x, y: point.y - segY + (lower?.curved ? gap : -gap) })),
+            { x: halfWidth, y: (lower?.curved ? top - halfClearance : bottom + halfClearance) - segY },
+          ]
+        : null;
     pushHingedDoorSegment(ctx, state, {
       partId,
       segY,
@@ -175,7 +197,7 @@ export function appendArchedHingedDoorOps(
       handleAbsY: clampHandleAbsY(ctx, defaultHandle, safeHandleBottom, safeHandleTop, partId),
       allowHandle: true,
       colorVal: ctx.getPartColorValueSafe(partId),
-      archCut: { contour, baseMinY: rect.minY - segY, baseMaxY: rect.maxY - segY },
+      ...(contour ? { archCut: { contour, baseMinY: rect.minY - segY, baseMaxY: rect.maxY - segY } } : {}),
     });
   }
   return true;

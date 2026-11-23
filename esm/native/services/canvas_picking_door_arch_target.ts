@@ -1,9 +1,12 @@
 import type { Vector3Like } from '../../../types/three_like.js';
 import type { AppContainer, Object3DLike, ThreeLike, Vec3Like } from '../../../types';
-import type { DoorArchCut, DoorArchProfile, DoorArchRect } from '../../../types/maps.js';
+import type { DoorArchCut, DoorArchPoint, DoorArchProfile, DoorArchRect } from '../../../types/maps.js';
 import {
   containsDoorArchPoint,
   doorArchY,
+  doorContourSpanAtX,
+  doorArchOutline,
+  intersectDoorContours,
   getDoorsArray,
   MIN_DOOR_ARCH_CUT_MARGIN_M,
   isCanonicalDoorVisualMapKey,
@@ -25,6 +28,8 @@ import { __wp_scopeCornerPartKeyForStack } from './canvas_picking_core_helpers.j
 
 export type ArchSurface = {
   group: Object3DLike;
+  anchor: Object3DLike;
+  contour?: readonly DoorArchPoint[];
   key: string;
   rect: DoorArchRect;
   z: number;
@@ -58,6 +63,7 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
   if (typeof partId !== 'string' || ud.__wpDoorRemoved === true || group.visible === false) return null;
 
   let owner = group;
+  let contour: readonly DoorArchPoint[] | undefined;
   let rect = readDoorLeafRectFromUserData(ud);
   let key = __wp_scopeCornerPartKeyForStack(partId, ud.__wpStack === 'bottom' ? 'bottom' : 'top');
   let z = typeof ud.__wpFrontThickness === 'number' ? (ud.__wpFrontThickness / 2) * face : 0;
@@ -74,7 +80,8 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
       rect = { ...rect, minY: ud.__wpArchCutBaseMinY, maxY: ud.__wpArchCutBaseMaxY };
     }
   } else {
-    if (!isCanonicalDoorVisualMapKey(key) || ud.__wpArchCutBaseMinY !== undefined) return null;
+    if (!isCanonicalDoorVisualMapKey(key) || (tool === 'mirror' && ud.__wpArchCutBaseMinY !== undefined))
+      return null;
     if (tool === 'groove') {
       const surface = resolveGrooveSurfaceOwnerByPartId(group, key);
       if (!surface || face < 0) return null;
@@ -82,6 +89,8 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
       if (typeof surfaceZ !== 'number') return null;
       owner = surface as Object3DLike;
       rect = readGrooveSurfaceRectFromUserData(owner.userData);
+      const outline = owner.userData.__wpGrooveSurfaceContour;
+      if (Array.isArray(outline)) contour = outline as DoorArchPoint[];
       z = surfaceZ;
     } else {
       const surface = resolveMirrorPlacementOwnerByPartId(group, key);
@@ -96,6 +105,8 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
   const toLocal = owner.worldToLocal as (point: Vector3Like) => Vector3Like;
   return {
     group,
+    anchor: owner,
+    ...(contour ? { contour } : {}),
     key,
     rect,
     z,
@@ -190,7 +201,7 @@ export function resolveDoorArchTarget(args: {
   });
   if (args.tool === 'cut') {
     // Standard straight segments share a leaf. Measure its full height in
-    // each segment's own coordinates before planning a replacement curve.
+    // each segment's own coordinates before planning a cut.
     const families = new Map<string, ArchSurface[]>();
     for (const surface of surfaces) {
       const family = families.get(surface.key) ?? [];
@@ -336,7 +347,15 @@ export function planDoorArch(args: {
       },
     ];
   });
-  return slices.length === target.surfaces.length ? slices : [];
+  if (slices.length !== target.surfaces.length) return [];
+  if (
+    slices.some(slice => {
+      const { contour } = slice.surface;
+      return contour && !intersectDoorContours(doorArchOutline(slice.rect, slice.profile), contour).length;
+    })
+  )
+    return [];
+  return slices;
 }
 
 export function makeDoorArchCut(slice: DoorArchSlice): DoorArchCut {
@@ -361,14 +380,19 @@ export function readDoorArchCutSlice(surface: ArchSurface, value: unknown): Door
   };
 }
 
+function cutHitYInRange(curveY: number, pointerY: number): boolean {
+  return pointerY >= curveY - 0.075 && pointerY <= curveY + 0.035;
+}
+
 export function hitsDoorArchSlice(slice: DoorArchSlice, point: Vector3Like, tool: DoorArchTool): boolean {
   const x = Math.max(slice.rect.minX, Math.min(slice.rect.maxX, point.x));
   if (tool === 'cut') {
-    return (
-      Math.abs(x - point.x) < 0.014 && Math.abs(doorArchY(slice.rect, slice.profile, x) - point.y) < 0.035
-    );
+    return Math.abs(x - point.x) < 0.018 && cutHitYInRange(doorArchY(slice.rect, slice.profile, x), point.y);
   }
   if (Math.abs(x - point.x) > 0.01) return false;
+  const face = slice.surface.contour && doorContourSpanAtX(slice.surface.contour, x);
+  if (slice.surface.contour && (!face || point.y < face.minY - 0.006 || point.y > face.maxY + 0.006))
+    return false;
   // A pick on the apex or the narrow air gap should still remove the previewed region.
   const y = point.y - 0.012;
   return (

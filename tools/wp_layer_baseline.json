@@ -3760,7 +3760,7 @@
       "statement": {
         "toFile": "esm/shared/door_arch_geometry.ts",
         "kind": "value",
-        "importedSymbols": ["doorArchY"],
+        "importedSymbols": ["doorArchY", "intersectDoorContours"],
         "syntax": "static-import"
       },
       "owner": "door-arch-authoring",
@@ -3846,9 +3846,12 @@
         "kind": "value",
         "importedSymbols": [
           "containsDoorArchPoint",
+          "doorArchCutRange",
           "doorArchOutline",
           "doorArchesOverlap",
           "doorArchY",
+          "doorContourSpanAtX",
+          "intersectDoorContours",
           "readDoorArchCut",
           "sampleDoorArch"
         ],

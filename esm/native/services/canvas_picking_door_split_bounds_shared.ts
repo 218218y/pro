@@ -145,6 +145,12 @@ export function readCanvasDoorSplitEffectiveNodeBounds(args: {
   const partId = typeof ud.partId === 'string' ? String(ud.partId) : '';
   const baseKey = args.baseKey || __wp_getSplitHoverDoorBaseKey(partId);
 
+  const archBaseMin = readFiniteNumber(ud.__wpArchCutBaseMinY);
+  const archBaseMax = readFiniteNumber(ud.__wpArchCutBaseMaxY);
+  if (archBaseMin !== null && archBaseMax !== null && archBaseMax > archBaseMin) {
+    const worldY = readNodeWorldY(args.App, rec);
+    if (worldY !== null) return { minY: worldY + archBaseMin, maxY: worldY + archBaseMax };
+  }
   if (baseKey && ud.__wpSketchSegmentedDoor === true) {
     const visibleBounds = readCanvasDoorSplitVisibleSegmentBounds({
       App: args.App,

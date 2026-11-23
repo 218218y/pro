@@ -1,4 +1,4 @@
-import { doorArchY } from '../../shared/door_arch_geometry.js';
+import { doorArchY, intersectDoorContours } from '../../shared/door_arch_geometry.js';
 import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import { readGrooveLayoutList, resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
@@ -8,6 +8,7 @@ import {
   getCachedDoorVisualMaterial,
 } from './visuals_and_contents_door_visual_cache.js';
 
+import type { DoorArchPoint } from '../../../types/maps.js';
 import type { AppContainer, GrooveLayoutList, Object3DLike, ThreeLike } from '../../../types/index.js';
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
 
@@ -26,6 +27,7 @@ export function appendGrooveStrips(args: {
   densityOverride?: number;
   linesCountOverride?: unknown;
   grooveLayout?: GrooveLayoutList | null;
+  contour?: readonly DoorArchPoint[];
 }): void {
   const {
     App,
@@ -42,6 +44,7 @@ export function appendGrooveStrips(args: {
     densityOverride,
     linesCountOverride,
     grooveLayout,
+    contour,
   } = args;
   visualGroup.userData = visualGroup.userData || {};
   visualGroup.userData.__wpGrooveSurface = true;
@@ -54,6 +57,7 @@ export function appendGrooveStrips(args: {
   };
   visualGroup.userData.__wpGrooveSurfaceZ = zOffset;
   visualGroup.userData.__wpGrooveSurfaceZSign = zSign;
+  if (contour) visualGroup.userData.__wpGrooveSurfaceContour = contour;
   if (!hasGrooves) return;
 
   const grooveMat = getCachedDoorVisualMaterial(
@@ -100,6 +104,40 @@ export function appendGrooveStrips(args: {
             top - archRect.minY - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
           )
         : geometryHeight;
+      const x = placement.centerX + (isHorizontal ? 0 : crossOffset);
+      const y = arch ? (archRect.minY + top) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0);
+      const z = zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign;
+      if (contour) {
+        const x0 = x - geometryWidth / 2;
+        const x1 = x + geometryWidth / 2;
+        const y0 = y - height / 2;
+        const y1 = y + height / 2;
+        const patch = intersectDoorContours(
+          [
+            { x: x0, y: y0 },
+            { x: x0, y: y1 },
+            { x: x1, y: y1 },
+            { x: x1, y: y0 },
+          ],
+          contour
+        );
+        if (!patch.length) continue;
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute?.(
+          'position',
+          new THREE.Float32BufferAttribute(
+            patch.flatMap(point => [point.x, point.y, z]),
+            3
+          )
+        );
+        geometry.computeVertexNormals?.();
+        const strip = new THREE.Mesh(geometry, grooveMat);
+        strip.userData = strip.userData || {};
+        strip.userData.__keepMaterial = true;
+        tagDoorVisualPart(strip, 'door_groove_strip');
+        visualGroup.add(strip);
+        continue;
+      }
       const stripGeo = getCachedDoorVisualGeometry(
         App,
         createDoorVisualCacheKey('door_groove_strip', [geometryWidth, height]),
@@ -109,11 +147,7 @@ export function appendGrooveStrips(args: {
       strip.userData = strip.userData || {};
       strip.userData.__keepMaterial = true;
       tagDoorVisualPart(strip, 'door_groove_strip');
-      strip.position.set(
-        placement.centerX + (isHorizontal ? 0 : crossOffset),
-        arch ? (archRect.minY + top) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0),
-        zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign
-      );
+      strip.position.set(x, y, z);
       visualGroup.add(strip);
     }
   }

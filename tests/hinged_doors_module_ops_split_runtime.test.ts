@@ -188,30 +188,35 @@ test('module door split emission also defers when a sketch box contains external
   assert.equal(state.shouldSplitThisDoor, false);
 });
 
-test('a saved arched cut emits two independent leaves with matching curved edges', () => {
+test('a saved arched cut emits matching curved edges between two straight cuts', () => {
   const cut = { peak: 0.67, profile: { start: 0, end: 1, rise: 0.12 } };
   const persisted = readSplitDoorsMapValue(
     JSON.parse(
       JSON.stringify({
         splitarch_d5: cut,
         splitarch_d6: { ...cut, peak: 0 },
-        splitpos_d5: [0.5],
+        splitpos_d5: [0.35, 0.85],
       })
     )
   );
   const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', persisted);
   assert.deepEqual(splitDoorsMap.splitarch_d5, cut);
   assert.equal(splitDoorsMap.splitarch_d6, undefined);
-  assert.deepEqual(splitDoorsMap.splitpos_d5, [0.5]);
+  assert.deepEqual(splitDoorsMap.splitpos_d5, [0.35, 0.85]);
 
   const ctx = createCtx({ cfg: { splitDoorsMap } });
   assert.equal(appendArchedHingedDoorOps(ctx, createState()), true);
   const ops = ctx.opsList.map(readHingedDoorOp);
-  assert.equal(ops.length, 2);
-  const [lower, upper] = ops;
-  assert.equal(lower?.partId, 'd5_bot');
-  assert.equal(upper?.partId, 'd5_top');
+  assert.deepEqual(
+    ops.map(op => op.partId),
+    ['d5_bot', 'd5_mid1', 'd5_mid2', 'd5_top']
+  );
+  const [bottom, lower, upper, top] = ops;
+  assert.equal(bottom.archCut, undefined);
+  assert.equal(top.archCut, undefined);
   assert.ok(lower?.archCut && upper?.archCut);
+  assert.ok(Math.abs(bottom.y + bottom.height / 2 - 0.7) < 0.01);
+  assert.ok(Math.abs(top.y - top.height / 2 - 1.7) < 0.01);
   const edge = lower.archCut.contour.slice(1, -1);
   const corresponding = upper.archCut.contour.slice(1, -1);
   assert.ok(edge.length > 20);
