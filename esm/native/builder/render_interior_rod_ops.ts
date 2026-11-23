@@ -196,6 +196,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       manualHeightLimit,
       woodThick,
       shelfThick,
+      builtInDeskRange: safeArgs.builtInDeskRange,
     });
 
     const hasStorageBarrier =
@@ -274,6 +275,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       woodThick,
       shelfThick,
       shelfBlockerMode: 'surface',
+      builtInDeskRange: safeArgs.builtInDeskRange,
     });
 
     const canRenderSingleHanger = canSingleHangerFitBelowRod({

@@ -53,6 +53,7 @@ export type InteriorLayoutParams = ValueRecord & {
   innerW?: number;
   woodThick?: number;
   shelfThick?: number;
+  builtInDeskRange?: import('../../../types/built_in_desk.js').BuiltInDeskVerticalRange;
   internalDepth?: number;
   braceFrontZ?: number;
   internalCenterX?: number;
@@ -166,6 +167,7 @@ export function buildSketchExtrasArgs(
     innerW: readNumber(input.innerW, 0),
     woodThick: readNumber(input.woodThick, 0),
     shelfThick: readNumber(input.shelfThick, readNumber(input.woodThick, 0)),
+    ...(input.builtInDeskRange ? { builtInDeskRange: input.builtInDeskRange } : {}),
     internalDepth: readNumber(input.internalDepth, 0),
     ...(input.braceFrontZ !== undefined ? { braceFrontZ: input.braceFrontZ } : {}),
     internalCenterX: readNumber(input.internalCenterX, 0),

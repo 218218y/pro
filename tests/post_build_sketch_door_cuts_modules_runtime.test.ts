@@ -203,10 +203,10 @@ const moduleDeskHost: BuiltInDeskHost = {
   geometry: { leftX: -0.45, rightX: 0.45, bottomY: 0, topY: 2, backZ: 0, frontZ: 0.6, thickness: 0.018 },
 };
 
-function renderDeskForDoorCut(App: Record<string, unknown>, host: BuiltInDeskHost) {
+function renderDeskForDoorCut(App: Record<string, unknown>, host: BuiltInDeskHost, topNorm = 0.4) {
   const desk = resolveBuiltInDesk(host, {
     lengthCm: 100,
-    topNorm: 0.4,
+    topNorm,
     drawerCount: 3,
     drawerSide: 'right',
     support: 'wall',
@@ -268,19 +268,23 @@ test('a desk clears 30 cm above and below its body and preserves an existing cut
   }
 });
 
-test('a standalone box desk opening clips to its own door when the underside is near the bottom', () => {
+test('a standalone box desk removes the short leaf below its opening', () => {
   const App: Record<string, unknown> = {};
   const cabinetDoor = createDoorGroup();
   const boxDoor = createBoxDoorGroup();
   const sentinel = new FakeGroup();
   cabinetDoor.add(sentinel);
   getDoorsArray(App).push(...[cabinetDoor, boxDoor].map(group => ({ type: 'hinged', group }) as any));
-  const { surfaceY } = renderDeskForDoorCut(App, {
-    ...moduleDeskHost,
-    boxId: 'box-1',
-    boxIsStandalone: true,
-    geometry: { ...moduleDeskHost.geometry, bottomY: 0.5, topY: 1.5 },
-  });
+  const { surfaceY } = renderDeskForDoorCut(
+    App,
+    {
+      ...moduleDeskHost,
+      boxId: 'box-1',
+      boxIsStandalone: true,
+      geometry: { ...moduleDeskHost.geometry, bottomY: 0.5, topY: 1.5 },
+    },
+    0.52
+  );
   const cutArgs = {
     App: App as any,
     THREE: FakeTHREE as any,

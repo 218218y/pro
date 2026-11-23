@@ -116,6 +116,7 @@ export function resolveWinterBraceDoorPlan(args: {
   source: 'module' | 'box';
   gridY: (index: number) => number;
   sketchY: (norm: number) => number | null;
+  hideShelfAtY?: (y: number) => boolean;
 }): WinterBraceDoorPlan {
   const config = winterBraceRecord(args.config);
   const custom = winterBraceRecord(config?.customData);
@@ -135,6 +136,8 @@ export function resolveWinterBraceDoorPlan(args: {
     const y = args.sketchY(shelf.yNorm);
     if (y !== null) ys.push(y);
   }
-  const cuts = [...new Set(ys.filter(Number.isFinite))].sort((a, b) => a - b);
+  const cuts = [...new Set(ys.filter(y => Number.isFinite(y) && !args.hideShelfAtY?.(y)))].sort(
+    (a, b) => a - b
+  );
   return { cuts, fixedBelowY: config?.winterBraceDoorsUnlocked === true ? null : (cuts.at(-1) ?? null) };
 }

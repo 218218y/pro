@@ -16,6 +16,7 @@ import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_co
 
 import { readObject, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import { isCellBelowWinterBrace, resolveWinterBlanketSupport } from './winter_brace_contents_layout.js';
 
 export function resolveSketchPartitionShelfWidths(width: number): {
@@ -93,19 +94,11 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
 
   function resolveNextShelfBottomY(currentY: number): number {
     let topLimitY = effectiveTopY;
-    for (let j = 0; j < shelves.length; j++) {
-      const nextShelf = shelves[j] || null;
-      if (!nextShelf) continue;
-
-      const nextY = yFromNorm(nextShelf.yNorm);
-      if (
-        nextY == null ||
-        !(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)
-      ) {
+    for (const { y: nextY, height } of placements) {
+      if (!(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)) {
         continue;
       }
-
-      const nextBottomY = nextY - shelfHeightForVariant(normalizeSketchShelfVariant(nextShelf.variant)) / 2;
+      const nextBottomY = nextY - height / 2;
       if (nextBottomY < topLimitY) topLimitY = nextBottomY;
     }
     return topLimitY;
@@ -121,20 +114,16 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     );
   }
 
-  const placements = shelves.flatMap(shelf => {
-    const y = shelf ? yFromNorm(shelf.yNorm) : null;
+  const placements = shelves.flatMap((shelf, i) => {
+    if (!shelf) return [];
+    const y = yFromNorm(shelf.yNorm);
     if (y == null) return [];
     const variant = normalizeSketchShelfVariant(shelf.variant);
-    return [{ y, height: shelfHeightForVariant(variant), variant }];
+    const height = shelfHeightForVariant(variant);
+    return isShelfHiddenByDesk(args.builtInDeskRange, y, height) ? [] : [{ shelf, i, y, height, variant }];
   });
 
-  for (let i = 0; i < shelves.length; i++) {
-    const shelf = shelves[i] || null;
-    if (!shelf) continue;
-    const y = yFromNorm(shelf.yNorm);
-    if (y == null) continue;
-    const rawVariant = normalizeSketchShelfVariant(shelf.variant);
-    const variant = rawVariant;
+  for (const { shelf, i, y, height: shelfH, variant } of placements) {
     const isBrace = forceBraceShelves || variant === 'brace' || variant === 'winter_brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double';
@@ -169,7 +158,6 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       isGlass && boxHere ? resolveSketchBoxGlassShelfRearClearanceM(nominalShelfDepth) : 0;
     const shelfDepth = nominalShelfDepth - rearClearance;
     const shelfZ = backZ0 + rearClearance + shelfDepth / 2;
-    const shelfH = shelfHeightForVariant(variant);
     const shelfPartId = createSketchShelfPartId(moduleKeyStr, i + 1);
     const mat =
       isGlass && glassMat

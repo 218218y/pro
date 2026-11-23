@@ -59,6 +59,7 @@ export type SketchDoorCutSelection = {
   fixedBelowY?: number | null;
   basePartId: string;
   stacks: SketchDrawerStackBounds[];
+  deskOpenings?: SketchDrawerStackBounds[];
   splitPosList?: number[];
 };
 

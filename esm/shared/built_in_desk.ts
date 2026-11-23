@@ -15,6 +15,7 @@ export const BUILT_IN_DESK_DIMENSIONS = {
   drawerBayHeightM: 0.12,
   frontGapM: 0.003,
   doorOpeningClearanceM: 0.3,
+  shelfClearanceM: 0.1,
   floorY: SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY,
 } as const;
 
@@ -76,7 +77,7 @@ export function readBuiltInDeskPlacement(value: unknown): BuiltInDeskPlacement |
 
 export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltInDeskPlacement) {
   const { thickness, leftX, rightX, topY, bottomY, backZ, frontZ } = host;
-  const { drawerBayHeightM, frontGapM, floorY } = BUILT_IN_DESK_DIMENSIONS;
+  const { drawerBayHeightM, frontGapM, floorY, shelfClearanceM } = BUILT_IN_DESK_DIMENSIONS;
   const deskHeight = 2 * thickness + drawerBayHeightM;
   const width = rightX - leftX;
   const minTopY = Math.max(bottomY, floorY) + deskHeight;
@@ -150,7 +151,12 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
     };
   });
 
-  const verticalRange = { bottomY: outsideBottomY, surfaceY };
+  const verticalRange = {
+    bottomY: outsideBottomY,
+    surfaceY,
+    shelfMinY: outsideBottomY - shelfClearanceM,
+    shelfMaxY: surfaceY + shelfClearanceM,
+  };
   return {
     top,
     bottom,

@@ -44,6 +44,7 @@ export type CornerWingDoorContext = {
   startY: number;
   wingH: number;
   wingD: number;
+  wingW: number;
   activeWidth: number;
   blindWidth: number;
   uiAny: CornerWingCellFlowParams['ctx']['uiAny'];

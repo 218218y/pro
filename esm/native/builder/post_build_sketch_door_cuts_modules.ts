@@ -286,7 +286,9 @@ export function applySketchExternalDrawerDoorCuts(args: {
       // Authored leaves such as d0_top/d0_bot/d0_mid1 normalize back to d0;
       // replaying split positions on them is the recursive 1 -> 3 -> 7 failure.
       const isCanonicalSourceDoor = partId === basePartId || partId === `${basePartId}_full`;
-      if (!isCanonicalSourceDoor) return deskCuts.length ? { stacks: deskCuts, basePartId: partId } : null;
+      if (!isCanonicalSourceDoor) {
+        return deskCuts.length ? { stacks: [], deskOpenings: deskCuts, basePartId: partId } : null;
+      }
       const ownsDeferredSplit = deferredSplitModuleKeys.has(moduleKey);
       const winterPlan = asRecord(ud.__wpWinterBraceDoorPlan);
       const lineCutsY = Array.isArray(winterPlan?.cuts)
@@ -300,7 +302,8 @@ export function applySketchExternalDrawerDoorCuts(args: {
       )
         return null;
       return {
-        stacks: [...stacks, ...deskCuts],
+        stacks,
+        deskOpenings: deskCuts,
         basePartId,
         splitPosList: stacks.length || ownsDeferredSplit ? splitPosList : [],
         lineCutsY,

@@ -9,6 +9,9 @@ import {
 } from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
 import { getCornerHexDoorDepth } from './corner_wing_hex_cell_geometry.js';
+import { resolveBuiltInDesk } from './render_built_in_desk.js';
+import { resolveCornerWingDeskHost } from './corner_wing_cell_interiors_cell.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 
 // Corner wing door state derivation.
 //
@@ -104,11 +107,20 @@ export function createCornerWingDoorState(ctx: CornerWingDoorContext, doorIdx: n
   });
   const divisions =
     typeof cellCfg?.gridDivisions === 'number' && cellCfg.gridDivisions > 1 ? cellCfg.gridDivisions : 6;
+  const deskPlacement = ctx.asRecord(cellCfg?.sketchExtras).builtInDesk;
+  const desk =
+    cell && deskPlacement
+      ? resolveBuiltInDesk(
+          resolveCornerWingDeskHost({ ...ctx, __stackKey: ctx.stackKey }, cell),
+          deskPlacement
+        )
+      : null;
   const winterBraceDoorPlan = resolveWinterBraceDoorPlan({
     config: cellCfg,
     source: 'module',
     gridY: index => cellEffBottomY + (index * (shelfTopY - cellEffBottomY)) / divisions,
     sketchY: placement.yFromNorm,
+    hideShelfAtY: y => isShelfHiddenByDesk(desk?.plan.verticalRange, y, ctx.woodThick),
   });
   const shouldSplit =
     winterBraceDoorPlan.cuts.length > 0 || (ctx.splitDoors && (topSplitEnabled || bottomSplitEnabled));

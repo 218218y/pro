@@ -1,5 +1,16 @@
 import type { BuilderFoldedContentsPolicy } from '../../../types';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
 import type { ResolvedBuiltInDesk } from './render_built_in_desk.js';
+
+export function isShelfHiddenByDesk(
+  deskRange: BuiltInDeskVerticalRange | null | undefined,
+  centerY: number,
+  height: number
+): boolean {
+  return (
+    !!deskRange && centerY + height / 2 >= deskRange.shelfMinY && centerY - height / 2 <= deskRange.shelfMaxY
+  );
+}
 
 type AddFoldedContents<Group> = (
   x: number,

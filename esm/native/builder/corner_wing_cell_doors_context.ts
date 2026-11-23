@@ -57,6 +57,7 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
     startY: ctx.startY,
     wingH: ctx.wingH,
     wingD: ctx.wingD,
+    wingW: ctx.wingW,
     activeWidth: ctx.activeWidth,
     blindWidth: ctx.blindWidth,
     uiAny: ctx.uiAny,

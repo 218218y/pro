@@ -268,6 +268,7 @@ export function renderInteriorSketchBoxes(args: RenderInteriorSketchBoxesArgs): 
       yFromBoxNorm,
       resolveBoxDrawerSpan,
       args,
+      desk,
     });
 
     renderSketchBoxBoring({ renderArgs: args, shell: shellResult.state, startChildCount });

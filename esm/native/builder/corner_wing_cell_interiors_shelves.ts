@@ -1,4 +1,6 @@
 import { computeInteriorPresetOps } from './pure_api.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
 import { createWinterBraceShelfGeometry } from './winter_brace_shelf_geometry.js';
 import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import {
@@ -190,7 +192,8 @@ function resolveCornerShelfContentsMaxHeight(
   shelfRuntime: CornerWingInteriorShelfRuntime,
   gridIndex: number,
   shelfY: number,
-  shelfH: number
+  shelfH: number,
+  deskRange: BuiltInDeskVerticalRange | undefined
 ): number {
   const { runtime, cfgCell } = cellRuntime;
   const shelfTopY = shelfY + shelfH / 2;
@@ -207,7 +210,9 @@ function resolveCornerShelfContentsMaxHeight(
     if (shelves[nextIndex - 1]) {
       const nextVariant = shelfRuntime.readCornerShelfVariant(cfgCell, nextIndex);
       const nextShelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, nextVariant);
-      topLimitY = cellRuntime.effectiveBottomY + nextIndex * cellRuntime.localGridStep - nextShelfH / 2;
+      const nextY = cellRuntime.effectiveBottomY + nextIndex * cellRuntime.localGridStep;
+      if (isShelfHiddenByDesk(deskRange, nextY, nextShelfH)) continue;
+      topLimitY = nextY - nextShelfH / 2;
       break;
     }
   }
@@ -218,7 +223,8 @@ function resolveCornerShelfContentsMaxHeight(
 export function addCornerWingGridShelf(
   cellRuntime: CornerWingInteriorCellRuntime,
   shelfRuntime: CornerWingInteriorShelfRuntime,
-  gridIndex: number
+  gridIndex: number,
+  deskRange?: BuiltInDeskVerticalRange
 ): void {
   const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, cellInnerW, __braceSet } = cellRuntime;
   const y = cellRuntime.effectiveBottomY + gridIndex * cellRuntime.localGridStep;
@@ -232,6 +238,7 @@ export function addCornerWingGridShelf(
     cellRuntime.__backFaceZ;
   const shelfDepth = isBraceShelf ? braceDepth : cellRuntime.__regularDepth;
   const shelfH = cornerShelfHeightForVariant(runtime, shelfRuntime, shelfVariant);
+  if (isShelfHiddenByDesk(deskRange, y, shelfH)) return;
   const shelfW = isBraceShelf ? cellInnerW : cellShelfW;
   const shelfZ = cellRuntime.__backFaceZ + shelfDepth / 2;
   const rawShelfPartId = createCornerShelfPartId(cellKey, gridIndex);
@@ -292,6 +299,18 @@ export function addCornerWingGridShelf(
   let previousShelfIndex: number | null = null;
   for (let index = 1; index < gridDivisions; index++) {
     if (!activeShelves[index - 1]) continue;
+    if (deskRange) {
+      const variant = shelfRuntime.readCornerShelfVariant(cfgCell, index);
+      const height = cornerShelfHeightForVariant(runtime, shelfRuntime, variant);
+      if (
+        isShelfHiddenByDesk(
+          deskRange,
+          cellRuntime.effectiveBottomY + index * cellRuntime.localGridStep,
+          height
+        )
+      )
+        continue;
+    }
     if (index > gridIndex && nextShelfIndex === null) nextShelfIndex = index;
     if (index < gridIndex) previousShelfIndex = index;
   }
@@ -330,7 +349,7 @@ export function addCornerWingGridShelf(
         cellInnerW - CORNER_WING_INTERIOR_POLICY.foldedContentsWidthClearanceM
       ),
       runtime.wingGroup,
-      resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),
+      resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH, deskRange),
       shelfDepth,
       {
         showContentsEnabled: runtime.showContentsEnabled,

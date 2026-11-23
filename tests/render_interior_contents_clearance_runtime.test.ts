@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorCustomOps } from '../esm/native/builder/render_interior_custom_ops.js';
 import { createBuilderRenderInteriorPresetOps } from '../esm/native/builder/render_interior_preset_ops.js';
+import { resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
 import { computeModuleLayout } from '../esm/native/builder/core_layout_compute.ts';
 import { moduleRequiresCustomBoundaryGeometry } from '../esm/native/builder/module_custom_geometry_policy.ts';
 import { resolveModuleVerticalMetrics } from '../esm/native/builder/module_loop_pipeline_module_frame.ts';
@@ -191,6 +192,57 @@ test('renderInteriorPresetOps passes real shelf-space clearance to folded/librar
   assert.equal(firstShelfCall.sketchMode, true);
   assert.equal(firstShelfCall.hasExplicitOutlineCallback, true);
   assert.equal(firstShelfCall.isLibraryMode, true);
+});
+
+test('a desk hides preset and custom shelves around both plates and leaves their saved positions intact', () => {
+  const desk = resolveBuiltInDesk(
+    {
+      moduleKey: 0,
+      stack: 'top',
+      geometry: {
+        leftX: -0.5,
+        rightX: 0.5,
+        bottomY: 0,
+        topY: 2.4,
+        backZ: -0.3,
+        frontZ: 0.3,
+        thickness: 0.018,
+      },
+    },
+    { lengthCm: 120, drawerCount: 3, support: 'leg', drawerSide: 'right', topNorm: 0.35 }
+  );
+  assert.ok(desk);
+  const shelfIndexes = [3, 4, 5, 6, 7];
+  const ops = { shelves: shelfIndexes, rods: [] };
+  const render = [
+    (input: ReturnType<typeof commonInput>) =>
+      createPresetRenderer().applyInteriorPresetOps({ ...input, presetOps: ops }),
+    (input: ReturnType<typeof commonInput>) =>
+      createCustomRenderer().applyInteriorCustomOps({ ...input, customOps: ops }),
+  ];
+  for (const draw of render) {
+    const boards: BoardCall[] = [];
+    const folded: FoldedCall[] = [];
+    const input = { ...commonInput(folded, boards), localGridStep: 0.15, gridDivisions: 16 };
+    const withDesk = { ...input, builtInDeskRange: desk.plan.verticalRange };
+    assert.equal(draw(withDesk), true);
+    const shelfParts = () => boards.map(board => board.partId);
+    assert.deepEqual(
+      shelfParts(),
+      [3, 7].map(index => `module_shelf_0_g${index}`)
+    );
+    assert.deepEqual(
+      folded.filter(call => call.shelfY > 0).map(call => Number(call.shelfY.toFixed(3))),
+      [0.459, 1.059]
+    );
+
+    boards.length = 0;
+    assert.equal(draw(input), true);
+    assert.deepEqual(
+      shelfParts(),
+      shelfIndexes.map(index => `module_shelf_0_g${index}`)
+    );
+  }
 });
 
 test('renderInteriorPresetOps emits folded/library contents on the bottom base shelf', () => {

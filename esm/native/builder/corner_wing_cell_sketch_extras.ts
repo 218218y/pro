@@ -186,6 +186,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       isInternalDrawersEnabled,
       addFoldedClothes,
       sketchExtras: extra,
+      ...(params.desk ? { builtInDeskRange: params.desk.plan.verticalRange } : {}),
     };
     fnX(extrasArgs);
   } catch (_e) {

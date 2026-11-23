@@ -22,7 +22,7 @@ import type {
 } from './removed_frame_side_construction_plan.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';
-import { fitFoldedContentsAroundDesk } from './built_in_desk_contents.js';
+import { fitFoldedContentsAroundDesk, isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import {
   normalizeSketchShelfVariant,
   resolveSketchBoxSegmentForContent,
@@ -79,19 +79,11 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
 
   function resolveNextShelfBottomY(currentY: number): number {
     let topLimitY = shell.innerTopY;
-    for (let j = 0; j < boxShelves.length; j++) {
-      const nextShelf = boxShelves[j] || null;
-      if (!nextShelf) continue;
-      const nextVariant = normalizeSketchShelfVariant(nextShelf.variant);
-      const nextShelfH = shelfHeightForVariant(nextVariant);
-      const nextY = yFromBoxNorm(nextShelf.yNorm, nextShelfH / 2);
-      if (
-        nextY == null ||
-        !(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)
-      ) {
+    for (const { y: nextY, height } of shelfPlacements) {
+      if (!(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)) {
         continue;
       }
-      const nextBottomY = nextY - nextShelfH / 2;
+      const nextBottomY = nextY - height / 2;
       if (nextBottomY < topLimitY) topLimitY = nextBottomY;
     }
     return topLimitY;
@@ -107,12 +99,12 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     );
   }
 
-  const shelfPlacements = boxShelves.flatMap(shelf => {
+  const shelfPlacements = boxShelves.flatMap((shelf, si) => {
     if (!shelf) return [];
     const variant = normalizeSketchShelfVariant(shelf.variant);
     const height = shelfHeightForVariant(variant);
     const y = yFromBoxNorm(shelf.yNorm, height / 2);
-    if (y == null) return [];
+    if (y == null || isShelfHiddenByDesk(args.desk?.plan.verticalRange, y, height)) return [];
     const segment = resolveSketchBoxSegmentForContent({
       dividers: boxDividers,
       boxCenterX: geometry.centerX,
@@ -125,36 +117,34 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       yNorm: shelf.yNorm,
     });
     return [
-      { y, height, variant, leftX: segment?.leftX ?? innerLeftX, rightX: segment?.rightX ?? innerRightX },
+      {
+        shelf,
+        si,
+        y,
+        height,
+        variant,
+        segment,
+        leftX: segment?.leftX ?? innerLeftX,
+        rightX: segment?.rightX ?? innerRightX,
+      },
     ];
   });
 
-  for (let si = 0; si < boxShelves.length; si++) {
-    const shelf = boxShelves[si] || null;
-    if (!shelf) continue;
-    const rawVariant = normalizeSketchShelfVariant(shelf.variant);
-    const shelfH = shelfHeightForVariant(rawVariant);
-    const shelfY = yFromBoxNorm(shelf.yNorm, shelfH / 2);
-    if (shelfY == null) continue;
-    const shelfSegment = resolveSketchBoxSegmentForContent({
-      dividers: boxDividers,
-      boxCenterX: geometry.centerX,
-      innerW: geometry.innerW,
-      woodThick,
-      xNorm: shelf.xNorm,
-      horizontalDividers: boxHorizontalDividers,
-      boxCenterY: shell.centerY,
-      innerH: shell.sideH,
-      yNorm: shelf.yNorm,
-    });
-    const segmentLeftX = shelfSegment ? shelfSegment.leftX : innerLeftX;
-    const segmentRightX = shelfSegment ? shelfSegment.rightX : innerRightX;
+  for (const {
+    shelf,
+    si,
+    y: shelfY,
+    height: shelfH,
+    variant,
+    segment: shelfSegment,
+    leftX: segmentLeftX,
+    rightX: segmentRightX,
+  } of shelfPlacements) {
     const touchesRemovedLeftSide =
       removedSideState.leftRemoved && Math.abs(segmentLeftX - innerLeftX) <= sideEdgeEpsilon;
     const touchesRemovedRightSide =
       removedSideState.rightRemoved && Math.abs(segmentRightX - innerRightX) <= sideEdgeEpsilon;
     const forceBraceByRemovedSide = touchesRemovedLeftSide || touchesRemovedRightSide;
-    const variant = rawVariant;
     const isBrace = forceBraceByRemovedSide || variant === 'brace' || variant === 'winter_brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double' || !variant;

@@ -139,7 +139,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
         typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
       );
       if (!stacks.length && !deskCuts.length && !splitPosList.length) return null;
-      return { stacks: [...stacks, ...deskCuts], basePartId, splitPosList };
+      return { stacks, deskOpenings: deskCuts, basePartId, splitPosList };
     },
   });
 }

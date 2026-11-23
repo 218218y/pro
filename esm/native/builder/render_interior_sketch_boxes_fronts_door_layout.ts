@@ -1,4 +1,5 @@
 import { resolveWinterBraceDoorPlan } from './winter_brace_shelf_geometry.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import { resolveSketchDoorSegmentPartId } from './post_build_sketch_door_cuts_rebuild_shared.js';
 import {
   getSketchBoxDoorPlacementSegmentKey,
@@ -243,6 +244,8 @@ export function resolveWinterBraceBoxDoorLayouts(
     source: 'box',
     gridY: () => NaN,
     sketchY: norm => yFromBoxNorm(norm, args.frontsArgs.args.woodThick / 2),
+    hideShelfAtY: y =>
+      isShelfHiddenByDesk(args.frontsArgs.desk?.plan.verticalRange, y, args.frontsArgs.args.woodThick),
   });
   if (!plan.cuts.length) return [layout];
   const bottom = layout.doorCenterY - layout.doorH / 2;

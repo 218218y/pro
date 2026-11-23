@@ -16,6 +16,7 @@ import { asRecord, getDoorEntryGroup, readKey, type ValueRecord } from './post_b
 import type {
   ApplySketchDrawerDoorCutsArgs,
   SketchDrawerCutSegment,
+  SketchDrawerStackBounds,
 } from './post_build_sketch_door_cuts_contracts.js';
 import {
   normalizeSketchDrawerCutIntervals,
@@ -137,6 +138,20 @@ export function readSketchDoorSplitSelection(cfg: ValueRecord, partId: unknown):
   };
 }
 
+function intersectDoorCuts(
+  bounds: SketchDrawerStackBounds[],
+  doorXMin: number,
+  doorXMax: number
+): SketchDrawerCutSegment[] {
+  return bounds
+    .filter(
+      ({ xMin, xMax }) =>
+        Math.min(doorXMax, xMax) - Math.max(doorXMin, xMin) >
+        DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutHorizontalOverlapMinM
+    )
+    .map(({ yMin, yMax }) => ({ yMin, yMax }));
+}
+
 export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): void {
   const { App, runtime, selectDoorCuts } = args;
   const doorsArr = getDoorsArray(App);
@@ -157,9 +172,10 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const selection = selectDoorCuts(entry, g, ud);
     if (!selection) continue;
     const selectedStacks = Array.isArray(selection.stacks) ? selection.stacks : [];
+    const deskOpenings = selection.deskOpenings ?? [];
     const splitPosList = Array.isArray(selection.splitPosList) ? selection.splitPosList : [];
     const lineCutsY = selection.lineCutsY ?? [];
-    if (!selectedStacks.length && !splitPosList.length && !lineCutsY.length) continue;
+    if (!selectedStacks.length && !deskOpenings.length && !splitPosList.length && !lineCutsY.length) continue;
 
     const width = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth') ?? NaN;
     const height = readGeometryUserDataPositiveNumberKey(ud, '__doorHeight') ?? NaN;
@@ -181,13 +197,11 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const doorMax = centerY + height / 2;
     const doorXMin = centerX - width / 2;
     const doorXMax = centerX + width / 2;
-    const drawerCutsRaw: SketchDrawerCutSegment[] = [];
-    for (const stack of selectedStacks) {
-      const overlap = Math.min(doorXMax, stack.xMax) - Math.max(doorXMin, stack.xMin);
-      if (!(overlap > DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutHorizontalOverlapMinM)) continue;
-      drawerCutsRaw.push({ yMin: stack.yMin, yMax: stack.yMax });
-    }
-    const drawerCuts = normalizeSketchDrawerCutIntervals(drawerCutsRaw);
+    const deskCuts = intersectDoorCuts(deskOpenings, doorXMin, doorXMax);
+    const drawerCuts = normalizeSketchDrawerCutIntervals([
+      ...intersectDoorCuts(selectedStacks, doorXMin, doorXMax),
+      ...deskCuts,
+    ]);
     const cuts: SketchDrawerCutSegment[] = drawerCuts.map(seg => ({ yMin: seg.yMin, yMax: seg.yMax }));
     const splitBounds = resolveSketchDoorAuthoredSplitBounds({ doorMin, doorMax, drawerCuts });
     appendAuthoredSplitLineCutIntervals({
@@ -207,7 +221,12 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
         : {}
     );
     if (!normalizedCuts.length) continue;
-    const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts);
+    const lowerDeskCuts = deskCuts.filter(cut => cut.yMin > doorMin && cut.yMin < doorMax);
+    const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts).filter(
+      segment =>
+        segment.yMax - segment.yMin >= HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM - 1e-6 ||
+        !lowerDeskCuts.some(cut => segment.yMax <= cut.yMin)
+    );
     const onlyVisibleSegment = visibleSegments.length === 1 ? visibleSegments[0] : undefined;
     if (
       onlyVisibleSegment &&

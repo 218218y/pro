@@ -1298,9 +1298,7 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
     '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_shared.ts',
   ]);
-  const applySrc = await readSourceFiles(['../esm/native/builder/post_build_sketch_door_cuts_apply.ts']);
   const orchestratorSrc = await readSourceFiles(['../esm/native/builder/post_build_visual_overlays.ts']);
-  const bundle = `${src}\n${applySrc}`;
   assert.match(
     src,
     /function collectSketchBoxExternalDrawerStackBounds\(App: AppContainer\): SketchBoxDrawerStackBounds\[]/
@@ -1312,10 +1310,6 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
   assert.match(applyOwnerSrc, /readSplitStandardPosListFromMap/);
   assert.doesNotMatch(boxSrc, /readSketchBoxDoorBasePartId/);
   assert.match(src, /ud\.__wpSketchExtDrawer !== true/);
-  assert.match(
-    bundle,
-    /const overlap = Math\.min\(doorXMax, stack\.xMax\) - Math\.max\(doorXMin, stack\.xMin\);/
-  );
   const overlayCallOrder = getFunctionCallSequenceFacts(
     orchestratorSrc,
     'applyPostBuildSketchVisualOverlays',
@@ -1383,8 +1377,6 @@ test('module sketch external drawer cuts use runtime drawer bounds so corner cel
     '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_shared.ts',
   ]);
-  const applySrc = await readSourceFiles(['../esm/native/builder/post_build_sketch_door_cuts_apply.ts']);
-  const bundle = `${src}\n${applySrc}`;
   assert.match(
     src,
     /function collectSketchModuleExternalDrawerStackBounds\(App: AppContainer\): SketchModuleDrawerStackCollection/
@@ -1422,10 +1414,6 @@ test('module sketch external drawer cuts use runtime drawer bounds so corner cel
       args: [{ kind: 'member', path: 'ud.moduleIndex' }],
     },
   });
-  assert.match(
-    bundle,
-    /const overlap = Math\.min\(doorXMax, stack\.xMax\) - Math\.max\(doorXMin, stack\.xMin\);/
-  );
 });
 
 test('stack-split upper sketch external drawer face bounds are shifted with moved drawer groups', async () => {

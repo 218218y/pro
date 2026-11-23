@@ -92,6 +92,7 @@ export type ApplySketchStorageBarriersArgs = {
 };
 
 export type ApplySketchShelvesArgs = {
+  builtInDeskRange?: import('../../../types/built_in_desk.js').BuiltInDeskVerticalRange;
   braceFrontZ?: number;
   shelves: SketchShelfExtra[];
   yFromNorm: (yNorm: unknown) => number | null;

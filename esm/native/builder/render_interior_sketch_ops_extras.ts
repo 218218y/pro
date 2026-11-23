@@ -207,6 +207,7 @@ export function applyInteriorSketchOwnedShelves(args: {
     const { braceShelfWidth, regularShelfWidth } = resolveSketchPartitionShelfWidths(cell.width);
     applySketchShelves({
       shelves,
+      ...(resolved.input.builtInDeskRange ? { builtInDeskRange: resolved.input.builtInDeskRange } : {}),
       yFromNorm: placementSupport.yFromNorm,
       findBoxAtY(y) {
         const box = findBoxAtY(y);

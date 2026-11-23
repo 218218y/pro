@@ -35,7 +35,7 @@ const PIN_LEN = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
 const PIN_EDGE_OFFSET_DEFAULT = INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM;
 const GLASS_THICK_M = MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
 
-function shelfHeightForVariant(variant: ShelfVariant | undefined, shelfThick: number): number {
+export function shelfHeightForVariant(variant: unknown, shelfThick: number): number {
   if (variant === 'glass') return GLASS_THICK_M;
   if (variant === 'double')
     return Math.max(shelfThick, shelfThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);

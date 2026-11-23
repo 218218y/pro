@@ -25,6 +25,7 @@ export type InteriorCustomInput = InteriorValueRecord & {
   roomArchitecturePlan?: RoomArchitecturePlan;
   THREE?: unknown;
   customOps?: InteriorValueRecord | null;
+  builtInDeskRange?: import('../../../types/built_in_desk.js').BuiltInDeskVerticalRange;
   ops?: InteriorValueRecord | null;
   createBoard?: InteriorOpsCallable;
   createRod?: InteriorOpsCallable;

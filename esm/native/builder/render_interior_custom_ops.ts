@@ -24,7 +24,9 @@ import { resolveRemovedFrameSideModuleConstructionPlan } from './removed_frame_s
 import {
   addCustomBaseShelfContents,
   createAddCustomGridShelf,
+  shelfHeightForVariant,
 } from './render_interior_custom_ops_shelves.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import {
   applyCustomInteriorGridLayout,
   applyCustomStorageBarrier,
@@ -136,6 +138,14 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const shelfExposedSide = removedSideConstruction.exposedShelfSide;
     if (removedSideConstruction.forceBraceShelves) {
       forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
+    }
+    if (input.builtInDeskRange) {
+      for (const index of Object.keys(shelfSet).map(Number)) {
+        const height = shelfHeightForVariant(shelfVariantByIndex[index], shelfThick);
+        if (isShelfHiddenByDesk(input.builtInDeskRange, effectiveBottomY + index * localGridStep, height)) {
+          delete shelfSet[index];
+        }
+      }
     }
     const roundedShelfSide = removedSideConstruction.roundedShelfSide;
 

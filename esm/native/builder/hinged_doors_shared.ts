@@ -6,6 +6,7 @@
 
 import { assertThreeViaDeps } from '../runtime/three_access.js';
 import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
+import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
 import type {
   BuildContextLike,
   BuilderCurtainResolver,
@@ -56,6 +57,8 @@ export type AppendHingedDoorOpsParams = {
   drawerHeightTotal?: number;
   effectiveBottomY?: number;
   effectiveTopY?: number;
+  builtInDeskRange?: BuiltInDeskVerticalRange;
+  shelfThick?: number;
   startY?: number;
   woodThick?: number;
   cabinetBodyHeight?: number;

@@ -19,6 +19,7 @@ import {
 } from './render_interior_preset_ops_shared.js';
 import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall_faces.js';
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import { addFullShelfPinBoring } from './render_interior_shelf_pin_boring.js';
 import { forceShelfIndexesToBrace } from './removed_frame_side_brace_shelves.js';
 import { resolveRemovedFrameSideConstructionPlanAtBoundary } from './removed_frame_side_construction_boundary.js';
@@ -141,6 +142,15 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     if (removedSideConstruction.forceBraceShelves) {
       forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
     }
+    if (input.builtInDeskRange) {
+      for (const index of Object.keys(shelfSet).map(Number)) {
+        if (
+          isShelfHiddenByDesk(input.builtInDeskRange, effectiveBottomY + index * localGridStep, shelfThick)
+        ) {
+          delete shelfSet[index];
+        }
+      }
+    }
     const roundedShelfSide = removedSideConstruction.roundedShelfSide;
 
     const regularShelfDepthCap = INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM;
@@ -241,7 +251,10 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
     });
 
     if (Array.isArray(ops.shelves)) {
-      for (let i = 0; i < ops.shelves.length; i += 1) addGridShelf(ops.shelves[i]);
+      for (const rawIndex of ops.shelves) {
+        const index = readPresetGridIndex(rawIndex);
+        if (index != null && shelfSet[index]) addGridShelf(index);
+      }
     }
 
     if (Array.isArray(ops.rods)) {

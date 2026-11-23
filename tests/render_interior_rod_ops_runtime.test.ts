@@ -206,6 +206,7 @@ test('hanging contents use the desktop as a lower boundary while preserving the 
         effectiveBottomY: 0,
         effectiveTopY: 2,
         builtInDeskRange: desk.plan.verticalRange,
+        config: { sketchExtras: { shelves: [{ yNorm: 0.475, variant: 'regular' }] } },
         wardrobeGroup: group,
         showHangerEnabled: true,
         showContentsEnabled: true,

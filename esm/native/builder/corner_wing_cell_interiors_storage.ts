@@ -117,7 +117,8 @@ export function createCornerWingInteriorLayoutOps(
     }
   };
 
-  const addGridShelf = (gridIndex: number) => addCornerWingGridShelf(cellRuntime, shelfRuntime, gridIndex);
+  const addGridShelf = (gridIndex: number) =>
+    addCornerWingGridShelf(cellRuntime, shelfRuntime, gridIndex, deskRange);
 
   return {
     createRod,

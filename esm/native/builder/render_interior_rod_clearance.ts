@@ -22,6 +22,8 @@ import {
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import type { UnknownRecord } from '../../../types';
 import type { BuiltInDeskVerticalRange } from '../../../types/built_in_desk.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
+import { shelfHeightForVariant } from './render_interior_custom_ops_shelves.js';
 
 type ShelfBlockerMode = 'contents' | 'surface';
 
@@ -36,6 +38,7 @@ type RodClearanceArgs = {
   woodThick?: unknown;
   shelfThick?: unknown;
   shelfBlockerMode?: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
 };
 
 type RodPoint = {
@@ -131,6 +134,8 @@ function pushShelfBlocker(args: {
   index: number;
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
+  variant?: unknown;
 }): void {
   const { blockers, effectiveBottomY, localGridStep, index, shelfThick, shelfBlockerMode } = args;
   if (!(index > 0) || !(localGridStep > 0)) return;
@@ -139,6 +144,8 @@ function pushShelfBlocker(args: {
     shelfY: effectiveBottomY + index * localGridStep,
     shelfThick,
     shelfBlockerMode,
+    builtInDeskRange: args.builtInDeskRange,
+    variant: args.variant,
   });
 }
 
@@ -147,10 +154,16 @@ function pushShelfContentBlocker(args: {
   shelfY: number;
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
+  variant?: unknown;
 }): void {
   const { blockers, shelfY, shelfThick, shelfBlockerMode } = args;
   const shelfTopY = resolveShelfTopY({ shelfY, shelfThick });
-  if (shelfTopY == null) return;
+  if (
+    shelfTopY == null ||
+    isShelfHiddenByDesk(args.builtInDeskRange, shelfY, shelfHeightForVariant(args.variant, shelfThick))
+  )
+    return;
 
   // Hanging clothes must reserve the visible folded stack that can sit on top of a shelf.
   // A single hanger, however, only collides with the physical shelf slab itself. Keeping
@@ -193,6 +206,7 @@ function collectPresetBlockers(args: {
   blockers: RodClearanceBlocker[];
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
 }): boolean {
   const { config, layout, effectiveBottomY, localGridStep, blockers, shelfThick, shelfBlockerMode } = args;
   const presetShelfRows = INTERIOR_PRESET_SHELF_ROWS_POLICY;
@@ -209,6 +223,7 @@ function collectPresetBlockers(args: {
         index,
         shelfThick,
         shelfBlockerMode,
+        builtInDeskRange: args.builtInDeskRange,
       });
     }
   };
@@ -267,11 +282,13 @@ function collectCustomBlockers(args: {
   blockers: RodClearanceBlocker[];
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
 }): boolean {
   const { customData, effectiveBottomY, localGridStep, blockers, shelfThick, shelfBlockerMode } = args;
   let hasEvidence = true;
 
   const shelves = readBoolArray(customData.shelves);
+  const variants = Array.isArray(customData.shelfVariants) ? customData.shelfVariants : [];
   for (let i = 0; i < shelves.length; i += 1) {
     if (shelves[i]) {
       pushShelfBlocker({
@@ -281,6 +298,8 @@ function collectCustomBlockers(args: {
         index: i + 1,
         shelfThick,
         shelfBlockerMode,
+        builtInDeskRange: args.builtInDeskRange,
+        variant: variants[i],
       });
     }
   }
@@ -438,6 +457,7 @@ function collectSketchExtraBlockers(args: {
   woodThick: number;
   shelfThick: number;
   shelfBlockerMode: ShelfBlockerMode;
+  builtInDeskRange?: BuiltInDeskVerticalRange | undefined;
 }): boolean {
   const { config, effectiveBottomY, effectiveTopY, blockers, woodThick, shelfThick, shelfBlockerMode } = args;
   const extras = isRecord(config?.sketchExtras) ? config.sketchExtras : null;
@@ -473,7 +493,14 @@ function collectSketchExtraBlockers(args: {
   for (const shelf of shelves) {
     const y = clampNormY(shelf.yNorm);
     if (y != null) {
-      pushShelfContentBlocker({ blockers, shelfY: y, shelfThick, shelfBlockerMode });
+      pushShelfContentBlocker({
+        blockers,
+        shelfY: y,
+        shelfThick,
+        shelfBlockerMode,
+        builtInDeskRange: args.builtInDeskRange,
+        variant: shelf.variant,
+      });
       hasEvidence = true;
     }
   }
@@ -541,6 +568,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       blockers,
       shelfThick,
       shelfBlockerMode,
+      builtInDeskRange: args.builtInDeskRange,
     });
   } else {
     const layout = typeof config?.layout === 'string' ? config.layout : '';
@@ -552,6 +580,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       blockers,
       shelfThick,
       shelfBlockerMode,
+      builtInDeskRange: args.builtInDeskRange,
     });
   }
 
@@ -564,6 +593,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       woodThick,
       shelfThick,
       shelfBlockerMode,
+      builtInDeskRange: args.builtInDeskRange,
     }) || hasEvidence;
 
   let blockerY = effectiveBottomY;

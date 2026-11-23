@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T21:40:37.185Z",
+  "generatedAt": "2026-11-23T02:52:49.572Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 619,
@@ -1961,42 +1961,42 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_context.ts",
-      "line": 77,
+      "line": 78,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "fallbackDoorW: ctx.activeWidth / locals.doorCount,"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_contracts.ts",
-      "line": 64,
+      "line": 65,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "fallbackDoorW: number;"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 60,
+      "line": 63,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.readNumFrom(geom, 'doorW', ctx.fallbackDoorW);"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 64,
+      "line": 67,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "ctx.blindWidth + doorIdx * ctx.fallbackDoorW + ctx.fallbackDoorW / 2"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_doors_state.ts",
-      "line": 202,
+      "line": 214,
       "term": "fallbackDoorW",
       "category": "domain-default",
       "text": "const doorW = ctx.fallbackDoorW;"
     },
     {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
-      "line": 192,
+      "line": 193,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
@@ -2066,7 +2066,7 @@
     },
     {
       "file": "esm/native/builder/interior_pipeline_shared.ts",
-      "line": 212,
+      "line": 214,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-reporter-isolation: diagnostics must never replace the original interior fallback behavior"
@@ -2220,7 +2220,7 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_apply.ts",
-      "line": 135,
+      "line": 136,
       "term": "fallback",
       "category": "domain-default",
       "text": "// as a defensive fallback for malformed snapshots where both domains exist."
@@ -2374,21 +2374,21 @@
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 168,
+      "line": 181,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "fallbackGridIndex?: number;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 170,
+      "line": 183,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const { rod, effectiveBottomY, localGridStep, fallbackGridIndex } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",
-      "line": 174,
+      "line": 187,
       "term": "fallbackGridIndex",
       "category": "domain-default",
       "text": "const factor = rawYFactor ?? rawGridIndex ?? fallbackGridIndex ?? null;"
@@ -2710,28 +2710,28 @@
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 35,
+      "line": 36,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: number;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 38,
+      "line": 39,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "const { requestedDepth, woodThick, internalDepth, fallbackDepth, boxInnerDepth } = args;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 39,
+      "line": 40,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "let shelfDepth = fallbackDepth;"
     },
     {
       "file": "esm/native/builder/render_interior_sketch_support_shelves.ts",
-      "line": 163,
+      "line": 152,
       "term": "fallbackDepth",
       "category": "domain-default",
       "text": "fallbackDepth: isBrace ? braceDepth : regularDepth,"

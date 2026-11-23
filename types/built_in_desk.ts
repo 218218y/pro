@@ -40,4 +40,9 @@ export type BuiltInDeskBoard = {
   depth: number;
 };
 
-export type BuiltInDeskVerticalRange = { bottomY: number; surfaceY: number };
+export type BuiltInDeskVerticalRange = {
+  bottomY: number;
+  surfaceY: number;
+  shelfMinY: number;
+  shelfMaxY: number;
+};

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderSketchBoxContentShelves } from '../esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts';
+import { resolveBuiltInDesk, type ResolvedBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
 import { createBuilderRenderInteriorLayoutHoverPreviewOps } from '../esm/native/builder/render_preview_interior_hover_ops.ts';
 import { SHELF_GROUP_PART_ID } from '../esm/native/features/part_identity/api.ts';
 import {
@@ -123,12 +124,13 @@ function createShelfHarness(options: ShelfHarnessOptions = {}) {
 
 function renderShelves(
   harness: ReturnType<typeof createShelfHarness>,
-  shelves: Array<Record<string, unknown>>
+  shelves: Array<Record<string, unknown>>,
+  desk?: ResolvedBuiltInDesk
 ) {
   harness.shell.box.shelves = shelves;
-  renderSketchBoxContentShelves(
-    harness.context as unknown as Parameters<typeof renderSketchBoxContentShelves>[0]
-  );
+  renderSketchBoxContentShelves({ ...harness.context, desk } as unknown as Parameters<
+    typeof renderSketchBoxContentShelves
+  >[0]);
 }
 
 function removedSideConfig(boxPid: string, sides: Array<'left' | 'right'>, rounded = sides) {
@@ -140,6 +142,44 @@ function removedSideConfig(boxPid: string, sides: Array<'left' | 'right'>, round
 }
 
 const boardNumber = (board: ShelfBoard, index: number) => Number(board.args[index]);
+
+test('the desk clears nearby sketch box shelves with their pins and folded contents', () => {
+  const harness = createShelfHarness();
+  const desk = resolveBuiltInDesk(
+    {
+      moduleKey: 0,
+      boxId: 'box-1',
+      stack: 'top',
+      geometry: {
+        leftX: -0.4,
+        rightX: 0.4,
+        bottomY: 0.4,
+        topY: 1.6,
+        backZ: -0.25,
+        frontZ: 0.25,
+        thickness: 0.02,
+      },
+    },
+    { lengthCm: 120, drawerCount: 3, support: 'wall', drawerSide: 'right', topNorm: 0.5 }
+  );
+  assert.ok(desk);
+  renderShelves(
+    harness,
+    [
+      { id: 'kept', yNorm: 0.16, variant: 'regular' },
+      { id: 'near-bottom', yNorm: 0.32, variant: 'double' },
+      { id: 'inside', yNorm: 0.45, variant: 'regular' },
+      { id: 'near-top', yNorm: 0.55, variant: 'glass' },
+    ],
+    desk
+  );
+  assert.deepEqual(
+    harness.boards.map(board => board.args[7]),
+    [`${harness.shell.boxPid}_shelf_kept`]
+  );
+  assert.equal(harness.pins.length, 1);
+  assert.equal(harness.folded.length, 1);
+});
 
 test('focused shelf renderer preserves variants, owner widths, pins, glass flags, and identity', () => {
   const harness = createShelfHarness();

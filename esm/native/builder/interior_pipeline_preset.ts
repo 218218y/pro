@@ -65,6 +65,7 @@ export function applyPresetInteriorLayout(
     renderedPreset =
       renderOps.applyInteriorPresetOps?.({
         presetOps,
+        ...(input.builtInDeskRange ? { builtInDeskRange: input.builtInDeskRange } : {}),
         fullShelfPinBoring: config.fullShelfPinBoring === true,
         roomArchitecturePlan: input.roomArchitecturePlan,
         cfg: input.cfg,

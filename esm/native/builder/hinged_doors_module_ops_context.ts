@@ -1,4 +1,5 @@
 import { resolveWinterBraceDoorPlan } from './winter_brace_shelf_geometry.js';
+import { isShelfHiddenByDesk } from './built_in_desk_contents.js';
 import { createSketchVerticalPlacement } from './render_interior_sketch_support_placement.js';
 import { reportError, shouldFailFast } from '../runtime/api.js';
 import { isDoorSpecialSurfaceValue, readDoorVisualMapValue } from '../features/door_authoring/api.js';
@@ -214,6 +215,7 @@ export function createHingedDoorModuleOpsContext(
     source: 'module',
     gridY: index => effectiveBottomY + (index * (shelfTopY - effectiveBottomY)) / divisions,
     sketchY: placement.yFromNorm,
+    hideShelfAtY: y => isShelfHiddenByDesk(params.builtInDeskRange, y, params.shelfThick ?? woodThick),
   });
   return {
     winterBraceDoorPlan,
