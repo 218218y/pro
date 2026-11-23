@@ -72,15 +72,13 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               )}
               <div className="wp-section-title">מידות חריטה</div>
               <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
-                {grooveArch ? null : (
-                  <GrooveDraftField
-                    id="wp-r-groove-draft-height"
-                    label="גובה (ס״מ)"
-                    resetLabel="איפוס גובה החריטה"
-                    value={model.grooveDraftHeightCm}
-                    onChange={model.setGrooveDraftHeightCm}
-                  />
-                )}
+                <GrooveDraftField
+                  id="wp-r-groove-draft-height"
+                  label="גובה (ס״מ)"
+                  resetLabel="איפוס גובה החריטה"
+                  value={model.grooveDraftHeightCm}
+                  onChange={model.setGrooveDraftHeightCm}
+                />
                 <GrooveDraftField
                   id="wp-r-groove-draft-width"
                   label="רוחב (ס״מ)"

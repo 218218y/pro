@@ -557,20 +557,12 @@ function cloneStableMirrorBackingMaterial(THREE: ThreeLike, original: unknown): 
   return material;
 }
 
-function writeStableBoxBackingMaterial(THREE: ThreeLike, mirror: Object3DLike): boolean {
-  if (!readBoxGeometryParameters(mirror)) return false;
+function writeStableReflectorBackingMaterial(THREE: ThreeLike, mirror: Object3DLike, box: boolean): boolean {
   try {
     const originalMaterial = Reflect.get(mirror, 'material');
     const backingMaterial = cloneStableMirrorBackingMaterial(THREE, originalMaterial);
     if (!backingMaterial) return false;
-    Reflect.set(mirror, 'material', [
-      backingMaterial,
-      backingMaterial,
-      backingMaterial,
-      backingMaterial,
-      backingMaterial,
-      backingMaterial,
-    ]);
+    Reflect.set(mirror, 'material', box ? Array(6).fill(backingMaterial) : backingMaterial);
     return true;
   } catch {
     return false;
@@ -784,36 +776,42 @@ function resolveReflectorSurfaceInsetM(App: unknown, mirror?: unknown, axis: 'x'
   return clampNumber(readRuntimeConfigNumberFromApp(App, configKey, defaultValue), defaultValue, 0, 0.06);
 }
 
-function makeBoxReflectorSurfacePlane(args: {
+type PlanarReflectorShape = Readonly<{
+  widthM: number;
+  heightM: number;
+  depthM: number;
+  createPlane: (widthM: number, heightM: number) => unknown;
+}>;
+
+function makeReflectorSurfacePlane(args: {
   App: unknown;
   THREE: ThreeLike;
   mirror: Object3DLike;
   material: UnknownRecord;
   originalMaterial?: unknown;
   faceSign: number;
+  shape?: PlanarReflectorShape;
 }): UnknownRecord | null {
-  const { App, THREE, mirror, material, faceSign } = args;
-  const parameters = readBoxGeometryParameters(mirror);
-  if (!parameters || typeof THREE.PlaneGeometry !== 'function' || typeof THREE.Mesh !== 'function')
+  const { App, THREE, mirror, material, faceSign, shape } = args;
+  const parameters = shape ? null : readBoxGeometryParameters(mirror);
+  if (
+    typeof THREE.Mesh !== 'function' ||
+    (!shape && (!parameters || typeof THREE.PlaneGeometry !== 'function'))
+  )
     return null;
-  const boxWidth = Number(parameters.width);
-  const boxHeight = Number(parameters.height);
-  const boxDepth = Number(parameters.depth);
-  if (!Number.isFinite(boxWidth) || !Number.isFinite(boxHeight) || !Number.isFinite(boxDepth)) return null;
-  if (boxWidth <= 0 || boxHeight <= 0 || boxDepth <= 0) return null;
+  const width = shape?.widthM ?? Number(parameters?.width);
+  const height = shape?.heightM ?? Number(parameters?.height);
+  const depth = shape?.depthM ?? Number(parameters?.depth);
+  if (![width, height, depth].every(value => value > 0 && Number.isFinite(value))) return null;
 
   try {
-    const insetX = Math.min(
-      resolveReflectorSurfaceInsetM(App, mirror, 'x'),
-      Math.max(0, boxWidth / 2 - 0.001)
-    );
-    const insetY = Math.min(
-      resolveReflectorSurfaceInsetM(App, mirror, 'y'),
-      Math.max(0, boxHeight / 2 - 0.001)
-    );
-    const surfaceWidth = Math.max(0.001, boxWidth - insetX * 2);
-    const surfaceHeight = Math.max(0.001, boxHeight - insetY * 2);
-    const geometry = new THREE.PlaneGeometry(surfaceWidth, surfaceHeight);
+    const insetX = Math.min(resolveReflectorSurfaceInsetM(App, mirror, 'x'), Math.max(0, width / 2 - 0.001));
+    const insetY = Math.min(resolveReflectorSurfaceInsetM(App, mirror, 'y'), Math.max(0, height / 2 - 0.001));
+    const surfaceWidth = Math.max(0.001, width - insetX * 2);
+    const surfaceHeight = Math.max(0.001, height - insetY * 2);
+    const geometry = shape
+      ? shape.createPlane(surfaceWidth, surfaceHeight)
+      : new THREE.PlaneGeometry(surfaceWidth, surfaceHeight);
     const surface = readRecord(new THREE.Mesh(geometry, material));
     if (!surface) return null;
 
@@ -827,7 +825,7 @@ function makeBoxReflectorSurfacePlane(args: {
     surfaceUserData.__wpPlanarReflectorSurfaceInsetXM = insetX;
     surfaceUserData.__wpPlanarReflectorSurfaceInsetYM = insetY;
     surface.raycast = function () {};
-    writeStableBoxBackingMaterial(THREE, mirror);
+    writeStableReflectorBackingMaterial(THREE, mirror, !shape);
     const sign = faceSign < 0 ? -1 : 1;
     const surfacePosition = readRecord(surface.position);
     call3(
@@ -835,7 +833,7 @@ function makeBoxReflectorSurfacePlane(args: {
       surfacePosition?.set,
       0,
       0,
-      sign * (boxDepth / 2 + resolveReflectorSurfaceGapM(App, mirror))
+      sign * (depth / 2 + resolveReflectorSurfaceGapM(App, mirror))
     );
     const surfaceRotation = readRecord(surface.rotation);
     if (sign < 0 && surfaceRotation) surfaceRotation.y = Math.PI;
@@ -854,10 +852,11 @@ function installReflectorSurfaceMaterial(args: {
   material: UnknownRecord;
   originalMaterial?: unknown;
   faceSign: number;
+  shape?: PlanarReflectorShape;
 }): { surfaceObject: UnknownRecord; normalSign: number } | null {
-  const surfacePlane = makeBoxReflectorSurfacePlane(args);
+  const surfacePlane = makeReflectorSurfacePlane(args);
   if (surfacePlane) return { surfaceObject: surfacePlane, normalSign: 1 };
-  if (!writeMirrorMaterial(args.mirror, args.material, args.faceSign)) return null;
+  if (args.shape || !writeMirrorMaterial(args.mirror, args.material, args.faceSign)) return null;
   return { surfaceObject: args.mirror, normalSign: args.faceSign < 0 ? -1 : 1 };
 }
 
@@ -924,6 +923,7 @@ export function installPlanarMirrorReflector(
   opts?: {
     faceSign?: number | null;
     sketchMode?: boolean | null;
+    shape?: PlanarReflectorShape;
   }
 ): boolean {
   if (!mirrorMesh || opts?.sketchMode === true) return false;
@@ -968,8 +968,13 @@ export function installPlanarMirrorReflector(
     material,
     originalMaterial,
     faceSign,
+    ...(opts?.shape ? { shape: opts.shape } : {}),
   });
-  if (!surfaceInstall) return false;
+  if (!surfaceInstall) {
+    callDispose(material);
+    callDispose(target);
+    return false;
+  }
 
   const reflectorWorldPosition = readRecord(new THREE.Vector3());
   const cameraWorldPosition = readRecord(new THREE.Vector3());

@@ -45,7 +45,7 @@ test('planar reflector render target is anti-aliased and aspect-aware', () => {
 });
 
 test('box mirrors use a real reflector plane instead of projecting on box side faces', () => {
-  assert.match(source, /makeBoxReflectorSurfacePlane/);
+  assert.match(source, /makeReflectorSurfacePlane/);
   assert.match(source, /new THREE\.PlaneGeometry\(surfaceWidth, surfaceHeight\)/);
   assert.match(source, /__wpPlanarReflectorSurface = true/);
   assert.match(source, /MIRROR_REFLECTOR_SURFACE_GAP_M/);
@@ -86,7 +86,7 @@ test('box reflector backing is stable and non-reflective behind the planar surfa
   assert.match(source, /__wpPlanarReflectorBackingMaterial = true/);
   assert.match(source, /envMap' in material\) material\.envMap = null/);
   assert.match(source, /roughness' in material\) material\.roughness = 1/);
-  assert.match(source, /writeStableBoxBackingMaterial\(THREE, mirror\)/);
+  assert.match(source, /writeStableReflectorBackingMaterial\(THREE, mirror, !shape\)/);
 });
 
 test('sliding inner-lane mirrors get dedicated reflector edge clearance', () => {

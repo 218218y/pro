@@ -19,6 +19,7 @@ import {
   resolveMirrorPlacementOwnerByPartId,
 } from './canvas_picking_door_shared.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
+import { resolveCanvasDoorSplitVerticalLockedWorldY } from './canvas_picking_door_split_pointer_y.js';
 import type { RaycasterLike } from './canvas_picking_engine.js';
 import { __wp_scopeCornerPartKeyForStack } from './canvas_picking_core_helpers.js';
 
@@ -242,6 +243,14 @@ export function resolveDoorArchTarget(args: {
     (args.tool !== 'cut' || surface.group.userData.__wpArchCutBaseMinY === undefined)
   )
     return null;
+  if (args.tool === 'cut') {
+    const world = surface.toWorld(point.clone());
+    const lock = resolveCanvasDoorSplitVerticalLockedWorldY(args.App, world.y);
+    if (lock !== null) {
+      world.y = lock;
+      point.copy(surface.toLocal(world));
+    }
+  }
   return {
     point,
     surface,
@@ -282,10 +291,17 @@ export function planDoorArch(args: {
   const bottom =
     Math.max(...target.surfaces.map(({ surface, offsetY }) => surface.rect.minY + offsetY)) + inset;
   const top = Math.min(...target.surfaces.map(({ surface, offsetY }) => surface.rect.maxY + offsetY)) - inset;
-  const height = Math.min(top - bottom, readDraftM(args.heightCm) ?? top - bottom);
+  const requestedHeight = readDraftM(args.heightCm);
+  const height = Math.min(top - bottom, requestedHeight ?? top - bottom);
   const centerY = Math.max(bottom + height / 2, Math.min(top - height / 2, target.point.y));
-  const minY = tool === 'mirror' ? centerY - height / 2 : bottom;
   const maxY = tool === 'mirror' ? centerY + height / 2 : Math.min(top, target.point.y);
+  const minY =
+    tool === 'mirror'
+      ? centerY - height / 2
+      : tool === 'groove' && requestedHeight !== null
+        ? maxY - requestedHeight
+        : bottom;
+  if (minY < bottom - 1e-7) return [];
   const span = maxY - minY;
   if (span < 0.03) return [];
 

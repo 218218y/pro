@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createMirrorDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_mirror.ts';
+import * as Three from 'three';
+import {
+  createMirrorDoorVisual,
+  makeArchedMirrorReflectorShape,
+} from '../esm/native/builder/visuals_and_contents_door_visual_mirror.ts';
 
 class FakeVector3 {
   constructor(x = 0, y = 0, z = 0) {
@@ -120,4 +124,67 @@ test('sized mirror placements on the back face keep the same proud add-on depth 
   assert.ok(mirrorBackFaceZ < -(0.018 / 2), 'back-face mirror should also protrude beyond the door slab');
   assert.equal(mirrorMesh.userData?.faceSign, -1);
   assert.equal(mirrorMesh.userData?.faceSide, 'inside');
+});
+
+test('an arched mirror reflector has normalized UVs over the full contour on either face', () => {
+  const arch = { start: 0, end: 0.5, rise: 0.3 };
+  const width = 0.45;
+  const height = 1.4;
+  const build = side =>
+    makeArchedMirrorReflectorShape(Three, width, height, 0.004, arch, side).createPlane(width, height);
+  const front = build(1);
+  const rear = build(-1);
+  const minMax = (attribute, axis) => {
+    const values = Array.from({ length: attribute.count }, (_, i) => attribute[axis](i));
+    return [Math.min(...values), Math.max(...values)];
+  };
+  for (const face of [front, rear]) {
+    const uv = face.getAttribute('uv');
+    for (const axis of ['getX', 'getY']) {
+      const [min, max] = minMax(uv, axis);
+      assert.ok(Math.abs(min) < 1e-6);
+      assert.ok(Math.abs(max - 1) < 1e-6);
+    }
+  }
+  const apexX = geometry => {
+    const pos = geometry.getAttribute('position');
+    let index = 0;
+    for (let i = 1; i < pos.count; i++) if (pos.getY(i) > pos.getY(index)) index = i;
+    return pos.getX(index);
+  };
+  assert.ok(apexX(front) > 0.2);
+  assert.ok(apexX(rear) < -0.2);
+  front.dispose();
+  rear.dispose();
+});
+
+test('arched mirror visuals attach a shaped planar reflector over the solid mirror backing', () => {
+  const App = {};
+  const group = createMirrorDoorVisual({
+    App,
+    THREE: Three,
+    w: 0.7,
+    h: 1.8,
+    thickness: 0.02,
+    mat: new Three.MeshStandardMaterial(),
+    baseMaterial: new Three.MeshStandardMaterial(),
+    zSign: 1,
+    isSketch: false,
+    mirrorLayout: [{ widthCm: 55, heightCm: 125, arch: { start: 0, end: 1, rise: 0.22 } }],
+    addOutlines() {},
+  });
+  const mirror = group.children.find(child => child.userData.__wpMirrorSurface);
+  assert.ok(mirror);
+  assert.equal(mirror.geometry.type, 'ExtrudeGeometry');
+  assert.equal(mirror.material.userData.__wpPlanarReflectorBackingMaterial, true);
+  const reflector = mirror.children.find(child => child.userData.__wpPlanarReflectorSurface);
+  assert.ok(reflector);
+  assert.equal(reflector.geometry.type, 'ShapeGeometry');
+  assert.ok(reflector.position.z > 0);
+  assert.ok(reflector.geometry.getAttribute('position').count > 12);
+  mirror.geometry.dispose();
+  reflector.geometry.dispose();
+  mirror.material.dispose();
+  reflector.material.dispose();
+  mirror.userData.__wpPlanarReflector.renderTarget.dispose();
 });

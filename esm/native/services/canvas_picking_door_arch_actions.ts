@@ -1,6 +1,7 @@
 import type { AppContainer, GrooveLayoutEntry, MirrorLayoutEntry, ThreeLike } from '../../../types';
 import type { DoorArchRect } from '../../../types/maps.js';
 import {
+  doorArchesOverlap,
   normalizeKnownMapSnapshot,
   readDoorArchCut,
   readMirrorLayoutFaceSign,
@@ -24,6 +25,7 @@ import {
   resolveDoorArchTarget,
   type ArchSurface,
   type DoorArchSlice,
+  type DoorArchTarget,
 } from './canvas_picking_door_arch_target.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import type { RaycasterLike } from './canvas_picking_engine.js';
@@ -31,7 +33,7 @@ import type { RaycasterLike } from './canvas_picking_engine.js';
 type SurfaceEntry = MirrorLayoutEntry | GrooveLayoutEntry;
 type ArchRemoval = { key: string; index: number; slice?: DoorArchSlice };
 export type DoorArchAction =
-  | { kind: 'add'; tool: DoorArchTool; slices: DoorArchSlice[] }
+  | { kind: 'add'; tool: DoorArchTool; slices: DoorArchSlice[]; replaceEntries?: ArchRemoval[] }
   | { kind: 'remove'; tool: DoorArchTool; slices: DoorArchSlice[]; entries: ArchRemoval[] };
 
 function centeredRect(x: number, y: number, width: number, height: number): DoorArchRect {
@@ -92,11 +94,8 @@ export function resolveDoorArchAction(args: {
       return { kind: 'remove', tool, slices, entries: keys.map(key => ({ key, index: 0 })) };
     }
     if (target.surfaces.some(({ surface }) => readDoorArchCut(map[surface.key]))) return null;
-  } else {
-    const map =
-      tool === 'mirror'
-        ? normalizeKnownMapSnapshot('mirrorLayoutMap', __wp_map(App, 'mirrorLayoutMap'))
-        : normalizeKnownMapSnapshot('grooveLayoutMap', __wp_map(App, 'grooveLayoutMap'));
+  } else if (tool === 'mirror') {
+    const map = normalizeKnownMapSnapshot('mirrorLayoutMap', __wp_map(App, 'mirrorLayoutMap'));
     const current = map[target.surface.key] ?? [];
     const matchIndex = current.findIndex(entry => {
       const slice = readSurfaceSlice(target.surface, entry, tool);
@@ -126,7 +125,7 @@ export function resolveDoorArchAction(args: {
     tool,
     target,
     widthCm: tool === 'mirror' ? ui.currentMirrorDraftWidthCm : ui.currentGrooveDraftWidthCm,
-    heightCm: ui.currentMirrorDraftHeightCm,
+    heightCm: tool === 'groove' ? ui.currentGrooveDraftHeightCm : ui.currentMirrorDraftHeightCm,
   });
   // A front-side mirror and a CNC region cannot occupy the same face.
   if (
@@ -141,7 +140,64 @@ export function resolveDoorArchAction(args: {
     })
   )
     return null;
-  return slices.length ? { kind: 'add', tool, slices } : null;
+  if (!slices.length) return null;
+  return tool === 'groove' ? resolveGrooveArchChange(App, target, slices) : { kind: 'add', tool, slices };
+}
+
+function resolveGrooveArchChange(
+  App: AppContainer,
+  target: DoorArchTarget,
+  slices: DoorArchSlice[]
+): DoorArchAction {
+  const current = normalizeKnownMapSnapshot('grooveLayoutMap', __wp_map(App, 'grooveLayoutMap'));
+  const overlaps: ArchRemoval[] = [];
+  const links = new Set<string>();
+  for (const next of slices) {
+    const key = next.surface.key;
+    current[key]?.forEach((entry, index) => {
+      const slice = readSurfaceSlice(next.surface, entry, 'groove');
+      if (!slice || !doorArchesOverlap(next, slice)) return;
+      overlaps.push({ key, index, slice });
+      if (entry.arch?.link) links.add(entry.arch.link);
+    });
+  }
+  const matches = slices.every(next =>
+    overlaps.some(({ slice }) => {
+      if (!slice || next.surface.key !== slice.surface.key) return false;
+      const sameSpan =
+        Math.abs(next.profile.start - slice.profile.start) < 1e-5 &&
+        Math.abs(next.profile.end - slice.profile.end) < 1e-5;
+      const sameBounds = (['minX', 'maxX', 'minY', 'maxY'] as const).every(
+        edge => Math.abs(next.rect[edge] - slice.rect[edge]) < 0.012
+      );
+      return sameSpan && sameBounds;
+    })
+  );
+  const entries = [...overlaps];
+  if (links.size) {
+    for (const [key, layouts] of Object.entries(current)) {
+      layouts?.forEach((entry, index) => {
+        if (
+          !entry.arch?.link ||
+          !links.has(entry.arch.link) ||
+          entries.some(candidate => candidate.key === key && candidate.index === index)
+        )
+          return;
+        const surface = target.allSurfaces.find(candidate => candidate.key === key);
+        const slice = surface && readSurfaceSlice(surface, entry, 'groove');
+        entries.push({ key, index, ...(slice ? { slice } : {}) });
+      });
+    }
+  }
+  if (matches) {
+    return {
+      kind: 'remove',
+      tool: 'groove',
+      entries,
+      slices: entries.flatMap(entry => (entry.slice ? [entry.slice] : [])),
+    };
+  }
+  return { kind: 'add', tool: 'groove', slices, replaceEntries: entries };
 }
 
 function makeSurfaceLayout(slice: DoorArchSlice) {
@@ -183,12 +239,15 @@ export function commitDoorArchAction(App: AppContainer, action: DoorArchAction):
       const entries =
         action.kind === 'remove'
           ? action.entries
-          : action.slices.map(slice => {
-              const { key } = slice.surface;
-              const layout = makeSurfaceLayout(slice);
-              const linesCount = resolvePendingGrooveLinesCount(App, layout.widthCm / 100, undefined, key);
-              return { key, value: { ...layout, linesCount } };
-            });
+          : [
+              ...(action.replaceEntries ?? []),
+              ...action.slices.map(slice => {
+                const { key } = slice.surface;
+                const layout = makeSurfaceLayout(slice);
+                const linesCount = resolvePendingGrooveLinesCount(App, layout.widthCm / 100, undefined, key);
+                return { key, value: { ...layout, linesCount } };
+              }),
+            ];
       writeDoorArchMaps(App, { tool: 'groove', entries }, meta);
     }
   });

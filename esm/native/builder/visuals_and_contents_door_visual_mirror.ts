@@ -132,19 +132,52 @@ export function createArchedMirrorGeometry(
   depth: number,
   arch: DoorArchProfile
 ) {
-  return createDoorContourGeometry(
-    THREE,
-    doorArchOutline(
-      {
-        minX: -width / 2,
-        maxX: width / 2,
-        minY: -height / 2,
-        maxY: height / 2,
-      },
-      arch
-    ),
-    depth
-  );
+  const rect = { minX: -width / 2, maxX: width / 2, minY: -height / 2, maxY: height / 2 };
+  const geometry = createDoorContourGeometry(THREE, doorArchOutline(rect, arch), depth);
+  if (depth !== 0) return geometry;
+
+  // ShapeGeometry uses metre coordinates for UVs. The planar material masks
+  // everything outside [0, 1], so both caps need the same UV space as a plane.
+  const position = geometry.attributes?.position;
+  if (
+    !position ||
+    typeof position !== 'object' ||
+    !('count' in position) ||
+    !('getX' in position) ||
+    !('getY' in position) ||
+    typeof position.count !== 'number' ||
+    typeof position.getX !== 'function' ||
+    typeof position.getY !== 'function' ||
+    typeof geometry.setAttribute !== 'function'
+  ) {
+    throw new TypeError('Arched mirror plane requires position and UV attributes');
+  }
+  const uv = new Float32Array(position.count * 2);
+  for (let index = 0; index < position.count; index++) {
+    uv[index * 2] = Number(position.getX(index)) / width + 0.5;
+    uv[index * 2 + 1] = Number(position.getY(index)) / height + 0.5;
+  }
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  return geometry;
+}
+
+export function makeArchedMirrorReflectorShape(
+  THREE: ThreeLike,
+  widthM: number,
+  heightM: number,
+  depthM: number,
+  arch: DoorArchProfile,
+  faceSign: number
+) {
+  // The rear reflector rotates 180° around Y. Reverse its local slice so the
+  // rotated plane still matches the cut glass on the rear of the same leaf.
+  const profile = faceSign < 0 ? { ...arch, start: 1 - arch.end, end: 1 - arch.start } : arch;
+  return {
+    widthM,
+    heightM,
+    depthM,
+    createPlane: (w: number, h: number) => createArchedMirrorGeometry(THREE, w, h, 0, profile),
+  };
 }
 
 export function appendMirrorDoorSurfacePlacement(args: {
@@ -204,6 +237,18 @@ export function appendMirrorDoorSurfacePlacement(args: {
     installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
       faceSign: placementFaceSign,
       sketchMode: args.isSketch,
+      ...(arch
+        ? {
+            shape: makeArchedMirrorReflectorShape(
+              args.THREE,
+              mirrorWidthM,
+              mirrorHeightM,
+              depthLayout.mirrorThick,
+              arch,
+              placementFaceSign
+            ),
+          }
+        : {}),
     });
   } catch {
     // Keep the existing envMap mirror material for cube mode.

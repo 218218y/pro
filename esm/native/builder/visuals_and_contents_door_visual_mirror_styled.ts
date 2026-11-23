@@ -11,6 +11,7 @@ import { createProfileDoorVisual } from './visuals_and_contents_door_visual_prof
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import {
   createArchedMirrorGeometry,
+  makeArchedMirrorReflectorShape,
   applyMirrorReflectorIdentityMetadata,
   applyMirrorReflectorProfileMetadata,
   createMirrorDoorVisual,
@@ -248,6 +249,18 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
       installPlanarMirrorReflector(args.App, args.THREE, mirrorMesh, {
         faceSign: placementFaceSign,
         sketchMode: args.isSketch,
+        ...(placementLayout?.arch
+          ? {
+              shape: makeArchedMirrorReflectorShape(
+                args.THREE,
+                placement.mirrorWidthM,
+                placement.mirrorHeightM,
+                depthLayout.mirrorThick,
+                placementLayout.arch,
+                placementFaceSign
+              ),
+            }
+          : {}),
       });
     } catch {
       // Keep the existing envMap mirror material for cube mode.

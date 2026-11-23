@@ -12,6 +12,7 @@ import {
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { resolveCanvasPickingClickModeState } from './canvas_picking_click_mode_state.js';
 import { createCanvasPickingClickModuleRefs } from './canvas_picking_click_module_refs.js';
+import { resetCanvasPickingEmptyClick } from './canvas_picking_click_empty.js';
 import { routeCanvasPickingClick } from './canvas_picking_click_route.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
@@ -99,7 +100,7 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
       raycaster: __wpRaycaster,
     });
     if (action) commitDoorArchAction(App, action);
-    else if (hitState?.effectiveDoorId)
+    else if (!resetCanvasPickingEmptyClick({ App, hitState, modeState }) && hitState?.effectiveDoorId)
       __wp_toast(App, 'אין מקום לקשת במיקום הזה. הזז את הסמן ובדוק את התצוגה המקדימה.', 'error');
     return;
   }
@@ -114,7 +115,12 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
   ) {
     return;
   }
-  if (!hitState) return;
+  if (!hitState) {
+    if (modeState.__isSplitEditMode || modeState.__isGrooveEditMode || modeState.__isPaintMode) {
+      resetCanvasPickingEmptyClick({ App, hitState, modeState });
+    }
+    return;
+  }
 
   const moduleRefs = createCanvasPickingClickModuleRefs({
     App,

@@ -572,3 +572,53 @@ test('hinge hardware mirrors its door-back geometry for a negative front directi
   );
   assert.equal(readHingedDoorHardwareRuntimeContext(doorGroup as any)?.frontSign, -1);
 });
+
+test('the hinge cup and carcass mounts fit the real side of the curved lower leaf', () => {
+  const THREE = createThreeStub() as any;
+  const wardrobeGroup = new THREE.Group();
+  const doorGroup = new THREE.Group();
+  doorGroup.position.y = 0.9;
+  const state = createHingedDoorHardwareRenderState(THREE, HINGED_DOOR_HARDWARE_RENDER_POLICY, 0.02);
+  assert.ok(state);
+  const edge = 0.248;
+  assert.equal(
+    attachHingedDoorHardware({
+      THREE,
+      wardrobeGroup,
+      doorGroup,
+      state,
+      doorOp: {
+        x: 0,
+        y: 0.9,
+        z: 0.6,
+        width: 0.5,
+        height: 1.6,
+        partId: 'd1_bot',
+        meshOffsetX: 0.25,
+        isLeftHinge: true,
+        isRemoved: false,
+        isMirror: false,
+        hasGroove: false,
+        archCut: {
+          baseMinY: -0.8,
+          baseMaxY: 1.2,
+          contour: [
+            { x: -edge, y: -0.8 },
+            { x: -edge, y: 0.15 },
+            { x: 0, y: 0.8 },
+            { x: edge, y: 0.15 },
+            { x: edge, y: -0.8 },
+          ],
+        },
+      },
+    }),
+    2
+  );
+  const halves = hardwareChildren(doorGroup, 'door');
+  assert.ok(halves[1].position.y < 0.15);
+  assert.ok(halves[0].position.y > -0.8);
+  assert.deepEqual(
+    hardwareChildren(wardrobeGroup, 'carcass').map(half => half.position.y),
+    halves.map(half => half.position.y + 0.9)
+  );
+});

@@ -442,6 +442,38 @@ export function attachHingedDoorHardware(args: {
   return appendHingedDoorHardware(args);
 }
 
+function resolveArchHingeMountSpan(doorOp: HingedDoorOpLike, policy: HingedDoorHardwarePolicy) {
+  const contour = doorOp.archCut?.contour;
+  const outer = contour?.[0];
+  if (!contour || !outer) return null;
+  // The bore and collar must clear the contour across their whole width.
+  const radius = Math.max(policy.cupRadiusM, policy.cupCollarRadiusM);
+  const hingeX = (doorOp.isLeftHinge ? 1 : -1) * policy.cupCenterFromHingeEdgeM - (doorOp.meshOffsetX ?? 0);
+  const curve = contour.slice(1, -1);
+  const first = curve[0];
+  const last = curve.at(-1);
+  if (!first || !last || hingeX - policy.cupRadiusM < first.x || hingeX + policy.cupRadiusM > last.x)
+    return null;
+  const minX = Math.max(first.x, hingeX - radius);
+  const maxX = Math.min(last.x, hingeX + radius);
+
+  const cutYs: number[] = [];
+  for (let i = 1; i < curve.length; i++) {
+    const left = curve[i - 1];
+    const right = curve[i];
+    if (!left || !right || right.x <= left.x) continue;
+    const start = Math.max(left.x, minX);
+    const end = Math.min(right.x, maxX);
+    if (end < start) continue;
+    const slope = (right.y - left.y) / (right.x - left.x);
+    cutYs.push(left.y + (start - left.x) * slope, left.y + (end - left.x) * slope);
+  }
+  if (!cutYs.length) return null;
+  const minY = Math.min(outer.y, Math.max(...cutYs));
+  const maxY = Math.max(outer.y, Math.min(...cutYs));
+  return { minY, maxY, radius };
+}
+
 export function appendHingedDoorHardware(args: {
   THREE: ThreeLike;
   wardrobeGroup: Object3DLike;
@@ -455,10 +487,22 @@ export function appendHingedDoorHardware(args: {
   const { THREE, wardrobeGroup, doorGroup, doorOp, state } = args;
   if (!state) return 0;
 
-  const offsets = resolveHingedDoorHardwareCenterOffsets(doorOp.height, state.policy);
-  if (!offsets) return 0;
+  const span = doorOp.archCut ? resolveArchHingeMountSpan(doorOp, state.policy) : null;
+  if (doorOp.archCut && !span) return 0;
+  const height = span ? span.maxY - span.minY : doorOp.height;
+  const defaultOffsets = resolveHingedDoorHardwareCenterOffsets(height, state.policy);
+  if (!defaultOffsets) return 0;
+  let offsets: readonly number[] = defaultOffsets;
+  if (span) {
+    const halfHeight = height / 2;
+    const maxCenterOffset = halfHeight - span.radius;
+    if (maxCenterOffset < 0) return 0;
+    const center = Math.min(defaultOffsets[1], maxCenterOffset);
+    offsets = center < span.radius ? [0] : [-center, center];
+  }
   const localCenterY =
-    typeof args.localCenterY === 'number' && Number.isFinite(args.localCenterY) ? args.localCenterY : 0;
+    (typeof args.localCenterY === 'number' && Number.isFinite(args.localCenterY) ? args.localCenterY : 0) +
+    (span ? (span.minY + span.maxY) / 2 : 0);
 
   for (const [hingeIndex, centerOffset] of offsets.entries()) {
     const localY = localCenterY + centerOffset;

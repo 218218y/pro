@@ -65,3 +65,29 @@ export function containsDoorArchPoint(
     point.y <= doorArchY(rect, profile, point.x)
   );
 }
+
+function archSpanAtHeight(rect: DoorArchRect, profile: DoorArchProfile, y: number) {
+  const span = rect.maxY - rect.minY;
+  const rise = span * profile.rise;
+  const level = (y - (rect.maxY - rise)) / rise;
+  if (level >= 1) return null;
+  const radius = level <= 0 ? 1 : Math.sqrt(1 - level ** 2);
+  const left = Math.max(profile.start, (1 - radius) / 2);
+  const right = Math.min(profile.end, (1 + radius) / 2);
+  if (left >= right) return null;
+  const scale = (rect.maxX - rect.minX) / (profile.end - profile.start);
+  return {
+    left: rect.minX + (left - profile.start) * scale,
+    right: rect.minX + (right - profile.start) * scale,
+  };
+}
+
+export function doorArchesOverlap(
+  first: { rect: DoorArchRect; profile: DoorArchProfile },
+  second: { rect: DoorArchRect; profile: DoorArchProfile }
+): boolean {
+  const bottom = Math.max(first.rect.minY, second.rect.minY);
+  const a = archSpanAtHeight(first.rect, first.profile, bottom);
+  const b = archSpanAtHeight(second.rect, second.profile, bottom);
+  return !!a && !!b && Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.0001;
+}

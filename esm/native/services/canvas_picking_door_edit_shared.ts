@@ -3,6 +3,7 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import {
   containsDoorArchPoint,
   doorArchOutline,
+  doorArchesOverlap,
   doorArchY,
   readDoorArchCut,
   sampleDoorArch,
@@ -46,6 +47,7 @@ import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 export {
   containsDoorArchPoint,
   doorArchOutline,
+  doorArchesOverlap,
   doorArchY,
   getDoorsArray,
   isCanonicalDoorVisualMapKey,

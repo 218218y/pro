@@ -468,7 +468,8 @@ test.describe('Canvas pointer parity smoke', () => {
 
   test('places and removes an arched cut, mirror and CNC on a single leaf and across a seam @critical', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    testInfo.setTimeout(120_000);
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
     await setDoorFeatureToggle(page, 'splitDoors', true);
@@ -491,10 +492,12 @@ test.describe('Canvas pointer parity smoke', () => {
       if (!first || !second) return null;
       const same = samples.filter(item => item.part === first.part);
       const start = same[0]?.x;
-      if (start === undefined) return null;
+      const end = samples.filter(item => item.part === second.part).at(-1)?.x;
+      if (start === undefined || end === undefined) return null;
       return {
         single: { x: (start + first.x) / 2, y },
         pair: { x: (first.x + second.x) / 2 + 0.006, y },
+        neighbor: { x: (second.x + end) / 2, y },
       };
     });
     if (!targets) throw new Error('Expected two adjacent visible door leaves');
@@ -546,7 +549,7 @@ test.describe('Canvas pointer parity smoke', () => {
           .poll(async () => (await readBuildDebugStats(page)).executeCount)
           .toBeGreaterThan(beforeAdd);
         const removeFrom =
-          tool === 'cut' ? point : { x: point.x + (placement === 'pair' ? 9 : 0), y: point.y + 22 };
+          tool !== 'mirror' ? point : { x: point.x + (placement === 'pair' ? 9 : 0), y: point.y + 22 };
         await page.mouse.move(removeFrom.x, removeFrom.y);
         const beforeRemove = (await readBuildDebugStats(page)).executeCount;
         await page.mouse.click(removeFrom.x, removeFrom.y);
@@ -557,6 +560,74 @@ test.describe('Canvas pointer parity smoke', () => {
           .poll(async () => (await readBuildDebugStats(page)).executeCount)
           .toBeGreaterThan(beforeRemove);
       }
+      if (tool === 'cut') {
+        const left = await pointOnCanvas(targets.single);
+        const right = await pointOnCanvas({ ...targets.neighbor, y: 0.18 });
+        await page.mouse.move(left.x, left.y);
+        await expect
+          .poll(async () => canvas.evaluate(node => (node as HTMLElement).style.cursor))
+          .toBe('pointer');
+        await page.keyboard.down('Shift');
+        try {
+          await page.mouse.click(left.x, left.y);
+          await expect.poll(async () => (await archCounts()).cut).toBe(1);
+          await page.mouse.move(right.x, right.y);
+          await page.mouse.click(right.x, right.y);
+          await expect.poll(async () => (await archCounts()).cut).toBe(2);
+          const cuts = (
+            (await readDebugStoreState(page)).config as {
+              splitDoorsMap: Record<string, { peak: number }>;
+            }
+          ).splitDoorsMap;
+          const peaks = Object.entries(cuts)
+            .filter(([key]) => key.startsWith('splitarch_'))
+            .map(([, cut]) => cut.peak);
+          expect(peaks[0]).toBeCloseTo(peaks[1]!, 5);
+        } finally {
+          await page.keyboard.up('Shift');
+        }
+        for (const target of [targets.single, targets.neighbor]) {
+          const point = await pointOnCanvas(target);
+          await page.mouse.click(point.x, point.y);
+        }
+        await expect.poll(async () => (await archCounts()).cut).toBe(0);
+      }
+      if (tool === 'groove') {
+        const single = await pointOnCanvas({ ...targets.single, y: -0.09 });
+        const taller = await pointOnCanvas({ ...targets.single, y: -0.02 });
+        const pair = await pointOnCanvas(targets.pair);
+        const readGrooves = async () => {
+          const config = (await readDebugStoreState(page)).config as {
+            grooveLayoutMap: Record<string, { heightCm: number; arch?: { link?: string } }[]>;
+          };
+          return Object.values(config.grooveLayoutMap).flat();
+        };
+        await page.mouse.click(single.x, single.y);
+        await expect.poll(readGrooves).toHaveLength(1);
+        const firstHeight = (await readGrooves())[0]!.heightCm;
+        await page.mouse.click(taller.x, taller.y);
+        await expect.poll(async () => (await readGrooves())[0]?.heightCm ?? 0).toBeGreaterThan(firstHeight);
+        expect(await readGrooves()).toHaveLength(1);
+        await page.mouse.click(pair.x, pair.y);
+        await expect.poll(readGrooves).toHaveLength(2);
+        const paired = await readGrooves();
+        expect(paired[0]?.arch?.link).toBeTruthy();
+        expect(paired[0]?.arch?.link).toBe(paired[1]?.arch?.link);
+        await page.mouse.click(pair.x, pair.y);
+        await expect.poll(async () => (await archCounts()).groove).toBe(0);
+
+        await page.locator('#wp-r-groove-draft-height').fill('42');
+        await page.mouse.click(single.x, single.y);
+        await expect.poll(readGrooves).toHaveLength(1);
+        expect((await readGrooves())[0]?.heightCm).toBeCloseTo(42, 6);
+        await page.mouse.click(single.x, single.y);
+        await expect.poll(async () => (await archCounts()).groove).toBe(0);
+      }
+      const background = await pointOnCanvas({ x: 0.75, y: -0.3 });
+      await page.mouse.click(background.x, background.y);
+      await expect
+        .poll(async () => (await readDebugStoreState(page)).mode)
+        .toMatchObject({ primary: 'none' });
     }
     expectNoRuntimeIssues(issues);
   });
