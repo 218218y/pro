@@ -1,3 +1,4 @@
+import { readDoorArchProfile } from './door_arch_geometry.js';
 import type {
   DoorSurfaceOverlayKind,
   MirrorLayoutEntry,
@@ -151,7 +152,9 @@ export function readMirrorLayoutEntry(value: unknown): MirrorLayoutEntry | null 
   const faceSign = readMirrorLayoutFaceSign(value, DEFAULT_FACE_SIGN);
   const surfaceKind = readMirrorLayoutExplicitSurfaceKind(value);
 
-  const out: MirrorLayoutEntry = {};
+  const arch = readDoorArchProfile(value.arch);
+  if (value.arch !== undefined && (!arch || widthCm == null || heightCm == null)) return null;
+  const out: MirrorLayoutEntry = arch ? { arch } : {};
   if (surfaceKind) out.surfaceKind = surfaceKind;
   if (widthCm != null) out.widthCm = widthCm;
   if (heightCm != null) out.heightCm = heightCm;
@@ -222,6 +225,13 @@ export function mirrorLayoutEquals(a: unknown, b: unknown): boolean {
   const bb = readMirrorLayoutEntry(b);
   if (!aa && !bb) return true;
   if (!aa || !bb) return false;
+  if (
+    aa.arch?.start !== bb.arch?.start ||
+    aa.arch?.end !== bb.arch?.end ||
+    aa.arch?.rise !== bb.arch?.rise ||
+    aa.arch?.link !== bb.arch?.link
+  )
+    return false;
   const aw = aa.widthCm ?? null;
   const bw = bb.widthCm ?? null;
   if (aw === null || bw === null) {

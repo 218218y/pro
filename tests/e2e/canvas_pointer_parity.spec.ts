@@ -466,6 +466,101 @@ test.describe('Canvas pointer parity smoke', () => {
     expectNoRuntimeIssues(issues);
   });
 
+  test('places and removes an arched cut, mirror and CNC on a single leaf and across a seam @critical', async ({
+    page,
+  }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await setDoorFeatureToggle(page, 'splitDoors', true);
+    await setDoorAuthoringMode(page, 'split-custom', true);
+    const canvas = page.locator('#viewer-container canvas').first();
+    const targets = await page.evaluate(() => {
+      const canvas = window.__WP_DEBUG__!.canvas;
+      const y = 0;
+      const raw = Array.from({ length: 401 }, (_, i) => {
+        const x = -0.6 + i * 0.003;
+        return { x, part: canvas.inspectNdc(x, y)?.partId };
+      });
+      const samples = raw.filter(item => /^d[0-9]+_(full|top|bot)$/u.test(item.part || ''));
+      const boundary = samples.findIndex((item, index) => {
+        const previous = samples[index - 1];
+        return previous && item.part !== previous.part && item.x - previous.x < 0.02;
+      });
+      const first = samples[boundary - 1];
+      const second = samples[boundary];
+      if (!first || !second) return null;
+      const same = samples.filter(item => item.part === first.part);
+      const start = same[0]?.x;
+      if (start === undefined) return null;
+      return {
+        single: { x: (start + first.x) / 2, y },
+        pair: { x: (first.x + second.x) / 2 + 0.006, y },
+      };
+    });
+    if (!targets) throw new Error('Expected two adjacent visible door leaves');
+
+    const archCounts = async () => {
+      const state = await readDebugStoreState(page);
+      const config = state.config as {
+        splitDoorsMap?: Record<string, unknown>;
+        grooveLayoutMap?: Record<string, { arch?: unknown }[]>;
+        mirrorLayoutMap?: Record<string, { arch?: unknown }[]>;
+      };
+      return {
+        cut: Object.keys(config.splitDoorsMap ?? {}).filter(key => key.startsWith('splitarch_')).length,
+        groove: Object.values(config.grooveLayoutMap ?? {})
+          .flat()
+          .filter(entry => entry.arch).length,
+        mirror: Object.values(config.mirrorLayoutMap ?? {})
+          .flat()
+          .filter(entry => entry.arch).length,
+      };
+    };
+    const pointOnCanvas = async (point: { x: number; y: number }) => {
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('Expected viewer canvas');
+      return { x: box.x + ((point.x + 1) * box.width) / 2, y: box.y + ((1 - point.y) * box.height) / 2 };
+    };
+
+    for (const tool of ['cut', 'groove', 'mirror'] as const) {
+      if (tool === 'groove') {
+        await setDoorAuthoringMode(page, 'split-custom', false);
+        await setDoorFeatureToggle(page, 'groovesEnabled', true);
+        await page.getByTestId('design-groove-manual-button').click();
+      } else if (tool === 'mirror') {
+        await setDoorAuthoringMode(page, 'groove', false);
+        await page.getByTestId('design-multicolor-enabled-toggle').locator('..').click();
+        await page.locator('[data-wp-search-special="mirror"]').click();
+      }
+      await page.getByTestId(`design-${tool}-shape-arch`).click();
+      for (const placement of ['single', 'pair'] as const) {
+        const point = await pointOnCanvas(targets[placement]);
+        await page.mouse.move(point.x, point.y);
+        await expect
+          .poll(async () => canvas.evaluate(node => (node as HTMLElement).style.cursor))
+          .toBe('pointer');
+        const beforeAdd = (await readBuildDebugStats(page)).executeCount;
+        await page.mouse.click(point.x, point.y);
+        await expect.poll(async () => (await archCounts())[tool]).toBe(placement === 'single' ? 1 : 2);
+        await expect
+          .poll(async () => (await readBuildDebugStats(page)).executeCount)
+          .toBeGreaterThan(beforeAdd);
+        const removeFrom =
+          tool === 'cut' ? point : { x: point.x + (placement === 'pair' ? 9 : 0), y: point.y + 22 };
+        await page.mouse.move(removeFrom.x, removeFrom.y);
+        const beforeRemove = (await readBuildDebugStats(page)).executeCount;
+        await page.mouse.click(removeFrom.x, removeFrom.y);
+        await expect
+          .poll(async () => (await archCounts())[tool], { message: `remove ${tool} ${placement}` })
+          .toBe(0);
+        await expect
+          .poll(async () => (await readBuildDebugStats(page)).executeCount)
+          .toBeGreaterThan(beforeRemove);
+      }
+    }
+    expectNoRuntimeIssues(issues);
+  });
+
   test('browser hover and click apply cell dimensions to the same canvas target @critical', async ({
     page,
   }) => {

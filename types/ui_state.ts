@@ -48,6 +48,9 @@ export interface UiState {
   grooveManualEnabled?: boolean;
   currentGrooveDraftHeightCm?: string;
   currentGrooveDraftWidthCm?: string;
+  doorCutArch?: boolean;
+  doorMirrorArch?: boolean;
+  doorGrooveArch?: boolean;
   currentGrooveOrientation?: 'vertical' | 'horizontal';
   currentMirrorDraftHeightCm?: string | number;
   currentMirrorDraftWidthCm?: string | number;

@@ -3,6 +3,9 @@
 // Owns the mirror-door construction path (wood backing + one-or-many mirror placements).
 // Kept separate so the canonical `createDoorVisual(...)` seam stays readable.
 
+import { doorArchOutline } from '../../shared/door_arch_geometry.js';
+import type { DoorArchProfile } from '../../../types/maps.js';
+import { createDoorContourGeometry } from './door_contour_geometry.js';
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { installPlanarMirrorReflector } from '../runtime/render_access.js';
 import { DOOR_MIRROR_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
@@ -122,6 +125,28 @@ function writeFiniteMirrorProfileNumber(
   if (Number.isFinite(num)) userData[key] = num;
 }
 
+export function createArchedMirrorGeometry(
+  THREE: ThreeLike,
+  width: number,
+  height: number,
+  depth: number,
+  arch: DoorArchProfile
+) {
+  return createDoorContourGeometry(
+    THREE,
+    doorArchOutline(
+      {
+        minX: -width / 2,
+        maxX: width / 2,
+        minY: -height / 2,
+        maxY: height / 2,
+      },
+      arch
+    ),
+    depth
+  );
+}
+
 export function appendMirrorDoorSurfacePlacement(args: {
   App: AppContainer;
   THREE: ThreeLike;
@@ -149,12 +174,12 @@ export function appendMirrorDoorSurfacePlacement(args: {
   const depthLayout = resolveMirrorDoorDepthLayout(args.thickness);
   const placementFaceSign = readMirrorLayoutFaceSign(args.placementLayout, args.zSign);
   const surfaceCenterZ = args.baseHalfDepthM + depthLayout.adhesiveGap + depthLayout.mirrorThick / 2;
+  const arch = args.placementLayout?.arch;
+  const { mirrorWidthM, mirrorHeightM } = args.placement;
   const mirrorMesh = new args.THREE.Mesh(
-    new args.THREE.BoxGeometry(
-      args.placement.mirrorWidthM,
-      args.placement.mirrorHeightM,
-      depthLayout.mirrorThick
-    ),
+    arch
+      ? createArchedMirrorGeometry(args.THREE, mirrorWidthM, mirrorHeightM, depthLayout.mirrorThick, arch)
+      : new args.THREE.BoxGeometry(mirrorWidthM, mirrorHeightM, depthLayout.mirrorThick),
     args.mat
   );
   mirrorMesh.userData = mirrorMesh.userData || {};
@@ -201,10 +226,9 @@ export function appendMirrorDoorSurfacePlacement(args: {
           Math.max(0.25, args.placement.mirrorWidthM * 3),
           Math.max(0.25, args.placement.mirrorHeightM * 3)
         );
-        const markGeo = new args.THREE.PlaneGeometry(
-          args.placement.mirrorWidthM,
-          args.placement.mirrorHeightM
-        );
+        const markGeo = arch
+          ? createArchedMirrorGeometry(args.THREE, mirrorWidthM, mirrorHeightM, 0, arch)
+          : new args.THREE.PlaneGeometry(mirrorWidthM, mirrorHeightM);
         const markMat = new args.THREE.MeshBasicMaterial({
           map: tex,
           transparent: true,

@@ -36,8 +36,20 @@ export type HandlesMap = Record<string, string | null | undefined>;
 /** Hinges: hinge direction or a legacy object payload. */
 export type HingeMap = Record<string, string | UnknownRecord | null | undefined>;
 
-/** Split doors: canonical boolean toggles plus separate manual and standard numeric split-position lists. */
-export type SplitDoorsMap = Record<string, boolean | number[] | null | undefined>;
+export type DoorArchPoint = { x: number; y: number };
+export type DoorArchRect = { minX: number; maxX: number; minY: number; maxY: number };
+
+export type DoorArchProfile = {
+  start: number;
+  end: number;
+  rise: number;
+  link?: string;
+};
+
+export type DoorArchCut = { peak: number; profile: DoorArchProfile };
+
+/** Split doors: canonical toggles, straight positions and shaped cuts. */
+export type SplitDoorsMap = Record<string, boolean | number[] | DoorArchCut | null | undefined>;
 
 /** Bottom split: toggle surface. */
 export type SplitDoorsBottomMap = Record<string, boolean | null | undefined>;
@@ -56,6 +68,7 @@ export type GrooveOrientation = 'vertical' | 'horizontal';
 
 /** Optional per-front groove sizing / placement (persisted in cm + normalized anchor). */
 export interface GrooveLayoutEntry extends UnknownRecord {
+  arch?: DoorArchProfile;
   widthCm?: number | null;
   heightCm?: number | null;
   centerXNorm?: number | null;
@@ -91,6 +104,7 @@ export type DoorSurfaceOverlayKind = 'mirror' | 'black_glass' | 'frosted_glass';
 
 /** Optional per-door surface sizing / placement (persisted in cm + normalized anchor). */
 export interface MirrorLayoutEntry extends UnknownRecord {
+  arch?: DoorArchProfile;
   surfaceKind?: DoorSurfaceOverlayKind | null;
   widthCm?: number | null;
   heightCm?: number | null;

@@ -5,6 +5,7 @@ import {
 } from '../../shared/handle_catalog.js';
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
+import { createDoorContourGeometry } from './door_contour_geometry.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
   createBuilderHingedDoorHardwareRenderState,
@@ -169,6 +170,12 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         __wpFrontVisualWidth: doorOp.width - hingedDims.visualWidthClearanceM,
         __wpFrontVisualHeight: doorOp.height - hingedDims.visualHeightClearanceM,
         __wpDoorId: doorIdNum,
+        ...(doorOp.archCut
+          ? {
+              __wpArchCutBaseMinY: doorOp.archCut.baseMinY,
+              __wpArchCutBaseMaxY: doorOp.archCut.baseMaxY,
+            }
+          : {}),
       };
       __reg(App, partId, group, 'hingedDoor');
       group.position.set(doorOp.pivotX || 0, doorOp.y || 0, doorOp.z || 0);
@@ -178,11 +185,13 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
       if (removed) {
         if (isRemoveDoorMode) {
           const box = new THREE.Mesh(
-            new THREE.BoxGeometry(
-              (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
-              (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
-              hingedDims.visualThicknessM
-            ),
+            doorOp.archCut
+              ? createDoorContourGeometry(THREE, doorOp.archCut.contour, hingedDims.visualThicknessM)
+              : new THREE.BoxGeometry(
+                  (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+                  (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+                  hingedDims.visualThicknessM
+                ),
             new THREE.MeshBasicMaterial({
               color: 0xff0000,
               transparent: true,
@@ -231,6 +240,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
         const doorVisualOptions = {
           grooveLayout: resolveGrooveLayout(cfg, partId),
+          ...(doorOp.archCut ? { cutContour: doorOp.archCut.contour } : {}),
           ...(glassFrameStyle ? { glassFrameStyle } : null),
           ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
         };
@@ -238,7 +248,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
           (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
           (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
           hingedDims.visualThicknessM,
-          isMirrorDoor ? mirrorMat : woodMat,
+          isMirrorDoor && !doorOp.archCut ? mirrorMat : woodMat,
           effectiveDoorStyle,
           doorOp.hasGroove,
           isMirrorDoor,
@@ -252,12 +262,14 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         );
       } else {
         visual = new THREE.Mesh(
-          new THREE.BoxGeometry(
-            (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
-            (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
-            hingedDims.visualThicknessM
-          ),
-          isMirrorDoor ? mirrorMat : woodMat
+          doorOp.archCut
+            ? createDoorContourGeometry(THREE, doorOp.archCut.contour, hingedDims.visualThicknessM)
+            : new THREE.BoxGeometry(
+                (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
+                (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
+                hingedDims.visualThicknessM
+              ),
+          isMirrorDoor && !doorOp.archCut ? mirrorMat : woodMat
         );
       }
 
@@ -275,7 +287,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         frontZ: hingedDims.frontTrimZOffsetM,
         faceSign: 1,
       });
-      if (isMirrorDoor) __tagAndTrackMirrorSurfaces(App, visual, mirrorMat);
+      if (isMirrorDoor && !doorOp.archCut) __tagAndTrackMirrorSurfaces(App, visual, mirrorMat);
 
       const absY = typeof doorOp.handleAbsY === 'number' ? doorOp.handleAbsY : null;
       group.userData.__handleAbsY = absY;

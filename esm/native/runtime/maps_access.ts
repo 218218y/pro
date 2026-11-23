@@ -66,3 +66,5 @@ export {
   writeSavedColors,
   writeSavedColorsOrThrow,
 } from './maps_access_saved_collections.js';
+
+export { writeDoorArchMaps } from './visual_keyed_map_writer_owner.js';

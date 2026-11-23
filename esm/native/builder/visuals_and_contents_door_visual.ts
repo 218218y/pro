@@ -4,6 +4,7 @@ import {
   readMirrorLayoutFaceSign,
   resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
+import { createDoorContourGeometry } from './door_contour_geometry.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
 import { createMixedSurfaceDoorVisual } from './visuals_and_contents_door_visual_mixed_surfaces.js';
 import {
@@ -148,6 +149,14 @@ export function createDoorVisual(
   const zSign = frontFaceSign === -1 ? -1 : 1;
   const __forceCurtainFix = !!forceCurtainFix;
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
+
+  if (options?.cutContour) {
+    const slab = new THREE.Mesh(createDoorContourGeometry(THREE, options.cutContour, thickness), mat);
+    tagDoorVisualPart(slab, 'door_flat_center_panel');
+    addOutlines(slab);
+    visualGroup.add(slab);
+    return visualGroup;
+  }
 
   const adhesiveGlassKind = resolveAdhesiveGlassKind(options?.adhesiveGlassKind);
   const surfaceFallbackKind = isMirror ? 'mirror' : adhesiveGlassKind || 'mirror';

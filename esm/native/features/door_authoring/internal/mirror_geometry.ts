@@ -136,8 +136,14 @@ export function resolveMirrorPlacementFromPreparedRect(args: {
 }): ResolvedMirrorPlacement {
   const { rect, width, height } = args.preparedRect;
   const layout = readMirrorLayoutEntry(args.layout);
-  const mirrorWidthM = clampMirrorSizeM(layout?.widthCm ?? null, width);
-  const mirrorHeightM = clampMirrorSizeM(layout?.heightCm ?? null, height);
+  const mirrorWidthM =
+    layout?.arch && layout.widthCm != null
+      ? Math.min(width, layout.widthCm / 100)
+      : clampMirrorSizeM(layout?.widthCm ?? null, width);
+  const mirrorHeightM =
+    layout?.arch && layout.heightCm != null
+      ? Math.min(height, layout.heightCm / 100)
+      : clampMirrorSizeM(layout?.heightCm ?? null, height);
 
   const halfW = mirrorWidthM / 2;
   const halfH = mirrorHeightM / 2;

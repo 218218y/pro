@@ -19,6 +19,9 @@ import {
   createPreviewOpsArgs,
   readSplitVariant,
 } from './canvas_picking_hover_flow_shared.js';
+import { resolveDoorArchAction } from './canvas_picking_door_arch_actions.js';
+import { readActiveDoorArchTool } from './canvas_picking_door_edit_shared.js';
+import { clearDoorArchPreview, showDoorArchPreview } from './canvas_picking_door_arch_preview.js';
 import { tryHandleCanvasNonSplitHover } from './canvas_picking_hover_flow_nonsplit.js';
 import { tryHandleCanvasSplitHover } from './canvas_picking_hover_flow_split.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
@@ -178,6 +181,35 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
       if (__isSplitEditMode && __hideLayoutPreview) __hideLayoutPreview(createPreviewOpsArgs(App));
     } catch {
       // hover-preview-cleanup: optional split/layout preview teardown is best-effort
+    }
+
+    const archTool = readActiveDoorArchTool(App, {
+      split: __isSplitEditMode,
+      groove: __isGrooveEditMode,
+      paint: __paintSelection === 'mirror',
+      splitVariant: __splitVariant,
+    });
+    clearDoorArchPreview(cutMarker);
+    if (archTool) {
+      if (marker) marker.visible = false;
+      if (doorMarker) doorMarker.visible = false;
+      if (cutMarker) cutMarker.visible = false;
+      const THREE = getThreeMaybe(App);
+      if (!THREE) return false;
+      if (!__isSplitEditMode) {
+        __hideSketchPreview?.(createPreviewOpsArgs(App));
+        __hideLayoutPreview?.(createPreviewOpsArgs(App));
+      }
+      const hit = resolveCanvasPickingClickHitState({
+        App,
+        ndcX,
+        ndcY,
+        isRemoveDoorMode: false,
+        raycaster: __wpRaycaster,
+        mouse: __wpMouse,
+      });
+      const action = resolveDoorArchAction({ App, THREE, tool: archTool, hit, raycaster: __wpRaycaster });
+      return !!action && showDoorArchPreview(cutMarker, THREE, action);
     }
 
     if (!__isSplitEditMode) {

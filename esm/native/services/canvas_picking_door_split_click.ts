@@ -1,4 +1,5 @@
-import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
+import { __wp_toast } from './canvas_picking_core_helpers.js';
+import { isCanvasDoorArchCutSegment, readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import type { CanvasDoorSplitClickArgs } from './canvas_picking_door_split_click_contracts.js';
 import {
   resolveCanvasDoorSplitBaseKey,
@@ -10,6 +11,10 @@ import { handleCanvasDoorToggleSplitClick } from './canvas_picking_door_split_cl
 export type { CanvasDoorSplitClickArgs } from './canvas_picking_door_split_click_contracts.js';
 
 export function handleCanvasDoorSplitClick(args: CanvasDoorSplitClickArgs): boolean {
+  if (isCanvasDoorArchCutSegment(args.doorHitGroup)) {
+    __wp_toast(args.App, 'כדי לשנות את החיתוך המעוגל, בחר ״ראש מעוגל״ ולחץ על הקשת.', 'error');
+    return true;
+  }
   const splitVariant = readSplitVariant(args.App);
   const doorBaseKey = resolveCanvasDoorSplitBaseKey(args.App, args.effectiveDoorId);
   const bounds = readCanvasDoorSplitBounds(args.App, doorBaseKey);

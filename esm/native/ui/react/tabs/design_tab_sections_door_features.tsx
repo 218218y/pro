@@ -1,12 +1,14 @@
 import type { ChangeEvent, ReactElement } from 'react';
 
 import { Button, ModeToggleButton, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
+import { DoorArchShapeOptions } from './design_tab_door_arch_shape.js';
 import type { DoorFeaturesSectionProps } from './design_tab_sections_contracts.js';
 
 export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactElement | null {
   const model = props.model;
   if (model.wardrobeType !== 'hinged' && model.wardrobeType !== 'sliding') return null;
   const showDoorCutAndRemovalControls = !model.isChestMode;
+  const grooveArch = model.grooveManualEnabled && model.doorGrooveArch;
   const showGrooveLinesControls = model.grooveActive || model.isChestMode;
 
   return (
@@ -61,15 +63,24 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               className="wp-tool-card wp-tool-card--curtain wp-r-mt-2"
               data-testid="design-groove-manual-fields"
             >
+              {model.isChestMode ? null : (
+                <DoorArchShapeOptions
+                  tool="groove"
+                  arched={!!grooveArch}
+                  onChange={model.setDoorGrooveArch}
+                />
+              )}
               <div className="wp-section-title">מידות חריטה</div>
               <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
-                <GrooveDraftField
-                  id="wp-r-groove-draft-height"
-                  label="גובה (ס״מ)"
-                  resetLabel="איפוס גובה החריטה"
-                  value={model.grooveDraftHeightCm}
-                  onChange={model.setGrooveDraftHeightCm}
-                />
+                {grooveArch ? null : (
+                  <GrooveDraftField
+                    id="wp-r-groove-draft-height"
+                    label="גובה (ס״מ)"
+                    resetLabel="איפוס גובה החריטה"
+                    value={model.grooveDraftHeightCm}
+                    onChange={model.setGrooveDraftHeightCm}
+                  />
+                )}
                 <GrooveDraftField
                   id="wp-r-groove-draft-width"
                   label="רוחב (ס״מ)"
@@ -81,27 +92,29 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
             </div>
           ) : null}
 
-          <div className="wp-r-mt-2" data-testid="design-groove-orientation-controls">
-            <div className="wp-r-label wp-r-label--center">כיוון החריטה</div>
-            <OptionButtonGroup columns={2} density="compact" label="כיוון החריטה">
-              <OptionButton
-                density="compact"
-                selected={model.grooveOrientation === 'vertical'}
-                onClick={() => model.setGrooveOrientation('vertical')}
-                testId="design-groove-orientation-vertical"
-              >
-                חריטה עומדת
-              </OptionButton>
-              <OptionButton
-                density="compact"
-                selected={model.grooveOrientation === 'horizontal'}
-                onClick={() => model.setGrooveOrientation('horizontal')}
-                testId="design-groove-orientation-horizontal"
-              >
-                חריטה שוכבת
-              </OptionButton>
-            </OptionButtonGroup>
-          </div>
+          {grooveArch ? null : (
+            <div className="wp-r-mt-2" data-testid="design-groove-orientation-controls">
+              <div className="wp-r-label wp-r-label--center">כיוון החריטה</div>
+              <OptionButtonGroup columns={2} density="compact" label="כיוון החריטה">
+                <OptionButton
+                  density="compact"
+                  selected={model.grooveOrientation === 'vertical'}
+                  onClick={() => model.setGrooveOrientation('vertical')}
+                  testId="design-groove-orientation-vertical"
+                >
+                  חריטה עומדת
+                </OptionButton>
+                <OptionButton
+                  density="compact"
+                  selected={model.grooveOrientation === 'horizontal'}
+                  onClick={() => model.setGrooveOrientation('horizontal')}
+                  testId="design-groove-orientation-horizontal"
+                >
+                  חריטה שוכבת
+                </OptionButton>
+              </OptionButtonGroup>
+            </div>
+          )}
 
           {showGrooveLinesControls ? (
             <div className="wp-r-mt-2 wp-r-groove-lines-block">
@@ -208,6 +221,14 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
               </ModeToggleButton>
 
               {model.splitIsCustom ? (
+                <DoorArchShapeOptions
+                  tool="cut"
+                  arched={!!model.doorCutArch}
+                  onChange={model.setDoorCutArch}
+                />
+              ) : null}
+
+              {model.splitIsCustom ? (
                 <ModeToggleButton
                   active={model.splitDoorsTransparent}
                   icon={
@@ -224,7 +245,13 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                 </ModeToggleButton>
               ) : null}
 
-              <div className={model.splitIsCustom ? 'wp-r-editmode-hint' : 'wp-r-editmode-hint hidden'}>
+              <div
+                className={
+                  model.splitIsCustom && !model.doorCutArch
+                    ? 'wp-r-editmode-hint'
+                    : 'wp-r-editmode-hint hidden'
+                }
+              >
                 הזז עכבר לראות קו חיתוך. לחץ להוספה. לחץ שוב על קו קיים כדי להסיר. אפשר כמה חיתוכים. החזק
                 Shift כדי לנעול את גובה החיתוך ולעבור ימינה/שמאלה לדלת סמוכה באותו גובה. כשהעכבר מעל דלת,
                 השתמש בחיצים למעלה/למטה כדי להזיז את החיתוך בדיוק 1 ס״מ בכל לחיצה.

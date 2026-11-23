@@ -36,6 +36,7 @@ export type DesignTabMulticolorController = {
   syncPaintColorFromTools: () => string | null;
   toggleEnabled: (checked: boolean) => void;
   setCurtain: (next: CurtainPreset) => void;
+  setMirrorArch: (arched: boolean) => void;
   setMirrorDraftField: (key: DesignTabMirrorDraftKey, value: string) => void;
   finishPaintMode: () => void;
   enterPaintMode: (paintId: string, curtainPreset?: CurtainPreset) => void;
@@ -157,6 +158,9 @@ export function createDesignTabMulticolorController(
       if (!checked) finishPaintMode();
     },
     setCurtain,
+    setMirrorArch(arched) {
+      setUiScalarSoftImpl(args.app, 'doorMirrorArch', arched, { source: 'react:designTab:mirrorShape' });
+    },
     setMirrorDraftField(key: DesignTabMirrorDraftKey, value: string) {
       try {
         setUiScalarSoftImpl(args.app, key, value, {

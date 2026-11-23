@@ -10,6 +10,7 @@ import {
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import {
+  createArchedMirrorGeometry,
   applyMirrorReflectorIdentityMetadata,
   applyMirrorReflectorProfileMetadata,
   createMirrorDoorVisual,
@@ -206,7 +207,19 @@ export function createStyledMirrorDoorVisual(args: CreateStyledMirrorDoorVisualA
     const placementLayout = placementLayouts[i] ?? null;
     const placementFaceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     const mirrorMesh = new args.THREE.Mesh(
-      new args.THREE.BoxGeometry(placement.mirrorWidthM, placement.mirrorHeightM, depthLayout.mirrorThick),
+      placementLayout?.arch
+        ? createArchedMirrorGeometry(
+            args.THREE,
+            placement.mirrorWidthM,
+            placement.mirrorHeightM,
+            depthLayout.mirrorThick,
+            placementLayout.arch
+          )
+        : new args.THREE.BoxGeometry(
+            placement.mirrorWidthM,
+            placement.mirrorHeightM,
+            depthLayout.mirrorThick
+          ),
       args.mat
     );
     mirrorMesh.userData = mirrorMesh.userData || {};

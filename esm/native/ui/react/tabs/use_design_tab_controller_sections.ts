@@ -95,6 +95,13 @@ export function useDesignTabControllerSections(args: {
       grooveLinesCountIsAuto: state.grooveLinesCountIsAuto,
       grooveLinesCountAutoBaseline: state.grooveLinesCountAutoBaseline,
       grooveManualEnabled: state.grooveManualEnabled,
+      doorCutArch: state.doorCutArch,
+      doorGrooveArch: state.doorGrooveArch,
+      setDoorCutArch: controllerRuntime.setDoorCutArch,
+      setDoorGrooveArch: arched => {
+        controllerRuntime.setDoorGrooveArch(arched);
+        if (arched && !editModes.grooveActive) editModes.toggleGrooveEdit();
+      },
       grooveDraftHeightCm: state.grooveDraftHeightCm,
       grooveDraftWidthCm: state.grooveDraftWidthCm,
       grooveOrientation: state.grooveOrientation,
@@ -139,6 +146,10 @@ export function useDesignTabControllerSections(args: {
       state.grooveLinesCountIsAuto,
       state.grooveLinesCountAutoBaseline,
       state.grooveManualEnabled,
+      state.doorCutArch,
+      state.doorGrooveArch,
+      controllerRuntime.setDoorCutArch,
+      controllerRuntime.setDoorGrooveArch,
       state.grooveDraftHeightCm,
       state.grooveDraftWidthCm,
       state.grooveOrientation,

@@ -6,6 +6,7 @@ import {
   attachHiddenCarcassMountFaceX,
   attachHiddenModuleDoors,
 } from './hinged_doors_module_ops_metadata.js';
+import type { HingedDoorArchCutRender } from './render_door_ops_shared_contracts.js';
 import type {
   HingedDoorIterationState,
   HingedDoorModuleOpsContext,
@@ -28,6 +29,7 @@ export function pushHingedDoorSegment(
     handleAbsY: number;
     allowHandle: boolean;
     colorVal: string | null;
+    archCut?: HingedDoorArchCutRender;
   }
 ): void {
   if (!ctx.opsList) {
@@ -55,6 +57,7 @@ export function pushHingedDoorSegment(
         ctx.winterBraceDoorPlan.fixedBelowY !== null &&
         args.segY + args.segH / 2 <= ctx.winterBraceDoorPlan.fixedBelowY + 1e-6,
       partId: args.partId,
+      ...(args.archCut ? { archCut: args.archCut } : {}),
       moduleIndex: ctx.index,
       pivotX: state.pivotX,
       y: args.segY,

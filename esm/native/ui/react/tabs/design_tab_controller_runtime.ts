@@ -40,6 +40,8 @@ export type DesignTabControllerRuntime = {
   setGrooveLinesCount: (count: number) => void;
   resetGrooveLinesCount: () => void;
   toggleGrooveManual: () => void;
+  setDoorCutArch: (arched: boolean) => void;
+  setDoorGrooveArch: (arched: boolean) => void;
   setGrooveDraftHeightCm: (value: string) => void;
   setGrooveDraftWidthCm: (value: string) => void;
   setGrooveOrientation: (orientation: GrooveOrientation) => void;
@@ -216,6 +218,14 @@ export function createDesignTabControllerRuntime(
         },
         createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
       );
+    },
+
+    setDoorCutArch(arched: boolean) {
+      setUiScalarSoft(app, 'doorCutArch', arched);
+    },
+
+    setDoorGrooveArch(arched: boolean) {
+      setUiScalarSoft(app, 'doorGrooveArch', arched);
     },
 
     toggleGrooveManual() {

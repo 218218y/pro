@@ -5,7 +5,13 @@ import {
   computeCustomSplitCutsY,
   mergeSplitCuts,
 } from '../esm/native/builder/hinged_doors_module_ops_split_policy.ts';
-import { appendSplitHingedDoorOps } from '../esm/native/builder/hinged_doors_module_ops_split.ts';
+import {
+  appendArchedHingedDoorOps,
+  appendSplitHingedDoorOps,
+} from '../esm/native/builder/hinged_doors_module_ops_split.ts';
+import { readHingedDoorOp } from '../esm/native/builder/render_door_ops_shared_ops.ts';
+import { readSplitDoorsMapValue } from '../esm/native/features/project_config/project_config_map_readers.ts';
+import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access.ts';
 import { createHingedDoorIterationState } from '../esm/native/builder/hinged_doors_module_ops_iteration.ts';
 
 function createCtx(overrides: Record<string, unknown> = {}) {
@@ -180,4 +186,40 @@ test('module door split emission also defers when a sketch box contains external
   const state = createHingedDoorIterationState(ctx, 0, 5);
   assert.equal(state.topSplitEnabled, true);
   assert.equal(state.shouldSplitThisDoor, false);
+});
+
+test('a saved arched cut emits two independent leaves with matching curved edges', () => {
+  const cut = { peak: 0.67, profile: { start: 0, end: 1, rise: 0.12 } };
+  const persisted = readSplitDoorsMapValue(
+    JSON.parse(
+      JSON.stringify({
+        splitarch_d5: cut,
+        splitarch_d6: { ...cut, peak: 0 },
+        splitpos_d5: [0.5],
+      })
+    )
+  );
+  const splitDoorsMap = normalizeKnownMapSnapshot('splitDoorsMap', persisted);
+  assert.deepEqual(splitDoorsMap.splitarch_d5, cut);
+  assert.equal(splitDoorsMap.splitarch_d6, undefined);
+  assert.deepEqual(splitDoorsMap.splitpos_d5, [0.5]);
+
+  const ctx = createCtx({ cfg: { splitDoorsMap } });
+  assert.equal(appendArchedHingedDoorOps(ctx, createState()), true);
+  const ops = ctx.opsList.map(readHingedDoorOp);
+  assert.equal(ops.length, 2);
+  const [lower, upper] = ops;
+  assert.equal(lower?.partId, 'd5_bot');
+  assert.equal(upper?.partId, 'd5_top');
+  assert.ok(lower?.archCut && upper?.archCut);
+  const edge = lower.archCut.contour.slice(1, -1);
+  const corresponding = upper.archCut.contour.slice(1, -1);
+  assert.ok(edge.length > 20);
+  assert.ok(Math.max(...edge.map(point => point.y)) - edge[0]!.y > 0.2);
+  for (const [index, point] of edge.entries()) {
+    const other = corresponding[index]!;
+    assert.equal(point.x, other.x);
+    const clearance = upper.y + other.y - (lower.y + point.y);
+    assert.ok(clearance > 0 && clearance < 0.02);
+  }
 });

@@ -5,6 +5,7 @@ import type {
   DoorVisualEntryLike,
   Object3DLike,
 } from '../../../types';
+import type { DoorArchPoint } from '../../../types/maps.js';
 import type { readDoorStyleMap } from '../features/door_authoring/api.js';
 
 export type HandleMeshFactory = (
@@ -96,7 +97,14 @@ export type SlidingDoorOpLike = {
   maxX?: number | undefined;
 };
 
+export type HingedDoorArchCutRender = {
+  contour: DoorArchPoint[];
+  baseMinY: number;
+  baseMaxY: number;
+};
+
 export type HingedDoorOpLike = {
+  archCut?: HingedDoorArchCutRender;
   fixedClosed?: boolean;
   winterBraceDoorPlan?: { cuts: number[]; fixedBelowY: number | null };
   x: number;

@@ -4,13 +4,19 @@
 // preserving the canonical exported click entrypoint there.
 import type { AppContainer } from '../../../types';
 import { isNotesScreenDrawMode } from '../runtime/notes_access.js';
-import { __wp_reportPickingIssue, __wp_ensurePickingRefs } from './canvas_picking_core_helpers.js';
+import {
+  __wp_reportPickingIssue,
+  __wp_ensurePickingRefs,
+  __wp_toast,
+} from './canvas_picking_core_helpers.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { resolveCanvasPickingClickModeState } from './canvas_picking_click_mode_state.js';
 import { createCanvasPickingClickModuleRefs } from './canvas_picking_click_module_refs.js';
 import { routeCanvasPickingClick } from './canvas_picking_click_route.js';
 import { syncCanvasPickingViewportMatrices } from './canvas_picking_viewport_matrices.js';
-import { readSplitVariant } from './canvas_picking_door_edit_shared.js';
+import { getThreeMaybe } from '../runtime/three_access.js';
+import { commitDoorArchAction, resolveDoorArchAction } from './canvas_picking_door_arch_actions.js';
+import { readActiveDoorArchTool, readSplitVariant } from './canvas_picking_door_edit_shared.js';
 import { tryHandleCanvasDoorCustomSplitScreenRemoveClick } from './canvas_picking_door_split_click_custom.js';
 import { requireViewerMeasurementTool } from './viewer_measurement_tool_loader.js';
 import { tryHandleRoomOpeningPlacementClick } from './room_opening_placement.js';
@@ -75,12 +81,34 @@ export function __coreHandleCanvasClickNDC(App: AppContainer, ndcX: number, ndcY
     });
     return;
   }
+  const splitVariant = readSplitVariant(App);
+  const archTool = readActiveDoorArchTool(App, {
+    split: modeState.__isSplitEditMode,
+    groove: modeState.__isGrooveEditMode,
+    paint: modeState.__isPaintMode,
+    splitVariant,
+  });
+  if (archTool) {
+    const THREE = getThreeMaybe(App);
+    if (!THREE) return;
+    const action = resolveDoorArchAction({
+      App,
+      THREE,
+      tool: archTool,
+      hit: hitState,
+      raycaster: __wpRaycaster,
+    });
+    if (action) commitDoorArchAction(App, action);
+    else if (hitState?.effectiveDoorId)
+      __wp_toast(App, 'אין מקום לקשת במיקום הזה. הזז את הסמן ובדוק את התצוגה המקדימה.', 'error');
+    return;
+  }
   // A cut is a gap in the door mesh, so the ray can hit a selector or carcass
   // behind it. Match the hover's projected cut line whenever no door was hit;
   // a resolved door retains priority over neighboring screen-space candidates.
   if (
     modeState.__isSplitEditMode &&
-    readSplitVariant(App) === 'custom' &&
+    splitVariant === 'custom' &&
     !hitState?.effectiveDoorId &&
     tryHandleCanvasDoorCustomSplitScreenRemoveClick({ App, ndcX, ndcY })
   ) {

@@ -3752,6 +3752,166 @@
       "owner": "built-in-desk",
       "reason": "Both sketch tool panels use one desk options control backed by the same limits as pointer picking.",
       "id": "built-in-desk-options"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/visuals_and_contents_door_visual_grooves.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["doorArchY"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The arch codec and curve are shared by persistence, exact canvas preview, and manufactured-front rendering.",
+      "id": "door-arch-visuals-and-contents-door-visual-grooves-door-arch-geometry"
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/project_config/project_config_map_readers.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCut"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The arch codec and curve are shared by persistence, exact canvas preview, and manufactured-front rendering.",
+      "id": "door-arch-project-config-map-readers-door-arch-geometry"
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/maps_access_normalizers_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["isDoorArchCutKey", "readDoorArchCut"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The arch codec and curve are shared by persistence, exact canvas preview, and manufactured-front rendering.",
+      "id": "door-arch-maps-access-normalizers-shared-door-arch-geometry"
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_click_flow.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/three_access.ts",
+        "kind": "value",
+        "importedSymbols": ["getThreeMaybe"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "Click and hover project the pointer through the wardrobe viewport’s injected Three runtime.",
+      "id": "door-arch-canvas-picking-click-flow-three-access"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_split.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["readDoorArchCut", "sampleDoorArch"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "One curve and codec are shared by project maps, pointer preview and mesh generation.",
+      "id": "door-arch-hinged-doors-module-ops-split-door-arch-geometry"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/visuals_and_contents_door_visual_mirror.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": ["doorArchOutline"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "One curve and codec are shared by project maps, pointer preview and mesh generation.",
+      "id": "door-arch-visuals-and-contents-door-visual-mirror-door-arch-geometry"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/door_arch_geometry.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "containsDoorArchPoint",
+          "doorArchOutline",
+          "doorArchY",
+          "readDoorArchCut",
+          "sampleDoorArch"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "One curve and codec are shared by project maps, pointer preview and mesh generation.",
+      "id": "door-arch-canvas-picking-door-edit-shared-door-arch-geometry"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "Canvas placement checks the same minimum cut and clearance limits as the door builder.",
+      "id": "door-arch-canvas-picking-door-edit-shared-door-system-policy"
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/door_visual_key_contracts_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["isCanonicalDoorVisualMapKey"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "Arch placement uses the same canonical part keys as the existing front layout maps.",
+      "id": "door-arch-canvas-picking-door-edit-shared-door-visual-key-contracts-shared"
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/render_access.ts",
+        "kind": "value",
+        "importedSymbols": ["getDoorsArray"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The door-edit owner reads the rendered door registry to match coplanar neighbors.",
+      "id": "door-arch-canvas-picking-door-edit-shared-render-access"
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "fromFile": "esm/native/services/canvas_picking_door_edit_shared.ts",
+      "statement": {
+        "toFile": "esm/native/runtime/service_access.ts",
+        "kind": "value",
+        "importedSymbols": ["getToolsServiceMaybe"],
+        "syntax": "static-import"
+      },
+      "owner": "door-arch-authoring",
+      "reason": "The door-edit owner reads the active mirror paint selection from the canonical tools service.",
+      "id": "door-arch-canvas-picking-door-edit-shared-service-access"
     }
   ]
 }

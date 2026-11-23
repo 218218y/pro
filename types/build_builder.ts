@@ -91,6 +91,7 @@ export type BuilderMirrorReflectorProfile = {
 };
 
 export type BuilderDoorVisualOptions = {
+  cutContour?: import('./maps.js').DoorArchPoint[];
   adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;

@@ -48,6 +48,8 @@ export type DesignTabUiState = {
   isChestMode: boolean;
   groovesEnabled: boolean;
   grooveManualEnabled: boolean;
+  doorCutArch: boolean;
+  doorGrooveArch: boolean;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
@@ -136,6 +138,8 @@ export function readDesignTabUiState(ui: UiStateLike | null | undefined): Design
     isChestMode: readBoolean(rec?.isChestMode),
     groovesEnabled: readBoolean(rec?.groovesEnabled),
     grooveManualEnabled: readBoolean(rec?.grooveManualEnabled),
+    doorCutArch: ui?.doorCutArch === true,
+    doorGrooveArch: ui?.doorGrooveArch === true,
     grooveDraftHeightCm: readDraftString(rec?.currentGrooveDraftHeightCm),
     grooveDraftWidthCm: readDraftString(rec?.currentGrooveDraftWidthCm),
     grooveOrientation: rec?.currentGrooveOrientation === 'horizontal' ? 'horizontal' : 'vertical',

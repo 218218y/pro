@@ -1,3 +1,4 @@
+import { readDoorArchProfile } from './door_arch_geometry.js';
 import type {
   GrooveLayoutEntry,
   GrooveLayoutList,
@@ -133,7 +134,9 @@ export function readGrooveLayoutEntry(value: unknown): GrooveLayoutEntry | null 
   const centerYNorm = normalizeCenter(value.centerYNorm);
   const orientation = readGrooveOrientation(value.orientation);
   const linesCount = normalizeLinesCount(value.linesCount);
-  const out: GrooveLayoutEntry = {};
+  const arch = readDoorArchProfile(value.arch);
+  if (value.arch !== undefined && (!arch || widthCm == null || heightCm == null)) return null;
+  const out: GrooveLayoutEntry = arch ? { arch } : {};
   if (widthCm != null) out.widthCm = widthCm;
   if (heightCm != null) out.heightCm = heightCm;
   if (hasSizedLayout && Math.abs(centerXNorm - GROOVE_LAYOUT_CENTER_NORM) > GROOVE_LAYOUT_CENTER_EPSILON) {

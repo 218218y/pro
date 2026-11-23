@@ -1,3 +1,4 @@
+import { doorArchY } from '../../shared/door_arch_geometry.js';
 import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import { readGrooveLayoutList, resolveGroovePlacementListInRect } from './door_visual_lookup_state.js';
@@ -69,7 +70,8 @@ export function appendGrooveStrips(args: {
   });
   const explicitLinesCount = normalizeGrooveLinesCount(linesCountOverride);
   for (const [placementIndex, placement] of placements.entries()) {
-    const isHorizontal = placement.orientation === 'horizontal';
+    const arch = normalizedLayouts[placementIndex]?.arch;
+    const isHorizontal = !arch && placement.orientation === 'horizontal';
     const distributionSpan = isHorizontal ? placement.heightM : placement.widthM;
     const stripSpan = Math.max(
       DOOR_GROOVE_RENDER_POLICY.stripWidthM,
@@ -83,20 +85,33 @@ export function appendGrooveStrips(args: {
     const gap = distributionSpan / (stripesCount + 1);
     const geometryWidth = isHorizontal ? stripSpan : DOOR_GROOVE_RENDER_POLICY.stripWidthM;
     const geometryHeight = isHorizontal ? DOOR_GROOVE_RENDER_POLICY.stripWidthM : stripSpan;
-    const stripGeo = getCachedDoorVisualGeometry(
-      App,
-      createDoorVisualCacheKey('door_groove_strip', [geometryWidth, geometryHeight]),
-      () => new THREE.BoxGeometry(geometryWidth, geometryHeight, DOOR_GROOVE_RENDER_POLICY.stripDepthM)
-    );
+    const archRect = {
+      minX: placement.centerX - placement.widthM / 2,
+      maxX: placement.centerX + placement.widthM / 2,
+      minY: placement.centerY - placement.heightM / 2,
+      maxY: placement.centerY + placement.heightM / 2,
+    };
     for (let i = 1; i <= stripesCount; i++) {
+      const crossOffset = -distributionSpan / 2 + i * gap;
+      const top = arch ? doorArchY(archRect, arch, placement.centerX + crossOffset) : archRect.maxY;
+      const height = arch
+        ? Math.max(
+            DOOR_GROOVE_RENDER_POLICY.stripWidthM,
+            top - archRect.minY - DOOR_GROOVE_RENDER_POLICY.heightClearanceM
+          )
+        : geometryHeight;
+      const stripGeo = getCachedDoorVisualGeometry(
+        App,
+        createDoorVisualCacheKey('door_groove_strip', [geometryWidth, height]),
+        () => new THREE.BoxGeometry(geometryWidth, height, DOOR_GROOVE_RENDER_POLICY.stripDepthM)
+      );
       const strip = new THREE.Mesh(stripGeo, grooveMat);
       strip.userData = strip.userData || {};
       strip.userData.__keepMaterial = true;
       tagDoorVisualPart(strip, 'door_groove_strip');
-      const crossOffset = -distributionSpan / 2 + i * gap;
       strip.position.set(
         placement.centerX + (isHorizontal ? 0 : crossOffset),
-        placement.centerY + (isHorizontal ? crossOffset : 0),
+        arch ? (archRect.minY + top) / 2 : placement.centerY + (isHorizontal ? crossOffset : 0),
         zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign
       );
       visualGroup.add(strip);

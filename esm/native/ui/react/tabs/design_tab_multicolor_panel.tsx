@@ -31,6 +31,7 @@ export type {
 
 export function MultiColorPanel(props: { embedded?: boolean } = {}) {
   const app = useApp();
+  const mirrorArch = useUiSelector(ui => ui.doorMirrorArch === true, undefined, 'appearance');
   const enabled = useCfgSelector(selectIsMultiColorMode, undefined, 'appearance');
   const savedRaw = useCfgSelector(selectSavedColors, undefined, 'appearance');
   const curtainChoiceRaw = useUiSelector(
@@ -142,6 +143,8 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
     <MultiColorPanelView
       embedded={!!props.embedded}
       viewState={viewState}
+      mirrorArch={mirrorArch}
+      onSetMirrorArch={multicolorController.setMirrorArch}
       onToggleEnabled={checked => multicolorController.toggleEnabled(checked)}
       onFinishPaintMode={() => multicolorController.finishPaintMode()}
       onPickBrush={pickBrush}

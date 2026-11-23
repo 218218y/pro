@@ -1,6 +1,7 @@
 import type { ChangeEvent, ReactElement } from 'react';
 
 import { Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
+import { DoorArchShapeOptions } from './design_tab_door_arch_shape.js';
 import { CURTAIN_OPTIONS, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
   MULTI_BTN_FINISH_EDIT,
@@ -32,6 +33,8 @@ type MirrorDraftFieldKey = 'currentMirrorDraftHeightCm' | 'currentMirrorDraftWid
 export type MultiColorPanelViewProps = {
   embedded?: boolean;
   viewState: MultiColorPanelViewState;
+  mirrorArch: boolean;
+  onSetMirrorArch: (arched: boolean) => void;
   onToggleEnabled: (checked: boolean) => void;
   onFinishPaintMode: () => void;
   onPickBrush: (paintId: string, curtainPreset?: CurtainPreset) => void;
@@ -306,12 +309,19 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
             ) : null}
 
             {viewState.paintActive && viewState.paintColor === 'mirror' ? (
-              <MultiColorMirrorDraftCard
-                kind="mirror"
-                heightDraft={viewState.mirrorDraftHeight}
-                widthDraft={viewState.mirrorDraftWidth}
-                onSetMirrorDraftField={props.onSetMirrorDraftField}
-              />
+              <>
+                <MultiColorMirrorDraftCard
+                  kind="mirror"
+                  heightDraft={viewState.mirrorDraftHeight}
+                  widthDraft={viewState.mirrorDraftWidth}
+                  onSetMirrorDraftField={props.onSetMirrorDraftField}
+                />
+                <DoorArchShapeOptions
+                  tool="mirror"
+                  arched={!!props.mirrorArch}
+                  onChange={props.onSetMirrorArch}
+                />
+              </>
             ) : null}
 
             {viewState.paintActive && viewState.activeAdhesiveGlassKind ? (

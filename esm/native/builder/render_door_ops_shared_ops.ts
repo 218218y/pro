@@ -100,6 +100,29 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     }
     op.winterBraceDoorPlan = { cuts: plan.cuts.slice(), fixedBelowY: plan.fixedBelowY };
   }
+  if (value.archCut !== undefined) {
+    const cut = value.archCut;
+    if (
+      !isRecord(cut) ||
+      !Array.isArray(cut.contour) ||
+      cut.contour.length < 3 ||
+      typeof cut.baseMinY !== 'number' ||
+      !Number.isFinite(cut.baseMinY) ||
+      typeof cut.baseMaxY !== 'number' ||
+      !Number.isFinite(cut.baseMaxY) ||
+      !cut.contour.every(
+        point =>
+          isRecord(point) &&
+          typeof point.x === 'number' &&
+          typeof point.y === 'number' &&
+          Number.isFinite(point.x) &&
+          Number.isFinite(point.y)
+      )
+    ) {
+      throw new TypeError('Invalid arched door cut contour');
+    }
+    op.archCut = { contour: cut.contour, baseMinY: cut.baseMinY, baseMaxY: cut.baseMaxY };
+  }
   const carcassMountFaceX = readRenderOpNumber(value.carcassMountFaceX);
   if (carcassMountFaceX != null) {
     Object.defineProperty(op, 'carcassMountFaceX', {

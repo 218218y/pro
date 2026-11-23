@@ -10,7 +10,7 @@ import {
   createHingedDoorModuleOpsContext,
 } from './hinged_doors_module_ops_shared.js';
 import { appendFullHingedDoorOps } from './hinged_doors_module_ops_full.js';
-import { appendSplitHingedDoorOps } from './hinged_doors_module_ops_split.js';
+import { appendArchedHingedDoorOps, appendSplitHingedDoorOps } from './hinged_doors_module_ops_split.js';
 
 export function appendHingedDoorOpsForModule(params: AppendHingedDoorOpsParams): number {
   let globalDoorCounter =
@@ -24,6 +24,8 @@ export function appendHingedDoorOpsForModule(params: AppendHingedDoorOpsParams):
   for (let doorIndex = 0; doorIndex < ctx.moduleDoors; doorIndex++) {
     const state = createHingedDoorIterationState(ctx, doorIndex, globalDoorCounter);
     globalDoorCounter = state.nextGlobalDoorCounter;
+
+    if (appendArchedHingedDoorOps(ctx, state)) continue;
 
     if (state.shouldSplitThisDoor) {
       appendSplitHingedDoorOps(ctx, state);

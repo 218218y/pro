@@ -1,7 +1,19 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
+import {
+  containsDoorArchPoint,
+  doorArchOutline,
+  doorArchY,
+  readDoorArchCut,
+  sampleDoorArch,
+} from '../../shared/door_arch_geometry.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { isCanonicalDoorVisualMapKey } from '../../shared/door_visual_key_contracts_shared.js';
+import { getToolsServiceMaybe } from '../runtime/service_access.js';
+import { getDoorsArray } from '../runtime/render_access.js';
+import type { DoorArchTool } from './canvas_picking_door_arch_target.js';
 import { asRecord as readRecord } from '../runtime/record.js';
-import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
+import { normalizeKnownMapSnapshot, writeDoorArchMaps } from '../runtime/maps_access.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import {
@@ -28,11 +40,22 @@ import {
 import {
   buildDoorVisualLookupKeys,
   toCanonicalGrooveLinesCountMapKey,
+  toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { createCanvasPickingDoorAuthoringRefreshGatedMeta } from './canvas_picking_door_authoring_meta.js';
-import { __wp_map } from './canvas_picking_core_helpers.js';
+import { __wp_map, __wp_ui } from './canvas_picking_core_helpers.js';
 
 export {
+  containsDoorArchPoint,
+  doorArchOutline,
+  doorArchY,
+  getDoorsArray,
+  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+  isCanonicalDoorVisualMapKey,
+  readDoorArchCut,
+  sampleDoorArch,
+  toCanonicalGroovesMapKey,
+  writeDoorArchMaps,
   buildDoorVisualLookupKeys,
   buildGrooveLayoutFromHit,
   computeAutoGrooveLinesCount,
@@ -115,4 +138,26 @@ export function writePendingGrooveLinesCountForPart(
     { [PENDING_GROOVE_LINES_COUNT_MAP_RUNTIME_KEY]: nextMap },
     createCanvasPickingDoorAuthoringRefreshGatedMeta(App, source)
   );
+}
+
+export function isCanvasDoorArchCutSegment(group: unknown): boolean {
+  return typeof asRecord(asRecord(group)?.userData)?.__wpArchCutBaseMinY === 'number';
+}
+
+export function readActiveDoorArchTool(
+  App: AppContainer,
+  modes: { split: boolean; groove: boolean; paint: boolean; splitVariant: string }
+): DoorArchTool | null {
+  const ui = __wp_ui(App);
+  if (modes.split && modes.splitVariant === 'custom' && ui.doorCutArch === true) return 'cut';
+  if (modes.groove && !ui.isChestMode && ui.grooveManualEnabled === true && ui.doorGrooveArch === true)
+    return 'groove';
+  if (
+    modes.paint &&
+    ui.doorMirrorArch === true &&
+    getToolsServiceMaybe(App)?.getPaintColor?.() === 'mirror'
+  ) {
+    return 'mirror';
+  }
+  return null;
 }

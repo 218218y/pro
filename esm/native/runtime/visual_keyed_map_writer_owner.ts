@@ -62,6 +62,27 @@ function readNormalizedVisualKeyedMap(
   return { ...(normalizeKnownMapSnapshot(mapName, cfgMapRecord(App, mapName)) as Record<string, unknown>) };
 }
 
+export function writeDoorArchMaps(
+  App: unknown,
+  patch:
+    | { splitDoorsMap: MapsByName['splitDoorsMap'] }
+    | { mirrorLayoutMap: MapsByName['mirrorLayoutMap'] }
+    | { grooveLayoutMap: MapsByName['grooveLayoutMap']; groovesMap: MapsByName['groovesMap'] },
+  meta: ActionMetaLike
+): void {
+  const normalized =
+    'splitDoorsMap' in patch
+      ? { splitDoorsMap: normalizeKnownMapSnapshot('splitDoorsMap', patch.splitDoorsMap) }
+      : 'mirrorLayoutMap' in patch
+        ? { mirrorLayoutMap: normalizeKnownMapSnapshot('mirrorLayoutMap', patch.mirrorLayoutMap) }
+        : {
+            grooveLayoutMap: normalizeKnownMapSnapshot('grooveLayoutMap', patch.grooveLayoutMap),
+            groovesMap: normalizeKnownMapSnapshot('groovesMap', patch.groovesMap),
+          };
+  const replace = Object.fromEntries(Object.keys(normalized).map(key => [key, true]));
+  commitConfigMapOwnerPatchWithReplaceKeys(App, normalized, replace, meta);
+}
+
 export function setCfgVisualKeyedMapFromOwner<K extends VisualKeyedMapName>(
   App: unknown,
   mapName: K,

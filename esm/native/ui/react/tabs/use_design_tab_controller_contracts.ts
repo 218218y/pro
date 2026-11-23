@@ -29,6 +29,10 @@ export type DesignTabDoorFeaturesSectionModel = {
   grooveLinesCountIsAuto: boolean;
   grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
+  doorCutArch: boolean;
+  doorGrooveArch: boolean;
+  setDoorCutArch: (arched: boolean) => void;
+  setDoorGrooveArch: (arched: boolean) => void;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
@@ -104,6 +108,8 @@ export type DesignTabControllerState = {
   grooveLinesCountIsAuto: boolean;
   grooveLinesCountAutoBaseline: number;
   grooveManualEnabled: boolean;
+  doorCutArch: boolean;
+  doorGrooveArch: boolean;
   grooveDraftHeightCm: string;
   grooveDraftWidthCm: string;
   grooveOrientation: GrooveOrientation;
