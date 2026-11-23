@@ -53,9 +53,16 @@ test('[design-tab-sections-runtime] door-style and cornice options render as nat
 
 test('[design-tab-sections-runtime] door-features section keeps hinged/sliding visibility and edit controls canonical', () => {
   const noop = () => {};
+  const doorShapes = {
+    doorCutShape: 'straight',
+    doorGrooveShape: 'straight',
+    setDoorCutShape: noop,
+    setDoorGrooveShape: noop,
+  } as const;
   const hingedHtml = renderToStaticMarkup(
     React.createElement(DoorFeaturesSection, {
       model: {
+        ...doorShapes,
         wardrobeType: 'hinged',
         isChestMode: false,
         groovesEnabled: true,
@@ -96,6 +103,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   const slidingHtml = renderToStaticMarkup(
     React.createElement(DoorFeaturesSection, {
       model: {
+        ...doorShapes,
         wardrobeType: 'sliding',
         isChestMode: false,
         groovesEnabled: false,
@@ -128,6 +136,7 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   const hiddenHtml = renderToStaticMarkup(
     React.createElement(DoorFeaturesSection, {
       model: {
+        ...doorShapes,
         wardrobeType: 'open',
         isChestMode: false,
         groovesEnabled: false,
@@ -174,6 +183,9 @@ test('[design-tab-sections-runtime] door-features section keeps hinged/sliding v
   assert.match(hingedHtml, /wp-r-groove-draft-width/);
   assert.match(hingedHtml, /design-groove-orientation-vertical/);
   assert.match(hingedHtml, /design-groove-orientation-horizontal/);
+  for (const shape of ['arch-down', 'arch-both', 'ellipse']) {
+    assert.match(hingedHtml, new RegExp(`design-groove-shape-${shape}`));
+  }
   assert.match(hingedHtml, /חריטה ידנית/);
   assert.match(hingedHtml, /חריטה עומדת/);
   assert.match(hingedHtml, /חריטה שוכבת/);
@@ -194,6 +206,10 @@ test('[design-tab-sections-runtime] chest mode keeps front engraving but hides d
       model: {
         wardrobeType: 'hinged',
         isChestMode: true,
+        doorCutShape: 'straight',
+        doorGrooveShape: 'straight',
+        setDoorCutShape: noop,
+        setDoorGrooveShape: noop,
         groovesEnabled: true,
         grooveActive: false,
         grooveLinesCount: '6',
@@ -279,6 +295,8 @@ test('[design-tab-sections-runtime] mirror draft fields keep reset buttons compa
   const html = renderToStaticMarkup(
     React.createElement(MultiColorPanelView, {
       embedded: true,
+      mirrorShape: 'ellipse',
+      onSetMirrorShape: noop,
       viewState: {
         enabled: true,
         paintActive: true,
@@ -308,6 +326,7 @@ test('[design-tab-sections-runtime] mirror draft fields keep reset buttons compa
   assert.match(html, /wp-r-mirror-draft-fields/);
   assert.match(html, /aria-label="חזרה לגובה מלא"/);
   assert.match(html, /aria-label="חזרה לרוחב מלא"/);
+  assert.match(html, /design-mirror-shape-ellipse/);
   assert.ok(
     resetButtons.every(button =>
       /^<button[^>]*><i class="fas fa-undo-alt" aria-hidden="true"><\/i><\/button>$/.test(button)
