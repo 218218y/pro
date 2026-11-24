@@ -5,6 +5,8 @@ export type BuiltInDeskOptions = {
   lengthCm: number;
   drawerCount: number;
   support: BuiltInDeskSupport;
+  doorClearanceAboveCm?: number;
+  doorClearanceBelowCm?: number;
 };
 
 export type BuiltInDeskPlacement = BuiltInDeskOptions & {

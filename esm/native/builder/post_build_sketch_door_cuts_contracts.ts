@@ -1,4 +1,5 @@
 import type { HandleType } from '../../shared/handle_catalog.js';
+import type { DoorArchPoint } from '../../../types/maps.js';
 // Post-build sketch external-drawer door cuts contracts (Pure ESM)
 //
 // Owns the canonical runtime + selection contracts shared by sketch external-drawer door-cut flows.
@@ -23,6 +24,13 @@ export type SketchDrawerStackBounds = {
   xMax: number;
   yMin: number;
   yMax: number;
+  keepShortLeaves?: boolean;
+};
+
+export type SketchDoorRebuildSegment = SketchDrawerCutSegment & {
+  partId?: string;
+  contour?: DoorArchPoint[];
+  deskArchScope?: { key: string; yMin: number; yMax: number };
 };
 
 export type SketchDoorCutsRuntime = {
@@ -51,6 +59,7 @@ export type SketchDoorCutsRuntime = {
   doorTrimMap?: ValueRecord | null;
   resolveMirrorLayout: (partId: string) => unknown;
   resolveGrooveLayout: (partId: string) => unknown;
+  readDeskArchCuts?: (key: string) => unknown;
   isDoorRemoved: (partId: string) => boolean;
 };
 
@@ -87,7 +96,7 @@ export type RebuildSketchSegmentedDoorArgs = {
   runtime: SketchDoorCutsRuntime;
   g: Object3DLike;
   ud: ValueRecord;
-  visibleSegments: SketchDrawerCutSegment[];
+  visibleSegments: SketchDoorRebuildSegment[];
   basePartId: string;
   collectSuppressedHandlePartIds?: (partIds: string[]) => void;
 };

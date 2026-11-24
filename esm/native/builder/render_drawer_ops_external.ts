@@ -1,4 +1,3 @@
-import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { appendDrawerRunnerVisuals } from './drawer_runner_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
@@ -23,6 +22,7 @@ import {
   readObject3D,
   readOutlineFn,
   readThreeLike,
+  resolveDrawerBoxVisual,
   resolveDrawerVisualState,
 } from './render_drawer_ops_shared.js';
 
@@ -71,7 +71,6 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       if (!drawerOp) continue;
 
       const partId = drawerOp.partId;
-      const drawerBoxPartId = makeDrawerBoxPartId(partId);
       const grooveKey = toCanonicalGroovesMapKey(drawerOp.grooveKey || partId);
       const dividerKey = drawerOp.dividerKey || null;
       const hasGroove = isGroovesEnabled && groovesMap[grooveKey] === true;
@@ -87,12 +86,12 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       const faceOffsetX = readFinite(drawerOp.faceOffsetX, 0);
       const baseFrontZ =
         typeof drawerOp.frontZ === 'number' && Number.isFinite(drawerOp.frontZ) ? drawerOp.frontZ : null;
-      const drawerBoxMat = resolveDrawerBoxPaintMaterial({
-        drawerBoxPartId,
-        fallbackMaterial: drawerBoxBaseMat,
+      const { drawerBoxPartId, drawerBoxMat } = resolveDrawerBoxVisual(
+        partId,
+        drawerBoxBaseMat,
         getPartColorValue,
-        getPartMaterial,
-      });
+        getPartMaterial
+      );
 
       const group = new THREE.Group();
       group.userData = {

@@ -53,50 +53,86 @@ export function BuiltInDeskOptionsPanel(props: {
 
   return (
     <div className="wp-sketch-shelf-variant-settings" id={id} role="group" aria-label="הגדרות שולחן מובנה">
-      <div className="wp-field">
-        <label className="wp-r-label" htmlFor={`${id}-length`}>
-          אורך קדימה מהחזית (ס״מ)
-        </label>
-        <input
-          className="wp-r-input"
-          id={`${id}-length`}
-          type="number"
-          min={minLengthCm}
-          max={maxLengthCm}
-          step={1}
-          value={lengthDraft ?? options.lengthCm}
-          data-testid="sketch-built-in-desk-length"
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const next = event.currentTarget.valueAsNumber;
-            setLengthDraft(event.currentTarget.value);
-            if (!Number.isInteger(next) || next < minLengthCm || next > maxLengthCm) return;
-            apply({
-              lengthCm: next,
-              drawerCount: Math.min(options.drawerCount, maxBuiltInDeskDrawers(next)),
-            });
-          }}
-          onBlur={() => setLengthDraft(null)}
-        />
+      <div className="wp-desk-option-row">
+        <div className="wp-field">
+          <label className="wp-r-label" htmlFor={`${id}-length`}>
+            אורך קדימה מהחזית (ס״מ)
+          </label>
+          <input
+            className="wp-r-input"
+            id={`${id}-length`}
+            type="number"
+            min={minLengthCm}
+            max={maxLengthCm}
+            step={1}
+            value={lengthDraft ?? options.lengthCm}
+            data-testid="sketch-built-in-desk-length"
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              const next = event.currentTarget.valueAsNumber;
+              setLengthDraft(event.currentTarget.value);
+              if (!Number.isInteger(next) || next < minLengthCm || next > maxLengthCm) return;
+              apply({
+                lengthCm: next,
+                drawerCount: Math.min(options.drawerCount, maxBuiltInDeskDrawers(next)),
+              });
+            }}
+            onBlur={() => setLengthDraft(null)}
+          />
+        </div>
+        <div className="wp-field">
+          <label className="wp-r-label" htmlFor={`${id}-drawers`}>
+            מספר מגירות
+          </label>
+          <select
+            className="wp-r-input"
+            id={`${id}-drawers`}
+            data-testid="sketch-built-in-desk-drawers"
+            value={options.drawerCount}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+              apply({ drawerCount: Number(event.currentTarget.value) })
+            }
+          >
+            {Array.from({ length: drawerLimit - 1 }, (_, index) => index + 2).map(count => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div className="wp-field">
-        <label className="wp-r-label" htmlFor={`${id}-drawers`}>
-          מספר מגירות
-        </label>
-        <select
-          className="wp-r-input"
-          id={`${id}-drawers`}
-          data-testid="sketch-built-in-desk-drawers"
-          value={options.drawerCount}
-          onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-            apply({ drawerCount: Number(event.currentTarget.value) })
-          }
-        >
-          {Array.from({ length: drawerLimit - 1 }, (_, index) => index + 2).map(count => (
-            <option key={count} value={count}>
-              {count}
-            </option>
-          ))}
-        </select>
+      <div className="wp-desk-option-row" role="group" aria-label="פתח הדלתות סביב השולחן">
+        {(
+          [
+            ['doorClearanceAboveCm', 'מרווח מעל השולחן (ס״מ)'],
+            ['doorClearanceBelowCm', 'מרווח מתחת לשולחן (ס״מ)'],
+          ] as const
+        ).map(([key, label]) => (
+          <div className="wp-field" key={key}>
+            <label className="wp-r-label" htmlFor={`${id}-${key}`}>
+              {label}
+            </label>
+            <input
+              className="wp-r-input"
+              id={`${id}-${key}`}
+              data-testid={`sketch-built-in-desk-${key}`}
+              type="number"
+              min={0}
+              max={BUILT_IN_DESK_DIMENSIONS.maxDoorClearanceCm}
+              step={1}
+              defaultValue={options[key] ?? BUILT_IN_DESK_DIMENSIONS.doorOpeningClearanceM * 100}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const next = event.currentTarget.valueAsNumber;
+                if (
+                  Number.isInteger(next) &&
+                  next >= 0 &&
+                  next <= BUILT_IN_DESK_DIMENSIONS.maxDoorClearanceCm
+                ) {
+                  apply({ [key]: next });
+                }
+              }}
+            />
+          </div>
+        ))}
       </div>
       <div className="wp-sketch-shelf-variant-options" role="group" aria-label="תמיכת שולחן">
         <OptionButton
@@ -116,7 +152,10 @@ export function BuiltInDeskOptionsPanel(props: {
           תלוי על הקיר
         </OptionButton>
       </div>
-      <p>לחצו בתא או בקופסה בגובה הפלטה. לחצו על שולחן קיים להחלת הגדרות חדשות או להסרה כשהתצוגה אדומה.</p>
+      <p>
+        לחצו בתא או בקופסה בגובה הפלטה. לשינוי החיתוך, הגדירו מרווח ולחצו על השולחן הקיים. מרווח 0 מקרב את
+        הדלת לשולחן. לחצו להסרה כשהתצוגה אדומה.
+      </p>
     </div>
   );
 }

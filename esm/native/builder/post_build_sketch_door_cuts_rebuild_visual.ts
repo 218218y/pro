@@ -2,7 +2,13 @@
 //
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
-import { resolveAdhesiveGlassKind, resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
+import {
+  readMirrorLayoutList,
+  resolveAdhesiveGlassKind,
+  resolveEffectiveDoorStyle,
+} from '../features/door_authoring/api.js';
+import type { DoorArchPoint } from '../../../types/maps.js';
+import { createDoorContourGeometry } from './door_contour_geometry.js';
 import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   listDoorGrooveTargetLookupKeys,
@@ -130,7 +136,10 @@ export function resolveSketchSegmentVisualFlags(args: {
   const sourceUserData = asRecord(args.sourceUserData);
   const segmentCurtain = resolveCurtain(segmentPartId);
   const segmentSpecial = resolveSpecial(segmentPartId, segmentCurtain);
-  const segmentIsMirror = segmentSpecial === 'mirror';
+  const segmentMirrorLayout = resolveMirrorLayout(segmentPartId);
+  const segmentIsMirror =
+    segmentSpecial === 'mirror' ||
+    readMirrorLayoutList(segmentMirrorLayout).some(layout => layout.surfaceKind === 'mirror');
   const segmentIsGlass = segmentSpecial === 'glass';
   const segmentAdhesiveGlassKind = resolveAdhesiveGlassKind(segmentSpecial);
   const segmentHasGroove =
@@ -146,7 +155,7 @@ export function resolveSketchSegmentVisualFlags(args: {
     segmentIsGlass,
     segmentAdhesiveGlassKind,
     segmentCurtain,
-    segmentMirrorLayout: resolveMirrorLayout(segmentPartId),
+    segmentMirrorLayout,
     segmentGrooveLayout: resolveGrooveLayout(segmentPartId),
   };
 }
@@ -161,6 +170,7 @@ export function createSegmentVisual(args: {
   segmentPartMat: unknown;
   segmentWoodMat: unknown;
   segmentMirrorMat: unknown;
+  contour?: DoorArchPoint[];
 }): SketchDoorNode {
   const {
     runtime,
@@ -184,7 +194,7 @@ export function createSegmentVisual(args: {
         ),
         Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM, segHeight),
         thickness,
-        flags.segmentIsMirror ? segmentMirrorMat : segmentPartMat,
+        flags.segmentIsMirror && !args.contour ? segmentMirrorMat : segmentPartMat,
         flags.segmentIsGlass ? 'glass' : flags.effectiveDoorStyle,
         flags.segmentHasGroove,
         flags.segmentIsMirror,
@@ -196,6 +206,7 @@ export function createSegmentVisual(args: {
         segmentPartId,
         {
           grooveLayout: flags.segmentGrooveLayout,
+          ...(args.contour ? { cutContour: args.contour, cutMirrorMaterial: segmentMirrorMat } : {}),
           ...(flags.segmentIsGlass ? { glassFrameStyle: flags.effectiveDoorStyle } : null),
           ...(flags.segmentAdhesiveGlassKind ? { adhesiveGlassKind: flags.segmentAdhesiveGlassKind } : null),
         }
@@ -207,14 +218,16 @@ export function createSegmentVisual(args: {
   return isObject3DLike(visual)
     ? visual
     : new THREE.Mesh(
-        new THREE.BoxGeometry(
-          Math.max(
-            DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM,
-            width - DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualWidthClearanceM
-          ),
-          Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM, segHeight),
-          thickness
-        ),
+        args.contour
+          ? createDoorContourGeometry(THREE, args.contour, thickness)
+          : new THREE.BoxGeometry(
+              Math.max(
+                DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM,
+                width - DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualWidthClearanceM
+              ),
+              Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM, segHeight),
+              thickness
+            ),
         segmentPartMat
       );
 }

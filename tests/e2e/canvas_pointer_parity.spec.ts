@@ -34,6 +34,11 @@ test.describe('Canvas pointer parity smoke', () => {
     await openMainTab(page, 'interior');
     await page.getByTestId('interior-layout-method-sketch').click();
     await page.getByTestId('interior-built-in-desk').click();
+    const lengthField = page.getByTestId('sketch-built-in-desk-length');
+    const drawerField = page.getByTestId('sketch-built-in-desk-drawers');
+    const [lengthBox, drawerBox] = await Promise.all([lengthField.boundingBox(), drawerField.boundingBox()]);
+    expect(lengthBox?.y).toBeCloseTo(drawerBox?.y ?? -100, 0);
+    expect(lengthBox?.x ?? 0).toBeGreaterThan(drawerBox?.x ?? 0);
     await page.getByTestId('sketch-built-in-desk-length').fill('75');
     await page.getByTestId('sketch-built-in-desk-drawers').selectOption('2');
     await expect
@@ -124,15 +129,23 @@ test.describe('Canvas pointer parity smoke', () => {
     await sketch.getByTestId('sketch-built-in-desk-length').fill('75');
     await sketch.getByTestId('sketch-built-in-desk-drawers').selectOption('3');
     await sketch.getByTestId('sketch-built-in-desk-wall').click();
+    await sketch.getByTestId('sketch-built-in-desk-doorClearanceAboveCm').fill('0');
+    await sketch.getByTestId('sketch-built-in-desk-doorClearanceBelowCm').fill('0');
 
-    const deskPoint = await findDeskPart('_top');
+    const deskPoint = await findDeskPart('_back');
     if (!deskPoint) throw new Error('Expected a reachable built-in desk part');
     await clickCanvasViaDebugNdc(page, deskPoint);
     const updatedDesk = {
       modulesConfiguration: expect.arrayContaining([
         expect.objectContaining({
           sketchExtras: {
-            builtInDesk: expect.objectContaining({ lengthCm: 75, drawerCount: 3, support: 'wall' }),
+            builtInDesk: expect.objectContaining({
+              lengthCm: 75,
+              drawerCount: 3,
+              support: 'wall',
+              doorClearanceAboveCm: 0,
+              doorClearanceBelowCm: 0,
+            }),
           },
         }),
       ]),
@@ -160,7 +173,9 @@ test.describe('Canvas pointer parity smoke', () => {
     await deskButton.click();
     await sketch.getByTestId('sketch-built-in-desk-length').fill('75');
     await sketch.getByTestId('sketch-built-in-desk-wall').click();
-    const removalPoint = await findDeskPart('_top');
+    await sketch.getByTestId('sketch-built-in-desk-doorClearanceAboveCm').fill('0');
+    await sketch.getByTestId('sketch-built-in-desk-doorClearanceBelowCm').fill('0');
+    const removalPoint = await findDeskPart('_back');
     if (!removalPoint) throw new Error('Expected a visible desktop for removal');
     await clickCanvasViaDebugNdc(page, removalPoint);
     await expect.poll(config).not.toMatchObject(updatedDesk);
@@ -178,6 +193,125 @@ test.describe('Canvas pointer parity smoke', () => {
     await clickCanvasViaDebugNdc(page, empty);
     await expect(deskButton).toHaveAttribute('aria-pressed', 'false');
     await expect.poll(async () => (await readDebugStoreState(page)).mode).toMatchObject({ primary: 'none' });
+    expectNoRuntimeIssues(issues);
+  });
+
+  test('desk door leaves support restoration, curves, engraving and mirror placement @critical', async ({
+    page,
+  }, testInfo) => {
+    testInfo.setTimeout(120_000);
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await openMainTab(page, 'interior');
+    await page.getByTestId('interior-layout-method-sketch').click();
+    await page.getByTestId('interior-built-in-desk').click();
+    await page.getByTestId('sketch-built-in-desk-length').fill('50');
+    await page.getByTestId('sketch-built-in-desk-wall').click();
+    await page.getByTestId('sketch-built-in-desk-doorClearanceAboveCm').fill('5');
+    await page.getByTestId('sketch-built-in-desk-doorClearanceBelowCm').fill('0');
+    const host = await page.evaluate(() => {
+      const canvas = window.__WP_DEBUG__!.canvas;
+      for (let x = 0.5; x >= -0.5; x -= 0.02) {
+        if (canvas.inspectNdc(x, -0.08)?.moduleIndex === 0) return { x, y: -0.08 };
+      }
+      throw new Error('Expected a reachable desk host');
+    });
+    await clickCanvasViaDebugNdc(page, host);
+    await expect
+      .poll(async () => (await readDebugStoreState(page)).config)
+      .toMatchObject({
+        modulesConfiguration: expect.arrayContaining([
+          expect.objectContaining({
+            sketchExtras: {
+              builtInDesk: expect.objectContaining({ doorClearanceAboveCm: 5, doorClearanceBelowCm: 0 }),
+            },
+          }),
+        ]),
+      });
+    await page.getByTestId('interior-built-in-desk').click();
+    const findLeaf = (suffix: string, family?: string) =>
+      page.evaluate(
+        ({ suffix, family }) => {
+          const debug = window.__WP_DEBUG__!.canvas;
+          const samples = [];
+          for (let row = 0; row <= 50; row++) {
+            const y = -0.65 + row * 0.025;
+            for (let col = 0; col <= 28; col++) {
+              const x = -0.49 + col * 0.035;
+              const hit = debug.inspectNdc(x, y);
+              if (
+                hit?.partId?.startsWith('d') &&
+                hit.partId.endsWith(suffix) &&
+                (!family || hit.partId.startsWith(`${family}_`))
+              ) {
+                samples.push({ x, y, partId: hit.partId });
+              }
+            }
+          }
+          const center = samples[Math.floor(samples.length / 2)];
+          if (!center) return null;
+          const row = samples.filter(sample => sample.y === center.y && sample.partId === center.partId);
+          return row[Math.floor(row.length / 2)] ?? center;
+        },
+        { suffix, family }
+      );
+    const canvas = page.locator('#viewer-container canvas').first();
+    const click = async (point: { x: number; y: number }) => {
+      const box = (await canvas.boundingBox())!;
+      const x = box.x + ((1 + point.x) * box.width) / 2;
+      const y = box.y + ((1 - point.y) * box.height) / 2;
+      await page.mouse.move(x, y);
+      await expect.poll(() => canvas.evaluate(node => (node as HTMLElement).style.cursor)).toBe('pointer');
+      const before = (await readBuildDebugStats(page)).executeCount;
+      await page.mouse.click(x, y);
+      await expect.poll(async () => (await readBuildDebugStats(page)).executeCount).toBeGreaterThan(before);
+    };
+    const cfg = async () => (await readDebugStoreState(page)).config;
+    await expect.poll(() => findLeaf('_bot')).toBeTruthy();
+    const bottom = (await findLeaf('_bot'))!;
+    const family = bottom.partId.replace(/_bot$/u, '');
+    const top = (await findLeaf('_top', family))!;
+    expect(top).toBeTruthy();
+
+    await setDoorFeatureToggle(page, 'removeDoorsEnabled', true);
+    await setDoorAuthoringMode(page, 'remove-door', true);
+    await click(bottom);
+    const removedKey = `removed_${bottom.partId}`;
+    await expect.poll(cfg).toMatchObject({ removedDoorsMap: { [removedKey]: true } });
+    await click(bottom);
+    expect((await cfg()).removedDoorsMap?.[removedKey]).not.toBe(true);
+    await setDoorAuthoringMode(page, 'remove-door', false);
+
+    await setDoorFeatureToggle(page, 'groovesEnabled', true);
+    await setDoorAuthoringMode(page, 'groove', true);
+    const manual = page.getByTestId('design-groove-manual-button');
+    if ((await manual.getAttribute('aria-expanded')) !== 'true') await manual.click();
+    await page.getByTestId('design-groove-shape-arch').click();
+    await click(top);
+    await expect.poll(cfg).toMatchObject({
+      grooveLayoutMap: { [top.partId]: [expect.objectContaining({ arch: expect.any(Object) })] },
+    });
+    await setDoorAuthoringMode(page, 'groove', false);
+
+    const multi = page.getByTestId('design-multicolor-enabled-toggle');
+    if (!(await multi.isChecked())) await multi.locator('..').click();
+    await page.locator('[data-wp-search-special="mirror"]').click();
+    await page.getByTestId('design-mirror-shape-arch').click();
+    await click(bottom);
+    await expect.poll(cfg).toMatchObject({
+      mirrorLayoutMap: { [bottom.partId]: [expect.objectContaining({ arch: expect.any(Object) })] },
+    });
+    await page.locator('.wp-tool-card--paint').getByRole('button', { name: 'סיום עריכה' }).click();
+
+    await setDoorFeatureToggle(page, 'splitDoors', true);
+    await setDoorAuthoringMode(page, 'split-custom', true);
+    await page.getByTestId('design-cut-shape-arch').click();
+    const newTop = (await findLeaf('_top', family))!;
+    await click(newTop);
+    await expect
+      .poll(cfg)
+      .toMatchObject({ splitDoorsMap: { [`splitarch_desk_${newTop.partId}`]: [expect.any(Object)] } });
+    await expect.poll(() => findLeaf('_top_top', family)).toBeTruthy();
     expectNoRuntimeIssues(issues);
   });
 

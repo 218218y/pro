@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T21:09:42.670Z",
+  "generatedAt": "2026-11-24T15:41:24.760Z",
   "status": {
     "allPassed": true,
     "silentCatchPolicy": true,
@@ -14,7 +14,7 @@
     "files": 278
   },
   "compatibility": {
-    "totalCategorizedOccurrences": 619,
+    "totalCategorizedOccurrences": 622,
     "filesWithOccurrences": 230,
     "guardedOccurrences": 21,
     "guardedFiles": 12,

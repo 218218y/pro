@@ -31,4 +31,4 @@ export {
   readOutlineFn,
 } from './render_drawer_ops_shared_readers.js';
 export { readExternalDrawerOp, readInternalDrawerOp } from './render_drawer_ops_shared_ops.js';
-export { resolveDrawerVisualState } from './render_drawer_ops_shared_visual_state.js';
+export { resolveDrawerBoxVisual, resolveDrawerVisualState } from './render_drawer_ops_shared_visual_state.js';

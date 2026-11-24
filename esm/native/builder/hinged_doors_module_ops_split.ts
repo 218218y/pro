@@ -1,4 +1,4 @@
-import type { DoorArchPoint } from '../../../types/maps.js';
+import type { DoorArchPoint, DoorArchRect } from '../../../types/maps.js';
 import {
   doorArchCutEdges,
   doorArchCutsAreSeparate,
@@ -249,4 +249,44 @@ function joinCurvedCutEdges(lower: DoorArchPoint[], upper: DoorArchPoint[]): Doo
     top.push({ x, y: high });
   }
   return [...bottom, ...top.reverse()];
+}
+
+export function planArchesOnDeskDoor(rect: DoorArchRect, value: unknown, outerInset: number) {
+  const policy = HINGED_DOOR_SPLIT_GEOMETRY_POLICY;
+  const gap = (policy.splitGapM + outerInset * 2) / 2;
+  const cuts = readDoorArchCuts(value);
+  const accepted: typeof cuts = [];
+  const curves = cuts
+    .flatMap(cut => {
+      if (cut.profile.shape && cut.profile.shape !== 'arch-down') return [];
+      if (
+        !accepted.every(other =>
+          doorArchCutsAreSeparate(rect, other, cut, policy.minSegmentHeightM + policy.splitGapM)
+        )
+      )
+        return [];
+      const slice = resolveDoorArchCutSlice(rect, cut);
+      const curve = doorArchCutEdges(slice.rect, slice.profile)[0]!;
+      const low = Math.min(...curve.map(point => point.y));
+      const high = Math.max(...curve.map(point => point.y));
+      const pad = policy.archOuterClearanceM - 1e-8;
+      if (low < rect.minY + pad || high > rect.maxY - pad) return [];
+      accepted.push(cut);
+      return [{ curve, low, high }];
+    })
+    .sort((a, b) => a.low - b.low);
+  if (!curves.length) return [];
+  return Array.from({ length: curves.length + 1 }, (_, index) => {
+    const lower = curves[index - 1];
+    const upper = curves[index];
+    const yMin = lower ? lower.low + gap : rect.minY;
+    const yMax = upper ? upper.high - gap : rect.maxY;
+    const centerY = (yMin + yMax) / 2;
+    const lowerEdge = lower?.curve.map(({ x, y }) => ({ x, y: y + gap - centerY }));
+    const upperEdge = upper?.curve.map(({ x, y }) => ({ x, y: y - gap - centerY }));
+    if (lowerEdge && upperEdge) return { yMin, yMax, contour: joinCurvedCutEdges(lowerEdge, upperEdge) };
+    const edge = lowerEdge ?? upperEdge!;
+    const flatY = (lowerEdge ? yMax - outerInset : yMin + outerInset) - centerY;
+    return { yMin, yMax, contour: [{ x: rect.minX, y: flatY }, ...edge, { x: rect.maxX, y: flatY }] };
+  });
 }

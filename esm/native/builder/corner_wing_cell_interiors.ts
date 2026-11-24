@@ -82,6 +82,8 @@ export function applyCornerWingCellInteriors(params: CornerWingCellFlowParams): 
     });
 
     applyCornerWingCellSketchExtras({
+      whiteMat: runtime.whiteMat,
+      frontMat: runtime.frontMat,
       App: runtime.App,
       THREE: runtime.THREE,
       wingGroup: runtime.wingGroup,

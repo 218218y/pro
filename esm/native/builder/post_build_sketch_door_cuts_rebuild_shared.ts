@@ -5,6 +5,7 @@
 import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { asObject3D, asRecord, type ValueRecord } from './post_build_extras_shared.js';
+import { createDoorContourGeometry } from './door_contour_geometry.js';
 
 import type {
   Object3DLike,
@@ -204,16 +205,19 @@ export function createRemovedDoorRestoreTarget(args: {
   partId: string;
   hingeLeft: boolean;
   handleAbsY: number | null;
+  contour?: import('../../../types/maps.js').DoorArchPoint[];
 }): SketchDoorNode {
   const { runtime, width, height, constructionHeight, thickness, partId, hingeLeft, handleAbsY } = args;
   const { THREE } = runtime;
   const target = asSketchDoorNode(
     new THREE.Mesh(
-      new THREE.BoxGeometry(
-        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, width),
-        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, height),
-        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinThicknessM, thickness)
-      ),
+      args.contour
+        ? createDoorContourGeometry(THREE, args.contour, thickness)
+        : new THREE.BoxGeometry(
+            Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, width),
+            Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, height),
+            Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinThicknessM, thickness)
+          ),
       new THREE.MeshBasicMaterial({
         color: 0xff0000,
         transparent: true,

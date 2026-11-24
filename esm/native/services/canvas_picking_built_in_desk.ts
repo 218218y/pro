@@ -58,10 +58,13 @@ function readDeskHit(hit: RaycastHitLike) {
 }
 
 function sameDesk(a: BuiltInDeskPlacement | null, b: BuiltInDeskPlacement | null): boolean {
+  const defaultClearanceCm = BUILT_IN_DESK_DIMENSIONS.doorOpeningClearanceM * 100;
   return (
     a?.lengthCm === b?.lengthCm &&
     a?.drawerCount === b?.drawerCount &&
     a?.support === b?.support &&
+    (a?.doorClearanceAboveCm ?? defaultClearanceCm) === (b?.doorClearanceAboveCm ?? defaultClearanceCm) &&
+    (a?.doorClearanceBelowCm ?? defaultClearanceCm) === (b?.doorClearanceBelowCm ?? defaultClearanceCm) &&
     a?.topNorm === b?.topNorm &&
     a?.drawerSide === b?.drawerSide
   );

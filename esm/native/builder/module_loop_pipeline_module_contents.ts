@@ -185,6 +185,8 @@ export function applyModuleContents(
       desk,
       createBoard: runtime.createBoard,
       material: currentBraceShelfMat,
+      drawerBoxMaterial: runtime.whiteMat,
+      getPartColorValue: runtime.getPartColorValue ?? null,
       getPartMaterial: runtime.getPartMaterial,
       addDrawerGroup: group => wardrobeGroup.add(group),
       motion: { createGroup: () => new runtime.THREE.Group(), entries: getDrawersArray(runtime.App) },

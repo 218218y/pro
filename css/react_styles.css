@@ -2010,6 +2010,13 @@
   margin-bottom: 5px;
 }
 
+#reactSidebarRoot .wp-desk-option-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+}
+
 #reactSidebarRoot .wp-sketch-shelf-variant-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

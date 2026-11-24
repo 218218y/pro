@@ -15,6 +15,7 @@ export const BUILT_IN_DESK_DIMENSIONS = {
   drawerBayHeightM: 0.12,
   frontGapM: 0.003,
   doorOpeningClearanceM: 0.3,
+  maxDoorClearanceCm: 100,
   shelfClearanceM: 0.1,
   floorY: SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY,
 } as const;
@@ -33,7 +34,7 @@ export function maxBuiltInDeskDrawers(lengthCm: number): number {
 }
 
 function readOptions(value: Record<string, unknown>): BuiltInDeskOptions | null {
-  const { lengthCm, drawerCount, support } = value;
+  const { lengthCm, drawerCount, support, doorClearanceAboveCm, doorClearanceBelowCm } = value;
   if (
     typeof lengthCm !== 'number' ||
     !Number.isInteger(lengthCm) ||
@@ -47,18 +48,48 @@ function readOptions(value: Record<string, unknown>): BuiltInDeskOptions | null 
   ) {
     return null;
   }
-  return { lengthCm, drawerCount, support };
+  for (const gap of [doorClearanceAboveCm, doorClearanceBelowCm]) {
+    if (
+      gap !== undefined &&
+      (typeof gap !== 'number' ||
+        !Number.isInteger(gap) ||
+        gap < 0 ||
+        gap > BUILT_IN_DESK_DIMENSIONS.maxDoorClearanceCm)
+    )
+      return null;
+  }
+  return {
+    lengthCm,
+    drawerCount,
+    support,
+    ...(typeof doorClearanceAboveCm === 'number' ? { doorClearanceAboveCm } : {}),
+    ...(typeof doorClearanceBelowCm === 'number' ? { doorClearanceBelowCm } : {}),
+  };
 }
 
 export function encodeBuiltInDeskTool(options: BuiltInDeskOptions): string {
-  return `${BUILT_IN_DESK_TOOL_PREFIX}${options.lengthCm}:${options.drawerCount}:${options.support}`;
+  const base = `${BUILT_IN_DESK_TOOL_PREFIX}${options.lengthCm}:${options.drawerCount}:${options.support}`;
+  if (options.doorClearanceAboveCm === undefined && options.doorClearanceBelowCm === undefined) return base;
+  const defaultCm = BUILT_IN_DESK_DIMENSIONS.doorOpeningClearanceM * 100;
+  return `${base}:${options.doorClearanceAboveCm ?? defaultCm}:${options.doorClearanceBelowCm ?? defaultCm}`;
 }
 
 export function readBuiltInDeskTool(tool: string): BuiltInDeskOptions | null {
   if (!tool.startsWith(BUILT_IN_DESK_TOOL_PREFIX)) return null;
   const parts = tool.slice(BUILT_IN_DESK_TOOL_PREFIX.length).split(':');
-  if (parts.length !== 3 || !/^\d+$/.test(parts[0] ?? '') || !/^\d+$/.test(parts[1] ?? '')) return null;
-  return readOptions({ lengthCm: Number(parts[0]), drawerCount: Number(parts[1]), support: parts[2] });
+  if (
+    (parts.length !== 3 && parts.length !== 5) ||
+    [parts[0], parts[1], ...parts.slice(3)].some(part => !/^\d+$/.test(part ?? ''))
+  )
+    return null;
+  return readOptions({
+    lengthCm: Number(parts[0]),
+    drawerCount: Number(parts[1]),
+    support: parts[2],
+    ...(parts.length === 5
+      ? { doorClearanceAboveCm: Number(parts[3]), doorClearanceBelowCm: Number(parts[4]) }
+      : {}),
+  });
 }
 
 export function readBuiltInDeskPlacement(value: unknown): BuiltInDeskPlacement | null {
@@ -157,6 +188,11 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
     shelfMinY: outsideBottomY - shelfClearanceM,
     shelfMaxY: surfaceY + shelfClearanceM,
   };
+  const defaultClearance = BUILT_IN_DESK_DIMENSIONS.doorOpeningClearanceM;
+  const above =
+    placement.doorClearanceAboveCm === undefined ? defaultClearance : placement.doorClearanceAboveCm / 100;
+  const below =
+    placement.doorClearanceBelowCm === undefined ? defaultClearance : placement.doorClearanceBelowCm / 100;
   return {
     top,
     bottom,
@@ -166,6 +202,11 @@ export function planBuiltInDesk(host: BuiltInDeskHostGeometry, placement: BuiltI
     support,
     surfaceY,
     verticalRange,
+    doorOpening: {
+      yMin: outsideBottomY - below,
+      yMax: surfaceY + above,
+      keepShortLeaves: below !== defaultClearance,
+    },
     bayWidth,
     drawerSign,
     wallEdgeX,

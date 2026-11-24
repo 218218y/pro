@@ -31,6 +31,8 @@ type CornerWingCellSketchExtrasParams = {
   cellD: number;
   shelfMat: unknown;
   bodyMat: unknown;
+  whiteMat: unknown;
+  frontMat: unknown;
   doorStyle: unknown;
   isGroovesEnabled: boolean;
   isInternalDrawersEnabled: boolean;
@@ -138,6 +140,9 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
         desk: params.desk,
         createBoard,
         material: shelfMat,
+        drawerBoxMaterial: params.whiteMat,
+        frontMaterial: params.frontMat,
+        getPartColorValue: getPartColorValue ?? null,
         getPartMaterial: getCornerMat,
         addDrawerGroup: group => wingGroup.add(group),
         motion: {
@@ -156,6 +161,7 @@ export function applyCornerWingCellSketchExtras(params: CornerWingCellSketchExtr
       createRod,
       currentShelfMat: shelfMat,
       bodyMat,
+      whiteMat: params.whiteMat,
       effectiveBottomY,
       effectiveTopY,
       localGridStep,

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-23T08:27:10.845Z",
+  "generatedAt": "2026-11-24T15:46:05.185Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 619,
+    "totalOccurrences": 622,
     "totalFiles": 230,
     "byCategory": {
       "runtime-default": 72,
-      "domain-default": 451,
+      "domain-default": 454,
       "error-message-default": 42,
       "framework-default": 5,
       "browser-adapter": 17,
@@ -255,9 +255,9 @@
         }
       },
       "esm/native/builder/render_built_in_desk.ts": {
-        "total": 1,
+        "total": 3,
         "categories": {
-          "domain-default": 1
+          "domain-default": 3
         }
       },
       "esm/native/builder/render_carcass_ops_cornice_finalize.ts": {
@@ -290,13 +290,13 @@
           "domain-default": 2
         }
       },
-      "esm/native/builder/render_drawer_ops_external.ts": {
-        "total": 1,
+      "esm/native/builder/render_drawer_ops_internal.ts": {
+        "total": 2,
         "categories": {
-          "domain-default": 1
+          "domain-default": 2
         }
       },
-      "esm/native/builder/render_drawer_ops_internal.ts": {
+      "esm/native/builder/render_drawer_ops_shared_visual_state.ts": {
         "total": 2,
         "categories": {
           "domain-default": 2
@@ -1996,7 +1996,7 @@
     },
     {
       "file": "esm/native/builder/corner_wing_cell_sketch_extras.ts",
-      "line": 193,
+      "line": 199,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-sketch-extra-fallback: optional sketch-extra metadata may be absent without blocking geometry output"
@@ -2220,35 +2220,35 @@
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_apply.ts",
-      "line": 136,
+      "line": 141,
       "term": "fallback",
       "category": "domain-default",
       "text": "// as a defensive fallback for malformed snapshots where both domains exist."
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 216,
+      "line": 217,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "const runtimeDrawerOwnerBlocksConfigFallback ="
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_modules.ts",
-      "line": 219,
+      "line": 220,
       "term": "runtimeDrawerOwnerBlocksConfigFallback",
       "category": "domain-default",
       "text": "if (!stacksByModule.size && allowConfigDerivedCuts && !runtimeDrawerOwnerBlocksConfigFallback) {"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
-      "line": 57,
+      "line": 58,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup"
     },
     {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
-      "line": 100,
+      "line": 101,
       "term": "fallback",
       "category": "domain-default",
       "text": "// builder-cleanup-fallback: resource disposal and detached-node removal are best-effort cleanup"
@@ -2276,10 +2276,24 @@
     },
     {
       "file": "esm/native/builder/render_built_in_desk.ts",
-      "line": 59,
+      "line": 63,
       "term": "fallback",
       "category": "domain-default",
       "text": "getPartMaterial?: (partId: string, fallback: unknown) => unknown;"
+    },
+    {
+      "file": "esm/native/builder/render_built_in_desk.ts",
+      "line": 88,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "function emitFront(board: BuiltInDeskBoard, partId: string, fallback = material): unknown {"
+    },
+    {
+      "file": "esm/native/builder/render_built_in_desk.ts",
+      "line": 89,
+      "term": "fallback",
+      "category": "domain-default",
+      "text": "return emit(board, partId, args.getPartMaterial?.(partId, fallback) ?? fallback);"
     },
     {
       "file": "esm/native/builder/render_carcass_ops_cornice_finalize.ts",
@@ -2352,13 +2366,6 @@
       "text": "const hasLayoutMirror = mirrorLayoutHasBuilderSurfaceKind(mirrorLayout, 'mirror', layoutFallbackKind);"
     },
     {
-      "file": "esm/native/builder/render_drawer_ops_external.ts",
-      "line": 92,
-      "term": "fallbackMaterial",
-      "category": "domain-default",
-      "text": "fallbackMaterial: drawerBoxBaseMat,"
-    },
-    {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
       "line": 86,
       "term": "fallbackMaterial",
@@ -2371,6 +2378,20 @@
       "term": "fallbackMaterial",
       "category": "domain-default",
       "text": "fallbackMaterial: drawerBoxBaseMat,"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_shared_visual_state.ts",
+      "line": 14,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial: unknown,"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_shared_visual_state.ts",
+      "line": 21,
+      "term": "fallbackMaterial",
+      "category": "domain-default",
+      "text": "fallbackMaterial,"
     },
     {
       "file": "esm/native/builder/render_interior_rod_clearance.ts",

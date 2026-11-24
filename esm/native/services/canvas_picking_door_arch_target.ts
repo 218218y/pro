@@ -38,6 +38,7 @@ export type ArchSurface = {
   contour?: readonly DoorArchPoint[];
   key: string;
   rect: DoorArchRect;
+  deskScoped?: boolean;
   z: number;
   face: 1 | -1;
   toWorld: (point: Vector3Like) => Vector3Like;
@@ -66,6 +67,22 @@ const MAX_SEAM_GAP_M = 0.025;
 const PLANE_EPSILON_M = 0.008;
 const SURFACE_INSET_M = 0.004;
 
+function readDeskArchScope(ud: Object3DLike['userData']): { key: string; minY: number; maxY: number } | null {
+  const scope = ud.__wpDeskArchScope;
+  if (
+    !scope ||
+    typeof scope !== 'object' ||
+    !('key' in scope) ||
+    typeof scope.key !== 'string' ||
+    !('minY' in scope) ||
+    typeof scope.minY !== 'number' ||
+    !('maxY' in scope) ||
+    typeof scope.maxY !== 'number'
+  )
+    return null;
+  return { key: scope.key, minY: scope.minY, maxY: scope.maxY };
+}
+
 function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1): ArchSurface | null {
   const ud = group.userData;
   const partId = ud.partId;
@@ -76,16 +93,24 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
   let rect = readDoorLeafRectFromUserData(ud);
   let key = __wp_scopeCornerPartKeyForStack(partId, ud.__wpStack === 'bottom' ? 'bottom' : 'top');
   let z = typeof ud.__wpFrontThickness === 'number' ? (ud.__wpFrontThickness / 2) * face : 0;
+  const deskScope = tool === 'cut' ? readDeskArchScope(ud) : null;
   if (tool === 'cut') {
     const match = /^d([1-9]\d*)_(full|top|bot|mid\d*)$/.exec(partId);
-    if (!match || !rect || face < 0 || ud.__wpWinterBraceDoorPlan || ud.__wpSketchSegmentedDoor) return null;
-    key = `splitarch_d${match[1]}`;
+    if (
+      !rect ||
+      face < 0 ||
+      (!deskScope && (!match || ud.__wpWinterBraceDoorPlan || ud.__wpSketchSegmentedDoor))
+    )
+      return null;
+    key = deskScope?.key ?? `splitarch_d${match?.[1]}`;
     const width = ud.__wpFrontVisualWidth;
     if (typeof width === 'number') {
       const center = (rect.minX + rect.maxX) / 2;
       rect = { ...rect, minX: center - width / 2, maxX: center + width / 2 };
     }
-    if (typeof ud.__wpArchCutBaseMinY === 'number' && typeof ud.__wpArchCutBaseMaxY === 'number') {
+    if (deskScope) {
+      rect = { ...rect, minY: deskScope.minY, maxY: deskScope.maxY };
+    } else if (typeof ud.__wpArchCutBaseMinY === 'number' && typeof ud.__wpArchCutBaseMaxY === 'number') {
       rect = { ...rect, minY: ud.__wpArchCutBaseMinY, maxY: ud.__wpArchCutBaseMaxY };
     }
   } else {
@@ -115,6 +140,7 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
     group,
     anchor: owner,
     ...(contour ? { contour } : {}),
+    ...(deskScope ? { deskScoped: true } : {}),
     key,
     rect,
     z,
@@ -122,6 +148,19 @@ function readArchSurface(group: Object3DLike, tool: DoorArchTool, face: 1 | -1):
     toWorld: point => toWorld.call(owner, point),
     toLocal: point => toLocal.call(owner, point),
   };
+}
+
+function readArchLeaves(group: Object3DLike): Object3DLike[] {
+  if (group.userData.__wpSketchDoorLeaf === true) return [group];
+  if (group.userData.__wpSketchSegmentedDoor !== true) return [group];
+  const leaves: Object3DLike[] = [];
+  const nodes = group.children.slice();
+  while (nodes.length) {
+    const node = nodes.pop()!;
+    if (node.userData.__wpSketchDoorLeaf === true) leaves.push(node);
+    else nodes.push(...node.children);
+  }
+  return leaves;
 }
 
 function localRayHit(THREE: ThreeLike, surface: ArchSurface, ray: { origin: Vec3Like; direction: Vec3Like }) {
@@ -205,14 +244,17 @@ export function resolveDoorArchTarget(args: {
   const surfaces = getDoorsArray(args.App).flatMap(entry => {
     if (!entry.group) return [];
     if (args.tool === 'cut' && entry.type !== 'hinged') return [];
-    const surface = readArchSurface(entry.group, args.tool, face);
-    return surface ? [surface] : [];
+    return readArchLeaves(entry.group).flatMap(leaf => {
+      const surface = readArchSurface(leaf, args.tool, face);
+      return surface ? [surface] : [];
+    });
   });
   if (args.tool === 'cut') {
     // Standard straight segments share a leaf. Measure its full height in
     // each segment's own coordinates before planning a cut.
     const families = new Map<string, ArchSurface[]>();
     for (const surface of surfaces) {
+      if (surface.deskScoped) continue;
       const family = families.get(surface.key) ?? [];
       family.push(surface);
       families.set(surface.key, family);
@@ -283,7 +325,7 @@ export function resolveDoorArchTarget(args: {
     !hasDoorHit &&
     !neighbor &&
     !snapToEnd &&
-    (args.tool !== 'cut' || surface.group.userData.__wpArchCutBaseMinY === undefined)
+    (args.tool !== 'cut' || (!surface.deskScoped && surface.group.userData.__wpArchCutBaseMinY === undefined))
   )
     return null;
   if (args.tool === 'cut') {

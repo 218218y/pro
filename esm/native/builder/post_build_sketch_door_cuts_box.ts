@@ -102,7 +102,16 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       stack === 'bottom' && /^\d+$/.test(String(moduleKey)) ? `lower_${moduleKey}` : String(moduleKey),
       boxId
     );
-    return [{ key, xMin: -Infinity, xMax: Infinity, yMin: opening.yMin, yMax: opening.yMax }];
+    return [
+      {
+        key,
+        xMin: -Infinity,
+        xMax: Infinity,
+        yMin: opening.yMin,
+        yMax: opening.yMax,
+        ...(opening.keepShortLeaves ? { keepShortLeaves: true } : {}),
+      },
+    ];
   });
   const desksByBox = groupSketchDrawerStackBounds(deskBounds);
   const splitMap = asRecord(readKey(cfg, 'splitDoorsMap'));

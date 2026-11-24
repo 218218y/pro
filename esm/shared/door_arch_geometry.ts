@@ -59,7 +59,7 @@ export function readDoorArchCuts(value: unknown): DoorArchCut[] {
 }
 
 export function isDoorArchCutKey(key: string): boolean {
-  return /^splitarch_d[1-9]\d*$/.test(key);
+  return /^splitarch_(?:d[1-9]\d*|desk_[a-zA-Z0-9_-]+)$/.test(key);
 }
 
 export function doorArchSpan(rect: DoorArchRect, profile: DoorArchProfile, x: number) {

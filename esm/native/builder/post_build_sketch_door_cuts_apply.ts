@@ -16,13 +16,17 @@ import { asRecord, getDoorEntryGroup, readKey, type ValueRecord } from './post_b
 import type {
   ApplySketchDrawerDoorCutsArgs,
   SketchDrawerCutSegment,
+  SketchDoorRebuildSegment,
   SketchDrawerStackBounds,
 } from './post_build_sketch_door_cuts_contracts.js';
 import {
   normalizeSketchDrawerCutIntervals,
   subtractSketchDrawerIntervals,
 } from './post_build_sketch_door_cuts_intervals.js';
-import { rebuildSketchSegmentedDoor } from './post_build_sketch_door_cuts_rebuild.js';
+import {
+  rebuildSketchSegmentedDoor,
+  resolveSketchDoorLeafSizing,
+} from './post_build_sketch_door_cuts_rebuild.js';
 import { notifyHandleFitSuppressions } from './construction_correction_feedback.js';
 import {
   readGeometryUserDataNumber,
@@ -30,6 +34,7 @@ import {
   readGeometryUserDataPositiveNumberKey,
 } from './geometry_user_data_contracts.js';
 import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
+import { applyDeskLeafArchCuts } from './post_build_sketch_door_cuts_desk.js';
 
 function clampSketchDoorCutValue(value: number, min: number, max: number): number {
   if (value < min) return min;
@@ -198,6 +203,11 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const doorXMin = centerX - width / 2;
     const doorXMax = centerX + width / 2;
     const deskCuts = intersectDoorCuts(deskOpenings, doorXMin, doorXMax);
+    const shortLeafOpenings = intersectDoorCuts(
+      deskOpenings.filter(opening => !opening.keepShortLeaves),
+      doorXMin,
+      doorXMax
+    );
     const drawerCuts = normalizeSketchDrawerCutIntervals([
       ...intersectDoorCuts(selectedStacks, doorXMin, doorXMax),
       ...deskCuts,
@@ -221,24 +231,37 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
         : {}
     );
     if (!normalizedCuts.length) continue;
-    const lowerDeskCuts = deskCuts.filter(cut => cut.yMin > doorMin && cut.yMin < doorMax);
+    const lowerDeskCuts = shortLeafOpenings.filter(cut => cut.yMin > doorMin && cut.yMin < doorMax);
     const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts).filter(
       segment =>
         segment.yMax - segment.yMin >= HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM - 1e-6 ||
         !lowerDeskCuts.some(cut => segment.yMax <= cut.yMin)
     );
+    const rebuiltSegments: SketchDoorRebuildSegment[] = deskCuts.length
+      ? applyDeskLeafArchCuts(
+          visibleSegments,
+          selection.basePartId,
+          resolveSketchDoorLeafSizing(width),
+          runtime
+        )
+      : visibleSegments;
     const onlyVisibleSegment = visibleSegments.length === 1 ? visibleSegments[0] : undefined;
     if (
+      rebuiltSegments.length === 1 &&
       onlyVisibleSegment &&
       Math.abs(onlyVisibleSegment.yMin - doorMin) <= DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutNoOpToleranceM &&
       Math.abs(onlyVisibleSegment.yMax - doorMax) <= DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutNoOpToleranceM
-    )
+    ) {
+      const scope = rebuiltSegments[0]?.deskArchScope;
+      if (scope)
+        ud.__wpDeskArchScope = { key: scope.key, minY: scope.yMin - centerY, maxY: scope.yMax - centerY };
       continue;
+    }
     rebuildSketchSegmentedDoor({
       runtime,
       g,
       ud,
-      visibleSegments,
+      visibleSegments: rebuiltSegments,
       fixedBelowY: selection.fixedBelowY ?? null,
       registerFixedDoor: (group, hingeSide) => {
         doorsArr.push({ type: 'hinged', group, hingeSide, isOpen: false });

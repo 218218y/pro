@@ -523,10 +523,6 @@
       "entry": "door_authoring/api.js"
     },
     {
-      "file": "esm/native/builder/render_drawer_ops_external.ts",
-      "entry": "part_identity/api.js"
-    },
-    {
       "file": "esm/native/builder/render_drawer_ops_internal.ts",
       "entry": "part_identity/api.js"
     },
@@ -541,6 +537,10 @@
     {
       "file": "esm/native/builder/render_drawer_ops_shared_visual_state.ts",
       "entry": "door_authoring/api.js"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_shared_visual_state.ts",
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/builder/render_interior_custom_ops_shelves.ts",

@@ -1,8 +1,29 @@
 import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
+import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import type { MirrorLayoutList } from '../../../types';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { readCurtainType } from './render_door_ops_shared.js';
-import type { DrawerConfig, GetPartColorValueFn } from './render_drawer_ops_shared_types.js';
+import type {
+  DrawerConfig,
+  GetPartColorValueFn,
+  GetPartMaterialFn,
+} from './render_drawer_ops_shared_types.js';
+
+export function resolveDrawerBoxVisual(
+  drawerPartId: string,
+  fallbackMaterial: unknown,
+  getPartColorValue: GetPartColorValueFn | null,
+  getPartMaterial: GetPartMaterialFn | null
+) {
+  const drawerBoxPartId = makeDrawerBoxPartId(drawerPartId);
+  const drawerBoxMat = resolveDrawerBoxPaintMaterial({
+    drawerBoxPartId,
+    fallbackMaterial,
+    getPartColorValue,
+    getPartMaterial,
+  });
+  return { drawerBoxPartId, drawerBoxMat };
+}
 
 export function resolveDrawerVisualState(
   cfg: DrawerConfig,

@@ -191,6 +191,7 @@ function fitsAmongDoorCuts(App: AppContainer, slice: DoorArchSlice): boolean {
   const existing = readDoorArchCuts(__wp_map(App, 'splitDoorsMap')[surface.key]);
   if (!existing.every(cut => doorArchCutsAreSeparate(rect, cut, nextCut, MIN_DOOR_ARCH_CUT_MARGIN_M)))
     return false;
+  if (surface.deskScoped) return true;
   const [low, high] = doorArchCutRange(rect, nextCut);
   const isClear = (y: number) =>
     y <= low - MIN_DOOR_ARCH_CUT_MARGIN_M || y >= high + MIN_DOOR_ARCH_CUT_MARGIN_M;

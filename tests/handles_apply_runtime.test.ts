@@ -216,6 +216,9 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
   );
   assert.ok(desk);
   const backMaterial = {};
+  const frontMaterial = {};
+  const drawerBoxMaterial = {};
+  const paintedBox = {};
   renderBuiltInDesk({
     desk,
     createBoard(w, h, d, x, y, z, material, partId) {
@@ -226,7 +229,14 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
       return mesh;
     },
     material: {},
-    getPartMaterial: (id, material) => (id === 'built_in_desk_top_0_cell_back' ? backMaterial : material),
+    frontMaterial,
+    drawerBoxMaterial,
+    getPartColorValue: id => (id === 'drawer_box__built_in_desk_top_0_cell_front_2' ? 'custom' : null),
+    getPartMaterial: (id, material) => {
+      if (id === 'built_in_desk_top_0_cell_back') return backMaterial;
+      if (id === 'drawer_box__built_in_desk_top_0_cell_front_2') return paintedBox;
+      return material;
+    },
     addDrawerGroup(group) {
       wardrobe.add(group as unknown as FakeGroup3D);
     },
@@ -238,6 +248,9 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
   assert.equal(back.userData.__wpBuiltInDeskId, 'built_in_desk_top_0_cell');
   assert.equal(back.parent, wardrobe);
   assert.equal(back.userData.drawerId, undefined);
+  const deskBody = wardrobe.children.filter(child => child.userData.partId === back.userData.partId);
+  assert.equal(deskBody.length, 3);
+  assert.ok(deskBody.every(child => (child as FakeMesh3D).material === backMaterial));
 
   for (let rebuild = 0; rebuild < 2; rebuild++) {
     applyHandles({ App, cfgSnapshot: readConfigSnapshot(App), addOutlines, removeDoorsEnabled: false });
@@ -247,6 +260,11 @@ test('desk handles mount on the sideways front faces and ride with the drawer gr
       const group = entry.group as unknown as FakeGroup3D;
       const front = group.children.find(child => child.userData.partId === entry.partId);
       assert.ok(front);
+      assert.equal((front as FakeMesh3D).material, frontMaterial);
+      const box = group.children.filter(child => child.userData.partId === `drawer_box__${entry.partId}`);
+      assert.equal(box.length, 5);
+      const expectedBoxMaterial = entry.partId?.endsWith('_2') ? paintedBox : drawerBoxMaterial;
+      assert.ok(box.every(child => (child as FakeMesh3D).material === expectedBoxMaterial));
       assert.equal(mount.parent, group);
       assert.deepEqual(mount.position, front.position);
       assert.equal(mount.rotation.y, Math.PI / 2);

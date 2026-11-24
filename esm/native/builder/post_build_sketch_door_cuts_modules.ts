@@ -203,6 +203,7 @@ export function applySketchExternalDrawerDoorCuts(args: {
         xMax: boxId ? geometry.rightX : Infinity,
         yMin: opening.yMin,
         yMax: opening.yMax,
+        ...(opening.keepShortLeaves ? { keepShortLeaves: true } : {}),
       },
     ];
   });

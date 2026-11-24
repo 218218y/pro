@@ -65,7 +65,13 @@ export function groupSketchDrawerStackBounds<TKey extends string>(
   const grouped = new Map<TKey, SketchDrawerStackBounds[]>();
   for (const item of entries) {
     const list = grouped.get(item.key);
-    const bounds = { xMin: item.xMin, xMax: item.xMax, yMin: item.yMin, yMax: item.yMax };
+    const bounds = {
+      xMin: item.xMin,
+      xMax: item.xMax,
+      yMin: item.yMin,
+      yMax: item.yMax,
+      ...(item.keepShortLeaves ? { keepShortLeaves: true } : {}),
+    };
     if (list) list.push(bounds);
     else grouped.set(item.key, [bounds]);
   }

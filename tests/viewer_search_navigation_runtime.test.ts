@@ -41,6 +41,31 @@ test('catalog has one unique ID per real option, including the two door-count co
   assert.notEqual(destination('cell-door-count').tab, destination('design-cell-door-count').tab);
 });
 
+test('curved door shapes are searchable and reveal the matching editor', () => {
+  for (const [tool, label] of [
+    ['cut', 'חיתוך דלת'],
+    ['groove', 'חריטה'],
+    ['mirror', 'מראה'],
+  ] as const) {
+    for (const [shape, name] of [
+      ['arch', 'קשת למעלה'],
+      ['arch-down', 'קשת למטה'],
+      ['arch-both', 'שתי קשתות'],
+      ['ellipse', 'אליפסה'],
+    ] as const) {
+      const id = `${tool}-shape-${shape}`;
+      if (tool === 'cut' && (shape === 'ellipse' || shape === 'arch-both')) {
+        assert.equal(findViewerSearchDestination(id), undefined);
+        continue;
+      }
+      assert.ok(searchViewerDestinations(`${label} ${name}`, undefined, 25).some(result => result.id === id));
+      const option = destination(id);
+      assert.equal(option.selector, `[data-testid="design-${id}"]`);
+      assert.ok(option.reveal.length >= 2);
+    }
+  }
+});
+
 test('search ranks exact matches, matches multiword Hebrew aliases and never duplicates', () => {
   const results = searchViewerDestinations('זכוכית וילון', undefined, 100);
   assert.ok(results.some(option => option.id === 'glass-curtain'));

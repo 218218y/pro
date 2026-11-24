@@ -56,6 +56,8 @@ export function applySketchBoxBuiltInDesks(
     desk,
     createBoard: args.createBoard,
     material: shell.boxMat,
+    drawerBoxMaterial: args.whiteMat,
+    getPartColorValue: args.getPartColorValue ?? null,
     ...(args.getPartMaterial ? { getPartMaterial: args.getPartMaterial } : {}),
     addDrawerGroup: group => args.group.add?.(group),
     motion: { createGroup: () => new Group(), entries: args.drawersArray },

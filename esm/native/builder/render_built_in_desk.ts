@@ -6,6 +6,7 @@ import {
   readBuiltInDeskPlacement,
 } from '../../shared/built_in_desk.js';
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
+import { resolveDrawerBoxVisual } from './render_drawer_ops_shared.js';
 import { readObject } from './render_interior_sketch_shared.js';
 
 export function markBuiltInDeskHost(node: unknown, host: BuiltInDeskHost, deskId?: string): void {
@@ -37,6 +38,7 @@ export type BuiltInDeskDoorOpening = {
   host: BuiltInDeskHost;
   yMin: number;
   yMax: number;
+  keepShortLeaves?: boolean;
 };
 
 export function readBuiltInDeskDoorOpening(drawer: DrawerVisualEntryLike): BuiltInDeskDoorOpening | null {
@@ -56,7 +58,10 @@ export function renderBuiltInDesk(args: {
     partId: string
   ) => unknown;
   material: unknown;
+  drawerBoxMaterial: unknown;
+  frontMaterial?: unknown;
   getPartMaterial?: (partId: string, fallback: unknown) => unknown;
+  getPartColorValue?: ((partId: string) => unknown) | null;
   addDrawerGroup: (group: Object3DLike) => unknown;
   motion: DeskDrawers;
 }): void {
@@ -68,8 +73,7 @@ export function renderBuiltInDesk(args: {
   } = args;
   const { thickness } = host.geometry;
   const prefix = `built_in_desk_${host.stack}_${host.moduleKey}_${host.boxId ?? 'cell'}`;
-  function emit(board: BuiltInDeskBoard, suffix: string): unknown {
-    const partId = `${prefix}_${suffix}`;
+  function emit(board: BuiltInDeskBoard, partId: string, resolvedMaterial: unknown): unknown {
     return createBoard(
       board.width,
       board.height,
@@ -77,21 +81,30 @@ export function renderBuiltInDesk(args: {
       board.x,
       board.y,
       board.z,
-      args.getPartMaterial?.(partId, material) ?? material,
+      resolvedMaterial,
       partId
     );
   }
+  function emitFront(board: BuiltInDeskBoard, partId: string, fallback = material): unknown {
+    return emit(board, partId, args.getPartMaterial?.(partId, fallback) ?? fallback);
+  }
   const fixedBoards = [
-    emit(plan.top, 'top'),
-    emit(plan.bottom, 'bottom'),
-    emit(plan.back, 'back'),
-    ...(plan.support ? [emit(plan.support, 'leg')] : []),
-    ...plan.drawerPartitions.map((board, index) => emit(board, `partition_${index + 1}`)),
+    emitFront(plan.top, `${prefix}_back`),
+    emitFront(plan.bottom, `${prefix}_back`),
+    emitFront(plan.back, `${prefix}_back`),
+    ...(plan.support ? [emitFront(plan.support, `${prefix}_leg`)] : []),
+    ...plan.drawerPartitions.map((board, index) => emitFront(board, `${prefix}_partition_${index + 1}`)),
   ];
   for (const board of fixedBoards) markBuiltInDeskHost(board, host, prefix);
 
   for (const [index, front] of plan.drawers.entries()) {
-    const key = `front_${index + 1}`;
+    const id = `${prefix}_front_${index + 1}`;
+    const { drawerBoxPartId: boxId, drawerBoxMat } = resolveDrawerBoxVisual(
+      id,
+      args.drawerBoxMaterial,
+      args.getPartColorValue ?? null,
+      pid => args.getPartMaterial?.(pid, args.drawerBoxMaterial)
+    );
     const drawerGroup = motion.createGroup();
     const { frontGapM } = BUILT_IN_DESK_DIMENSIONS;
     const runnerClearance = 0.013;
@@ -104,7 +117,7 @@ export function renderBuiltInDesk(args: {
     const bodyBottomY = front.y - sideHeight / 2;
     const bottomThickness = 0.008;
     const boards = [
-      emit(front, key),
+      emitFront(front, id, args.frontMaterial ?? material),
       emit(
         {
           ...front,
@@ -114,11 +127,18 @@ export function renderBuiltInDesk(args: {
           x: centerX,
           y: bodyBottomY + bottomThickness / 2,
         },
-        `${key}_base`
+        boxId,
+        drawerBoxMat
       ),
       emit(
         { ...front, depth: boxSpanZ, height: sideHeight, x: bodyBackX + (plan.drawerSign * thickness) / 2 },
-        `${key}_back`
+        boxId,
+        drawerBoxMat
+      ),
+      emit(
+        { ...front, depth: boxSpanZ, height: sideHeight, x: bodyFrontX - (plan.drawerSign * thickness) / 2 },
+        boxId,
+        drawerBoxMat
       ),
     ];
     for (const sign of [-1, 1]) {
@@ -129,14 +149,14 @@ export function renderBuiltInDesk(args: {
             z: front.z + (sign * (boxSpanZ - thickness)) / 2,
             depth: thickness,
             height: sideHeight,
-            width: bodyDepth - thickness,
-            x: centerX + (plan.drawerSign * thickness) / 2,
+            width: bodyDepth - 2 * thickness,
+            x: centerX,
           },
-          `${key}_${sign < 0 ? 'left' : 'right'}`
+          boxId,
+          drawerBoxMat
         )
       );
     }
-    const id = `${prefix}_${key}`;
     for (const board of boards) {
       const node = readObject<Object3DLike>(board);
       if (!node) continue;
@@ -168,11 +188,9 @@ export function renderBuiltInDesk(args: {
       isOpen: false,
     };
     if (index === 0) {
-      const { doorOpeningClearanceM } = BUILT_IN_DESK_DIMENSIONS;
       const opening: BuiltInDeskDoorOpening = {
         host,
-        yMin: plan.verticalRange.bottomY - doorOpeningClearanceM,
-        yMax: plan.surfaceY + doorOpeningClearanceM,
+        ...plan.doorOpening,
       };
       entry.builtInDeskDoorOpening = opening;
     }

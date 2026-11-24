@@ -75,6 +75,43 @@ const commode = [...chest, press(tid('structure-chest-commode-button'))];
 const library = [press(tid('structure-library-mode-button'))];
 const groove = [check(tid('design-grooves-toggle'))];
 const split = [check(tid('design-split-doors-toggle'))];
+const curvedDoorShapeDestinations = (['cut', 'groove', 'mirror'] as const).flatMap(tool => {
+  const target = {
+    cut: {
+      label: 'חיתוך דלת',
+      reveal: [...split, press(tid('design-split-custom-mode-button'))],
+      requires: ['hinged', 'not-chest'],
+    },
+    groove: {
+      label: 'חריטה',
+      reveal: [...groove, expand(tid('design-groove-manual-button'))],
+      requires: ['cabinet', 'not-chest'],
+    },
+    mirror: { label: 'מראה', reveal: mirror, requires: ['cabinet'] },
+  } as const;
+  const { label, reveal, requires } = target[tool];
+  return (
+    [
+      ['arch', 'קשת למעלה'],
+      ['arch-down', 'קשת למטה'],
+      ['arch-both', 'שתי קשתות'],
+      ['ellipse', 'אליפסה'],
+    ] as const
+  )
+    .filter(([shape]) => tool !== 'cut' || shape === 'arch' || shape === 'arch-down')
+    .map(([shape, name]) => {
+      const id = `${tool}-shape-${shape}`;
+      return item(
+        'design',
+        id,
+        `${label} · ${name}`,
+        tid(`design-${id}`),
+        `${label} ${name} צורה מעוגל ראש עיגול שתי דלתות`,
+        reveal,
+        { aliases: [`${label} ${name}`, `${name} ${label}`, name], requires }
+      );
+    });
+});
 const remove = [check(tid('design-remove-doors-toggle'))];
 const lighting = [check(tid('toggle-advanced-lighting'))];
 const roomWall = [check(tid('settings-room-back-wall-toggle'))];
@@ -98,6 +135,7 @@ function item(
 }
 
 export const VIEWER_SEARCH_DESTINATIONS: readonly ViewerSearchDestination[] = [
+  ...curvedDoorShapeDestinations,
   // מבנה: סוגי ארונות, מידות, חומרים, בסיסים ועריכה לפי תא
   item('structure', 'type-hinged', 'ארון פתיחה', tid('structure-type-hinged-button'), 'דלתות ציר', [], {
     aliases: ['ארון', 'פתיחה', 'ארון פתיחה'],

@@ -60,6 +60,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   const specialMap = asRecord(readKey(cfg, 'doorSpecialMap'));
   const mirrorLayoutMap = asRecord(readKey(cfg, 'mirrorLayoutMap'));
   const grooveLayoutMap = asRecord(readKey(cfg, 'grooveLayoutMap'));
+  const splitDoorsMap = asRecord(readKey(cfg, 'splitDoorsMap'));
   const doorStyleMap = readDoorStyleMap(readKey(cfg, 'doorStyleMap'));
   const isDoorRemoved = makeDoorRemovalChecker(cfg);
   const handlesMap = asRecord(readKey(cfg, 'handlesMap'));
@@ -134,6 +135,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     doorTrimMap,
     resolveMirrorLayout,
     resolveGrooveLayout,
+    readDeskArchCuts: key => splitDoorsMap?.[key],
     isDoorRemoved,
   };
 }

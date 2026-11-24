@@ -6,6 +6,7 @@ import { patchBuilderHingedDoorMotionMetadata } from './hinged_door_motion_metad
 import { readKey } from './post_build_extras_shared.js';
 import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
+import type { DoorArchPoint } from '../../../types/maps.js';
 
 import { readDoorTrimListForPart } from '../features/door_authoring/api.js';
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
@@ -57,6 +58,8 @@ function appendSketchSegmentHinges(args: {
   segmentCenterLocalY: number;
   width: number;
   isLeftHinge: boolean;
+  contour?: DoorArchPoint[];
+  meshOffsetX: number;
 }): void {
   const { runtime, doorGroup, hardwareContext, segmentPartId, segmentHeight, segmentCenterLocalY } = args;
   const wardrobeGroup = doorGroup.parent;
@@ -81,6 +84,12 @@ function appendSketchSegmentHinges(args: {
       isMirror: false,
       hasGroove: false,
       pivotX,
+      ...(args.contour
+        ? {
+            meshOffsetX: args.meshOffsetX,
+            archCut: { contour: args.contour, baseMinY: -segmentHeight / 2, baseMaxY: segmentHeight / 2 },
+          }
+        : {}),
       ...(hardwareContext.carcassMountFaceX != null
         ? { carcassMountFaceX: hardwareContext.carcassMountFaceX }
         : null),
@@ -92,6 +101,14 @@ function appendSketchSegmentHinges(args: {
       : {}),
     ...(hardwareContext.frontSign !== undefined ? { frontSign: hardwareContext.frontSign } : {}),
   });
+}
+
+export function resolveSketchDoorLeafSizing(width: number) {
+  const clearance = SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
+  return {
+    clearance,
+    visualWidth: Math.max(SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM, width - clearance),
+  };
 }
 
 export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs): void {
@@ -117,6 +134,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
     MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const suppressedHandlePartIds: string[] = [];
   const hardwareContext = readHingedDoorHardwareRuntimeContext(g);
+  const { clearance, visualWidth: segmentVisualWidth } = resolveSketchDoorLeafSizing(width);
   const wardrobeGroup = g.parent;
   if (hardwareContext && wardrobeGroup) {
     // Hardware was rendered against the original uncut leaf. Remove both the
@@ -131,10 +149,16 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
 
   for (const [segIndex, seg] of visibleSegments.entries()) {
     const segmentConstructionHeight = seg.yMax - seg.yMin;
-    const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
-    if (!(segHeight > SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM)) continue;
+    const segHeight = seg.yMax - seg.yMin - clearance;
+    if (!(segHeight > (seg.contour ? 0 : SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM))) continue;
     const segCenterLocalY = (seg.yMin + seg.yMax) / 2 - centerY;
-    const segmentPartId = resolveSketchDoorSegmentPartId(partId, visibleSegments.length, segIndex);
+    const segmentPartId =
+      seg.partId ?? resolveSketchDoorSegmentPartId(partId, visibleSegments.length, segIndex);
+    const scope = seg.deskArchScope && {
+      key: seg.deskArchScope.key,
+      minY: seg.deskArchScope.yMin - (seg.yMin + seg.yMax) / 2,
+      maxY: seg.deskArchScope.yMax - (seg.yMin + seg.yMax) / 2,
+    };
     const edgeHandleVariantForClamp =
       typeof runtime.resolveEdgeHandleVariant === 'function'
         ? runtime.resolveEdgeHandleVariant(segmentPartId)
@@ -144,10 +168,6 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       handleAbsY,
       padding: resolveSegmentHandleClampPadding(edgeHandleVariantForClamp),
     });
-    const segmentVisualWidth = Math.max(
-      SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM,
-      width - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM
-    );
     const segmentVisualHeight = Math.max(
       SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM,
       segHeight
@@ -165,7 +185,9 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
         partId: segmentPartId,
         hingeLeft: isLeftHinge,
         handleAbsY: segmentHandleAbsY,
+        ...(seg.contour ? { contour: seg.contour } : {}),
       });
+      if (scope) removedTarget.userData.__wpDeskArchScope = scope;
       applySegmentPosition(removedTarget, doorMeshOffsetX, segCenterLocalY);
       buildSketchSegmentUserData({
         node: removedTarget,
@@ -199,7 +221,9 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       segmentPartMat,
       segmentWoodMat,
       segmentMirrorMat,
+      ...(seg.contour ? { contour: seg.contour } : {}),
     });
+    if (scope) visualObj.userData.__wpDeskArchScope = scope;
     applySegmentPosition(visualObj, doorMeshOffsetX, segCenterLocalY);
     applySketchSegmentPickMeta(visualObj, segmentPartId);
     buildSketchSegmentUserData({
@@ -249,6 +273,8 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       segmentCenterLocalY: segCenterLocalY,
       width: segmentVisualWidth,
       isLeftHinge,
+      meshOffsetX: doorMeshOffsetX,
+      ...(seg.contour ? { contour: seg.contour } : {}),
     });
 
     const handleResult = maybeAttachSegmentHandle({

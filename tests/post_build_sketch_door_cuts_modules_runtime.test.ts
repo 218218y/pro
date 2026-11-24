@@ -8,7 +8,7 @@ import {
 import { renderBuiltInDesk, resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
 import { getDoorsArray, getDrawersArray } from '../esm/native/runtime/render_access.ts';
 import { getInternalGridMap } from '../esm/native/runtime/cache_access.ts';
-import type { BuiltInDeskHost } from '../types/built_in_desk.ts';
+import type { BuiltInDeskHost, BuiltInDeskOptions } from '../types/built_in_desk.ts';
 
 class FakeVector3 {
   x: number;
@@ -203,24 +203,81 @@ const moduleDeskHost: BuiltInDeskHost = {
   geometry: { leftX: -0.45, rightX: 0.45, bottomY: 0, topY: 2, backZ: 0, frontZ: 0.6, thickness: 0.018 },
 };
 
-function renderDeskForDoorCut(App: Record<string, unknown>, host: BuiltInDeskHost, topNorm = 0.4) {
+function renderDeskForDoorCut(
+  App: Record<string, unknown>,
+  host: BuiltInDeskHost,
+  topNorm = 0.4,
+  clearances: Pick<BuiltInDeskOptions, 'doorClearanceAboveCm' | 'doorClearanceBelowCm'> = {}
+) {
   const desk = resolveBuiltInDesk(host, {
     lengthCm: 100,
     topNorm,
     drawerCount: 3,
     drawerSide: 'right',
     support: 'wall',
+    ...clearances,
   });
   assert.ok(desk);
   renderBuiltInDesk({
     desk,
     createBoard: () => new FakeGroup(),
     material: {},
+    drawerBoxMaterial: {},
     addDrawerGroup: () => {},
     motion: { createGroup: () => new FakeGroup() as never, entries: getDrawersArray(App) },
   });
   return desk.plan.verticalRange;
 }
+
+test('edited desk clearances and independent arches rebuild the upper and lower fronts together', () => {
+  const App: Record<string, unknown> = {};
+  const door = createDoorGroup();
+  getDoorsArray(App).push({ type: 'hinged', group: door } as any);
+  const { bottomY, surfaceY } = renderDeskForDoorCut(App, moduleDeskHost, 0.45, {
+    doorClearanceAboveCm: 4,
+    doorClearanceBelowCm: 0,
+  });
+  const shapes = new Set<string>();
+  const ctx = createCtx();
+  applySketchExternalDrawerDoorCuts({
+    App: App as any,
+    THREE: FakeTHREE as any,
+    ctx: {
+      ...ctx,
+      create: {
+        ...ctx.create,
+        createDoorVisual(...args: unknown[]) {
+          if ((args[13] as { cutContour?: unknown[] })?.cutContour?.length) shapes.add(String(args[12]));
+          return new FakeGroup();
+        },
+      },
+    } as any,
+    cfg: {
+      splitDoorsMap: {
+        splitarch_desk_d0_bot: [{ peak: 0.75, profile: { start: 0, end: 1, rise: 0.22 } }],
+        splitarch_desk_d0_top: [{ peak: 0.6, profile: { start: 0, end: 1, rise: 0.2 } }],
+      },
+    },
+    bodyMat: {},
+    globalFrontMat: {},
+    stackKey: 'top',
+  });
+  const segments = door.children.filter(child => child.userData.__wpDeskArchScope);
+  assert.deepEqual(
+    segments.map(child => child.userData.partId),
+    ['d0_bot_bot', 'd0_bot_top', 'd0_top_bot', 'd0_top_top']
+  );
+  assert.equal(shapes.size, 4);
+  const lower = segments[1]!;
+  const upper = segments[2]!;
+  assert.ok(
+    Math.abs(getWorldY(lower) + Number(lower.userData.__wpDoorConstructionHeight) / 2 - bottomY) < 1e-8
+  );
+  assert.ok(
+    Math.abs(getWorldY(upper) - Number(upper.userData.__wpDoorConstructionHeight) / 2 - surfaceY - 0.04) <
+      1e-8
+  );
+});
 
 test('a desk clears 30 cm above and below its body and preserves an existing cut', () => {
   const App: Record<string, unknown> = {};

@@ -14,6 +14,19 @@ async function choose(page: Page, query: string, id: string) {
   await expect(page.getByTestId('viewer-search-popover')).toHaveCount(0);
 }
 
+test('search reveals curved cut, engraving, and mirror controls @critical', async ({ page }) => {
+  await gotoSmokeApp(page);
+  for (const [query, id] of [
+    ['חיתוך דלת קשת למטה', 'cut-shape-arch-down'],
+    ['חריטה שתי קשתות', 'groove-shape-arch-both'],
+    ['מראה אליפסה', 'mirror-shape-ellipse'],
+  ]) {
+    await choose(page, query!, id!);
+    await expect(page.getByTestId(`design-${id}`)).toHaveClass(/wp-r-search-target-flash/);
+    await expect(page.getByTestId(`design-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  }
+});
+
 test('search ranks primary options and reveals the actual nested controls across tabs @critical', async ({
   page,
 }) => {
