@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../../../types';
 import { exitPrimaryMode } from '../actions/modes_actions.js';
 import {
+  activateBuiltInDeskTool,
   enterLayoutMode,
   enterManualLayoutMode,
   toggleBraceShelvesMode,
@@ -56,6 +57,7 @@ type InteriorTabManualWorkflowController = Pick<
   | 'setGridShelfVariant'
   | 'enterSketchDivision'
   | 'activateManualToolId'
+  | 'activateBuiltInDeskTool'
   | 'enterSketchShelfTool'
   | 'enterSketchBoxTool'
   | 'enterSketchBoxCorniceTool'
@@ -102,6 +104,7 @@ export function createInteriorTabManualWorkflowController(
 
   return {
     activateManualToolId,
+    activateBuiltInDeskTool: options => activateBuiltInDeskTool(app, options),
     enterSketchShelfTool,
     enterSketchDivision,
 

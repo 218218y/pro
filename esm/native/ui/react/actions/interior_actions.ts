@@ -5,11 +5,14 @@ import {
 // React UI actions: interior tools (layout/manual/drawers/dividers)
 
 import type { AppContainer, ActionMetaLike, DrawerRunnerType, UnknownRecord } from '../../../../../types';
+import type { BuiltInDeskOptions } from '../../../../../types/built_in_desk.js';
+import { DEFAULT_BUILT_IN_DESK_OPTIONS, encodeBuiltInDeskTool } from '../../../../shared/built_in_desk.js';
 import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 import { getPrimaryMode, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
 import { getUiFeedback, MODES, reportError } from '../../../services/api.js';
 import {
+  patchUiSoft,
   setUiCurrentLayoutType,
   setUiExtDrawerSelection,
   setUiFlag,
@@ -158,6 +161,14 @@ export function enterManualLayoutMode(app: AppContainer, toolId: unknown): void 
     cursor: 'alias',
     toast: 'חלוקה ידנית: לחץ בתוך הארון להוספה/הסרה',
   });
+}
+
+export function activateBuiltInDeskTool(app: AppContainer, options?: BuiltInDeskOptions): void {
+  if (options) {
+    patchUiSoft(app, { builtInDeskDraft: options }, { source: 'react:builtInDesk:draft' });
+  }
+  const draft = options ?? readStoreStateMaybe(app)?.ui?.builtInDeskDraft ?? DEFAULT_BUILT_IN_DESK_OPTIONS;
+  enterManualLayoutMode(app, encodeBuiltInDeskTool(draft));
 }
 
 export function toggleBraceShelvesMode(app: AppContainer, variant: 'regular' | 'brace' = 'brace'): void {

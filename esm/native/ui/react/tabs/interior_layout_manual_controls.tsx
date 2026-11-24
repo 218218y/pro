@@ -91,7 +91,7 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
             selected={deskOptions !== null}
             testId="interior-built-in-desk"
             panelId={deskPanelId}
-            activateManualToolId={props.activateManualToolId}
+            activateBuiltInDeskTool={props.activateBuiltInDeskTool}
             exitManual={props.exitManual}
           />
         ) : null}
@@ -100,7 +100,7 @@ export function InteriorLayoutManualControls(props: ManualLayoutControlsProps): 
         <BuiltInDeskOptionsPanel
           id={deskPanelId}
           options={deskOptions}
-          activateManualToolId={props.activateManualToolId}
+          activateBuiltInDeskTool={props.activateBuiltInDeskTool}
         />
       ) : null}
 

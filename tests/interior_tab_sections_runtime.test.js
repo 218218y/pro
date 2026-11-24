@@ -257,6 +257,7 @@ function createLayoutProps(overrides = {}) {
     setGridShelfVariant: noop,
     enterSketchDivision: noop,
     activateManualToolId: noop,
+    activateBuiltInDeskTool: noop,
     activateDoorTrimMode: noop,
     enterSketchShelfTool: noop,
     enterSketchBoxTool: noop,

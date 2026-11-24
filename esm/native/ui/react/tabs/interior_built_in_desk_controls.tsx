@@ -3,13 +3,10 @@ import type { BuiltInDeskOptions } from '../../../../../types/built_in_desk.js';
 import {
   BUILT_IN_DESK_DIMENSIONS,
   DEFAULT_BUILT_IN_DESK_OPTIONS,
-  encodeBuiltInDeskTool,
   maxBuiltInDeskDrawers,
   readBuiltInDeskTool,
 } from '../../../../shared/built_in_desk.js';
-import { patchUiSoft } from '../actions/store_actions.js';
 import { Button, OptionButton } from '../components/index.js';
-import { useApp, useUiSelector } from '../hooks.js';
 
 const clearanceFields = [
   ['doorClearanceAboveCm', 'מרווח מעל השולחן (ס״מ)', 'איפוס מרווח מעל השולחן'],
@@ -25,10 +22,9 @@ export function BuiltInDeskToolButton(props: {
   selected: boolean;
   testId: string;
   panelId: string;
-  activateManualToolId: (toolId: string) => void;
+  activateBuiltInDeskTool: () => void;
   exitManual: () => void;
 }): ReactElement {
-  const draft = useUiSelector(ui => ui.builtInDeskDraft, undefined, 'interaction');
   return (
     <OptionButton
       density="micro"
@@ -39,7 +35,7 @@ export function BuiltInDeskToolButton(props: {
       testId={props.testId}
       onClick={() => {
         if (props.selected) props.exitManual();
-        else props.activateManualToolId(encodeBuiltInDeskTool(draft ?? DEFAULT_BUILT_IN_DESK_OPTIONS));
+        else props.activateBuiltInDeskTool();
       }}
     >
       שולחן מובנה
@@ -104,16 +100,13 @@ function BuiltInDeskNumberField(props: {
 export function BuiltInDeskOptionsPanel(props: {
   id: string;
   options: BuiltInDeskOptions;
-  activateManualToolId: (toolId: string) => void;
+  activateBuiltInDeskTool: (options: BuiltInDeskOptions) => void;
 }): ReactElement {
-  const app = useApp();
   const { options, id } = props;
   const { minLengthCm, maxLengthCm } = BUILT_IN_DESK_DIMENSIONS;
   const drawerLimit = maxBuiltInDeskDrawers(options.lengthCm);
   const apply = (patch: Partial<BuiltInDeskOptions>) => {
-    const next = { ...options, ...patch };
-    patchUiSoft(app, { builtInDeskDraft: next }, { source: 'react:builtInDesk:draft' });
-    props.activateManualToolId(encodeBuiltInDeskTool(next));
+    props.activateBuiltInDeskTool({ ...options, ...patch });
   };
 
   return (

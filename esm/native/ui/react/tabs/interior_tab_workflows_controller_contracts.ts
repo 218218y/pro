@@ -1,4 +1,5 @@
 import type { AppContainer, DrawerRunnerType, UnknownRecord } from '../../../../../types';
+import type { BuiltInDeskOptions } from '../../../../../types/built_in_desk.js';
 import type {
   DoorTrimUiAxis,
   DoorTrimUiColor,
@@ -72,6 +73,7 @@ export type InteriorTabWorkflowController = {
   setHandleModeColor: (color: HandleUiColor) => void;
   enterManualHandlePositionMode: () => void;
   activateManualToolId: (toolId: string) => void;
+  activateBuiltInDeskTool: (options?: BuiltInDeskOptions) => void;
   activateDoorTrimMode: (
     axis: DoorTrimUiAxis,
     span: DoorTrimUiSpan,

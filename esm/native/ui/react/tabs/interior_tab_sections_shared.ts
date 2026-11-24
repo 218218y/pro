@@ -5,6 +5,7 @@ import type { DrawerRunnerType } from '../../../../../types';
 import { METAL_FINISH_PALETTE_BY_COLOR } from '../../../features/finish_palette/api.js';
 import type { HandleFinishColor, HandleFinishPresetColor } from '../../../features/finish_palette/api.js';
 import type { LayoutTypeOption, ManualToolOption } from './interior_tab_local_state_shared.js';
+import type { InteriorTabWorkflowController } from './interior_tab_workflows_controller_contracts.js';
 import type {
   DoorTrimUiAxis,
   DoorTrimUiColor,
@@ -213,6 +214,7 @@ export type InteriorLayoutSectionProps = {
     shelfVariant: 'regular' | 'double' | 'glass' | 'brace' | 'winter_brace'
   ) => void;
   activateManualToolId: (toolId: string) => void;
+  activateBuiltInDeskTool: InteriorTabWorkflowController['activateBuiltInDeskTool'];
   activateDoorTrimMode: (
     axis: DoorTrimUiAxis,
     span: DoorTrimUiSpan,

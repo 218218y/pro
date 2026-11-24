@@ -150,7 +150,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
           selected={deskOptions !== null}
           testId="sketch-built-in-desk"
           panelId={deskPanelId}
-          activateManualToolId={props.activateManualToolId}
+          activateBuiltInDeskTool={props.activateBuiltInDeskTool}
           exitManual={props.exitManual}
         />
       </div>
@@ -158,7 +158,7 @@ export function InteriorSketchShelvesSection(props: InteriorLayoutSectionProps):
         <BuiltInDeskOptionsPanel
           id={deskPanelId}
           options={deskOptions}
-          activateManualToolId={props.activateManualToolId}
+          activateBuiltInDeskTool={props.activateBuiltInDeskTool}
         />
       ) : null}
       {isShelfSelected ? (

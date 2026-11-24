@@ -132,6 +132,7 @@ export function createInteriorLayoutSectionProps(
     setGridShelfVariant: workflows.setGridShelfVariant,
     enterSketchDivision: workflows.enterSketchDivision,
     activateManualToolId: workflows.activateManualToolId,
+    activateBuiltInDeskTool: workflows.activateBuiltInDeskTool,
     activateDoorTrimMode: workflows.activateDoorTrimMode,
     enterSketchShelfTool: workflows.enterSketchShelfTool,
     enterSketchBoxTool: workflows.enterSketchBoxTool,

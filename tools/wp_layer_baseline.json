@@ -3744,7 +3744,6 @@
         "importedSymbols": [
           "BUILT_IN_DESK_DIMENSIONS",
           "DEFAULT_BUILT_IN_DESK_OPTIONS",
-          "encodeBuiltInDeskTool",
           "maxBuiltInDeskDrawers",
           "readBuiltInDeskTool"
         ]
@@ -3752,6 +3751,20 @@
       "owner": "built-in-desk",
       "reason": "Both sketch tool panels use one desk options control backed by the same limits as pointer picking.",
       "id": "built-in-desk-options"
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/actions/interior_actions.ts",
+      "statement": {
+        "toFile": "esm/shared/built_in_desk.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["DEFAULT_BUILT_IN_DESK_OPTIONS", "encodeBuiltInDeskTool"]
+      },
+      "owner": "built-in-desk",
+      "reason": "The shared manual workflow activates either the session draft or the canonical default with the desk tool codec.",
+      "id": "built-in-desk-manual-workflow"
     },
     {
       "from": "builder",
