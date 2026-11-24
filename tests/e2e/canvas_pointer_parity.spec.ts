@@ -25,6 +25,74 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
+  test('remembers and resets built-in desk options across Interior and Sketch @critical', async ({
+    page,
+  }) => {
+    const issues = collectRuntimeIssues(page);
+    await gotoSmokeApp(page);
+    await openMainTab(page, 'interior');
+    await page.getByTestId('interior-layout-method-sketch').click();
+    const interiorButton = page.getByTestId('interior-built-in-desk');
+    const panelFor = (tab: 'interior' | 'sketch') =>
+      page.locator(`#reactSidebarRoot .tab-content[data-tab="${tab}"]`);
+    const fieldsFor = (tab: 'interior' | 'sketch') => {
+      const panel = panelFor(tab);
+      return {
+        length: panel.getByTestId('sketch-built-in-desk-length'),
+        drawers: panel.getByTestId('sketch-built-in-desk-drawers'),
+        above: panel.getByTestId('sketch-built-in-desk-doorClearanceAboveCm'),
+        below: panel.getByTestId('sketch-built-in-desk-doorClearanceBelowCm'),
+      };
+    };
+    const { length, drawers, above, below } = fieldsFor('interior');
+    await interiorButton.click();
+    await expect(length).toHaveValue('120');
+    await expect(above).toHaveValue('1');
+    await expect(below).toHaveValue('1');
+
+    await length.fill('150');
+    await drawers.selectOption('6');
+    await above.fill('8');
+    await below.fill('0');
+    await page.getByTestId('sketch-built-in-desk-wall').click();
+    await interiorButton.click();
+    await interiorButton.click();
+    await expect(length).toHaveValue('150');
+    await expect(drawers).toHaveValue('6');
+    await expect(above).toHaveValue('8');
+    await expect(below).toHaveValue('0');
+
+    await interiorButton.click();
+    await openMainTab(page, 'sketch');
+    const sketch = panelFor('sketch');
+    const sketchButton = sketch.getByTestId('sketch-built-in-desk');
+    const sketchFields = fieldsFor('sketch');
+    await sketchButton.click();
+    await expect(sketchFields.length).toHaveValue('150');
+    await expect(sketchFields.above).toHaveValue('8');
+    await expect(sketchFields.below).toHaveValue('0');
+    await expect(sketch.getByTestId('sketch-built-in-desk-wall')).toHaveAttribute('aria-pressed', 'true');
+
+    await sketch.getByRole('button', { name: 'איפוס מרווח מעל השולחן' }).click();
+    await expect(sketchFields.above).toHaveValue('1');
+    await expect(sketchFields.below).toHaveValue('0');
+    await expect(sketchFields.drawers).toHaveValue('6');
+    await sketch.getByRole('button', { name: 'איפוס מרווח מתחת לשולחן' }).click();
+    await sketch.getByRole('button', { name: 'איפוס אורך השולחן' }).click();
+    await expect(sketchFields.length).toHaveValue('120');
+    await expect(sketchFields.drawers).toHaveValue('4');
+    await expect(sketchFields.below).toHaveValue('1');
+
+    await sketchButton.click();
+    await openMainTab(page, 'interior');
+    await interiorButton.click();
+    await expect(length).toHaveValue('120');
+    await expect(drawers).toHaveValue('4');
+    await expect(above).toHaveValue('1');
+    await expect(below).toHaveValue('1');
+    expectNoRuntimeIssues(issues);
+  });
+
   test('places, paints and updates a built-in desk from both sketch tool panels @critical', async ({
     page,
   }, testInfo) => {

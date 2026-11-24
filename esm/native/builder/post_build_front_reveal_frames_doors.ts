@@ -25,6 +25,19 @@ import {
   readGeometryUserDataPositiveNumberKey,
 } from './geometry_user_data_contracts.js';
 
+function addCurvedDoorReveal(runtime: FrontRevealFramesRuntime, door: Object3DLike, z: number): boolean {
+  const contour = readDoorContourPoints(door.userData?.__wpArchCutContour);
+  if (!contour) return false;
+  const lines = runtime.buildContourLines(
+    contour,
+    readGeometryUserDataNumber(door.userData?.__doorMeshOffsetX) ?? 0,
+    z,
+    runtime.pickRevealLineMaterial(door) || undefined
+  );
+  if (lines) door.add(lines);
+  return true;
+}
+
 export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: FrontRevealFramesRuntime): void {
   const { App, THREE, wardrobeGroup } = runtime;
   const doorsArr = getDoorsArray(App);
@@ -125,6 +138,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
         if (!seg || !segUd || !segUd.__wpSketchDoorSegment) continue;
         runtime.removeLocalFrames(seg);
         if (segUd.__wpDoorRemoved === true) continue;
+        if (addCurvedDoorReveal(runtime, seg, z)) continue;
         const segBounds = runtime.getObjectLocalBounds(seg);
         const segMinX = readBoundsAxis(segBounds, 'x', 'min');
         const segMaxX = readBoundsAxis(segBounds, 'x', 'max');
@@ -147,16 +161,15 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
       continue;
     }
 
-    const lineMat = runtime.pickRevealLineMaterial(g);
-    const contour = readDoorContourPoints(g.userData.__wpArchCutContour);
-    const lines = contour
-      ? runtime.buildContourLines(
-          contour,
-          readGeometryUserDataNumber(g.userData.__doorMeshOffsetX) ?? 0,
-          z,
-          lineMat || undefined
-        )
-      : runtime.buildRectLines(xLeft, xRight, yMin, yMax, z, lineMat || undefined);
+    if (addCurvedDoorReveal(runtime, g, z)) continue;
+    const lines = runtime.buildRectLines(
+      xLeft,
+      xRight,
+      yMin,
+      yMax,
+      z,
+      runtime.pickRevealLineMaterial(g) || undefined
+    );
     if (lines) g.add(lines);
   }
 }

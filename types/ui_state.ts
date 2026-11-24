@@ -1,4 +1,5 @@
 import type { CorniceDimensionOverridesCm } from './cornice_type.js';
+import type { BuiltInDeskOptions } from './built_in_desk.js';
 // Canonical UI slice state.
 //
 // This is the closed, store-owned UI state contract. External/project payloads
@@ -57,6 +58,7 @@ export interface UiState {
   currentMirrorDraftWidthCm?: string | number;
 
   // Interior tab.
+  builtInDeskDraft?: BuiltInDeskOptions;
   currentLayoutType?: unknown;
   currentGridDivisions?: unknown;
   currentGridShelfVariant?: unknown;

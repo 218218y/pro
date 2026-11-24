@@ -71,6 +71,7 @@ const UI_DOMAIN_BY_KEY = {
   currentGrooveOrientation: APPEARANCE,
   currentMirrorDraftHeightCm: APPEARANCE,
   currentMirrorDraftWidthCm: APPEARANCE,
+  builtInDeskDraft: INTERACTION,
   currentLayoutType: INTERIOR,
   currentGridDivisions: INTERIOR,
   currentGridShelfVariant: INTERIOR,

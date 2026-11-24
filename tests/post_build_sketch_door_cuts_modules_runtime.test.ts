@@ -6,6 +6,8 @@ import {
   applySketchExternalDrawerDoorCuts,
 } from '../esm/native/builder/post_build_sketch_door_cuts.ts';
 import { renderBuiltInDesk, resolveBuiltInDesk } from '../esm/native/builder/render_built_in_desk.ts';
+import { applyFrontRevealDoorFrames } from '../esm/native/builder/post_build_front_reveal_frames_doors.ts';
+import type { DoorArchPoint } from '../types/maps.ts';
 import { getDoorsArray, getDrawersArray } from '../esm/native/runtime/render_access.ts';
 import { getInternalGridMap } from '../esm/native/runtime/cache_access.ts';
 import type { BuiltInDeskHost, BuiltInDeskOptions } from '../types/built_in_desk.ts';
@@ -237,7 +239,7 @@ test('edited desk clearances and independent arches rebuild the upper and lower 
     doorClearanceAboveCm: 4,
     doorClearanceBelowCm: 0,
   });
-  const shapes = new Set<string>();
+  const shapes = new Map<string, DoorArchPoint[]>();
   const ctx = createCtx();
   applySketchExternalDrawerDoorCuts({
     App: App as any,
@@ -247,7 +249,8 @@ test('edited desk clearances and independent arches rebuild the upper and lower 
       create: {
         ...ctx.create,
         createDoorVisual(...args: unknown[]) {
-          if ((args[13] as { cutContour?: unknown[] })?.cutContour?.length) shapes.add(String(args[12]));
+          const contour = (args[13] as { cutContour?: DoorArchPoint[] })?.cutContour;
+          if (contour?.length) shapes.set(String(args[12]), contour);
           return new FakeGroup();
         },
       },
@@ -268,6 +271,31 @@ test('edited desk clearances and independent arches rebuild the upper and lower 
     ['d0_bot_bot', 'd0_bot_top', 'd0_top_bot', 'd0_top_top']
   );
   assert.equal(shapes.size, 4);
+  const revealContours: DoorArchPoint[][] = [];
+  applyFrontRevealDoorFrames({} as any, {
+    App: App as any,
+    THREE: FakeTHREE as any,
+    wardrobeGroup: { traverse() {} } as any,
+    localName: 'frontRevealFrames',
+    zNudge: 0.001,
+    reportSoft() {},
+    cleanupStaleLocalFrames() {},
+    getRevealZSignOverride: () => null,
+    getObjectLocalBounds: () => assert.fail('Curved desk leaves must not use rectangular bounds'),
+    pickRevealLineMaterial: () => null,
+    buildRectLines: () => assert.fail('Curved desk leaves must not get a rectangular reveal'),
+    buildContourLines(points, offset, z) {
+      assert.equal(offset, 0);
+      assert.ok(Math.abs(z - 0.01) < 1e-9);
+      revealContours.push([...points]);
+      return new FakeGroup() as never;
+    },
+    removeLocalFrames() {},
+  });
+  assert.deepEqual(
+    revealContours,
+    segments.map(segment => shapes.get(String(segment.userData.partId)))
+  );
   const lower = segments[1]!;
   const upper = segments[2]!;
   assert.ok(
@@ -279,7 +307,7 @@ test('edited desk clearances and independent arches rebuild the upper and lower 
   );
 });
 
-test('a desk clears 30 cm above and below its body and preserves an existing cut', () => {
+test('a desk clears 1 cm above and below its body by default and preserves an existing cut', () => {
   const App: Record<string, unknown> = {};
   const full = createDoorGroup();
   const existingUpper = createAuthoredSplitDoorLeaf({
@@ -320,8 +348,8 @@ test('a desk clears 30 cm above and below its body and preserves an existing cut
     assert.ok(lower && upper);
     const lowerTop = getWorldY(lower) + Number(lower.userData.__wpDoorConstructionHeight) / 2;
     const upperBottom = getWorldY(upper) - Number(upper.userData.__wpDoorConstructionHeight) / 2;
-    assert.ok(Math.abs(bottomY - lowerTop - 0.3) < 1e-12);
-    assert.ok(Math.abs(upperBottom - surfaceY - 0.3) < 1e-12);
+    assert.ok(Math.abs(bottomY - lowerTop - 0.01) < 1e-12);
+    assert.ok(Math.abs(upperBottom - surfaceY - 0.01) < 1e-12);
   }
 });
 
@@ -340,7 +368,7 @@ test('a standalone box desk removes the short leaf below its opening', () => {
       boxIsStandalone: true,
       geometry: { ...moduleDeskHost.geometry, bottomY: 0.5, topY: 1.5 },
     },
-    0.52
+    0.2
   );
   const cutArgs = {
     App: App as any,
@@ -358,7 +386,7 @@ test('a standalone box desk removes the short leaf below its opening', () => {
   assert.equal(segments.length, 1);
   const upper = segments[0]!;
   const halfHeight = Number(upper.userData.__wpDoorConstructionHeight) / 2;
-  assert.ok(Math.abs(getWorldY(upper) - halfHeight - surfaceY - 0.3) < 1e-12);
+  assert.ok(Math.abs(getWorldY(upper) - halfHeight - surfaceY - 0.01) < 1e-12);
   assert.ok(Math.abs(getWorldY(upper) + halfHeight - 1.5) < 1e-12);
 });
 

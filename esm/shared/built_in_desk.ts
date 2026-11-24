@@ -14,7 +14,7 @@ export const BUILT_IN_DESK_DIMENSIONS = {
   maxDrawerCount: 8,
   drawerBayHeightM: 0.12,
   frontGapM: 0.003,
-  doorOpeningClearanceM: 0.3,
+  doorOpeningClearanceM: 0.01,
   maxDoorClearanceCm: 100,
   shelfClearanceM: 0.1,
   floorY: SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY,

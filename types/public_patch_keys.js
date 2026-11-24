@@ -36,6 +36,7 @@ export const PUBLIC_UI_PATCH_KEYS = [
   'currentGrooveOrientation',
   'currentMirrorDraftHeightCm',
   'currentMirrorDraftWidthCm',
+  'builtInDeskDraft',
   'currentLayoutType',
   'currentGridDivisions',
   'currentGridShelfVariant',

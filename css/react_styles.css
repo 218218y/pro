@@ -2017,6 +2017,10 @@
   gap: 8px;
 }
 
+#reactSidebarRoot .wp-desk-number-field .wp-r-input {
+  padding-inline: 6px;
+}
+
 #reactSidebarRoot .wp-sketch-shelf-variant-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3733,6 +3737,11 @@ body.wp-ui-react .btn-cancel:hover {
   outline: none;
   border-color: #60a5fa;
   box-shadow: var(--wp-r-shadow-ring-reset-focus);
+}
+
+#reactSidebarRoot .wp-r-groove-reset-btn.wp-desk-reset-btn {
+  min-width: 28px;
+  padding: 0;
 }
 
 #reactSidebarRoot .wp-r-groove-reset-btn.wp-r-cell-dims-reset-dim-btn {

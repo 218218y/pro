@@ -237,6 +237,7 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       handleAbsY: segmentHandleAbsY,
       segmentIndex: segIndex,
     });
+    if (seg.contour) visualObj.userData.__wpArchCutContour = seg.contour;
     appendDoorTrimVisuals({
       App: runtime.App,
       THREE: runtime.THREE,
